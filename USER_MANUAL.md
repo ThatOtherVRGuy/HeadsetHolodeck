@@ -1,253 +1,393 @@
-# HeadsetHolodeck User Manual
+# Headset Holodeck User Manual
 
-HeadsetHolodeck is a Unity XR prototype for creating and revisiting immersive worlds from voice commands. In the main flow, you speak a prompt, the app transcribes it, sends it to World Labs, and loads the generated world into the headset. The app can also load local or remote splat/panorama files, switch between world views, and save or restore world configurations.
+Headset Holodeck is a Unity XR prototype for creating, loading, revisiting, and modifying immersive worlds in a headset. You can create worlds from voice prompts, captured camera images, or online image search results; load local or remote splats and panoramas; save worlds for fast revisiting; add spatial ambience; and use hands, gaze, and posture as part of object placement and editing.
 
-This manual describes the app as it currently stands in the `Holodeck` scene.
+This manual describes the current `Assets/Scenes/Holodeck.unity` scene.
 
 ## Requirements
 
 - Unity `6000.2.10f1`.
-- The project opened from `/Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeck`.
-- An XR headset build target, typically Android/OpenXR.
-- Internet access for OpenAI transcription/intent calls and World Labs generation.
-- Microphone access enabled for the app.
-- World Labs API access configured in the project-root `.env` file.
-- OpenAI access configured for the current local prototype.
-- Optional sound search access: `FREESOUND_API_KEY` for Freesound and `XENO_CANTO_API_KEY` for xeno-canto bird recordings. Openverse can be used without a local key.
+- Meta Quest 3 or Unity Editor for local testing.
+- Microphone permission.
+- Internet access for OpenAI, World Labs, image search, and online audio libraries.
+- Project-root `.env` file for API-backed features.
+- Optional Quest camera/headset-camera permission for real-world image capture.
 
-## Before You Run
+Useful keys:
 
-1. Open the project in Unity Hub using Unity `6000.2.10f1`.
+- `OPENAI_API_KEY`: speech intent and OpenAI-backed command interpretation.
+- `WORLDLABS_API_KEY`: World Labs world creation.
+- `PIXABAY_API_KEY`: online image search.
+- `FREESOUND_API_KEY`: Freesound audio search.
+- `XENO_CANTO_API_KEY`: bird/wildlife audio search.
+- `MESHY_API_KEY`, `TRIPO_API_KEY`, `HITEM_API_KEY`: future object generation providers.
+
+Run `Headset Holodeck > Validate Install` in Unity after cloning. It checks the scene, packages, Sherpa models, Android permissions, and local key configuration without printing secret values.
+
+## Starting The App
+
+1. Open the project in Unity `6000.2.10f1`.
 2. Open `Assets/Scenes/Holodeck.unity`.
-3. Confirm the active build target is Android if you are building for a headset.
-4. Confirm the World Labs `.env` file exists at the project root.
-5. Confirm microphone permission is allowed on the device.
-6. Press Play in the Editor, or build and run to the headset.
+3. Confirm `.env` exists at the project root if using API-backed features.
+4. Press Play in the Editor, or build and run to Quest.
 
-The main scene included in the build settings is `Assets/Scenes/Holodeck.unity`.
+The main environment starts in the static holodeck arch world. The Arch UI is visible by default and can be hidden or shown by voice.
 
-## Basic Voice Flow
+## Voice Input
 
-The app uses push-to-talk style recording.
+The app now supports hands-free wake-word input and push-to-talk fallback.
 
-1. Press the wake/record button once.
-2. Speak your command.
-3. Press the wake/record button again to stop recording.
-4. Wait while the app transcribes your speech and performs the action.
+### Wake Word
 
-In the Editor, the documented keyboard shortcut is `Space`. On headset, the wake action is wired through the project input actions, currently intended for the right controller secondary button.
+Say `Computer` followed by a command:
 
-## Generate A New World
+- "Computer, create a cafe in Paris in the 1920s on a rainy day."
+- "Computer, add sounds of the ocean."
+- "Computer, make the red cube larger."
 
-Say a world-generation request naturally:
+Inline commands are supported. If you only say "Computer", the app enters a short listening window and waits for the next utterance.
 
-- "Create a moonlit alien forest with glowing mushrooms."
-- "Generate a peaceful mountain temple at sunrise."
-- "Make a cyberpunk street market in the rain."
+The wake system uses local VAD plus Sherpa ASR today. The configured wake words include `computer` plus a few common partial transcriptions such as `pewter`, because wake detection may begin mid-word. During text-to-speech playback, wake detection is suppressed where the scene wiring can detect active TTS audio sources.
 
-After transcription, the app sends the prompt to World Labs. While the full splat loads, the app may show a panorama preview if one is available. When loading finishes, the app switches to the ready state and fades the preview.
+### Push-To-Talk Fallback
 
-Generation can take several minutes. The current timeout is long enough for normal World Labs jobs, but the app may appear idle while waiting on remote generation.
+Push-to-talk is still available for testing and fallback. In the Editor, the shortcut is `Space`. On device, the wake/record action is wired through the project input actions for controller input.
 
-## Choose Generation Quality
+Push once to start recording, speak, then push again to stop and process.
 
-You can change the active World Labs model tier by voice:
+## Exiting The Holodeck
 
-- "Use draft quality."
-- "Use fast generation."
-- "Use standard generation."
-- "Use high quality."
+You can exit in two ways:
 
-Available tiers are `draft`, `fast`, `standard`, and `high`. Higher quality may take longer.
+- Say "Computer, exit holodeck."
+- Walk through the Exit door/trigger in the static holodeck environment.
 
-## Switch Views
+Both paths call `Application.Quit`. On Android, the exit script also asks the activity to finish so the app closes more reliably on headset.
 
-The app supports multiple ways to view a world, depending on what content is available.
+If you want to end the current generated world without closing the app, say:
 
-Try commands like:
+- "Computer, end program."
 
-- "Show the 3D world."
-- "Switch to panorama view."
-- "Show the mesh view."
+This returns to the static holodeck, clears world audio, resets the world info panel, and moves `Me` back to the configured Teleport Anchor when that scene reference is wired.
 
-If the requested view is not available for the current world, the app should report that it cannot switch to that view.
+## Creating Worlds
 
-## Load Local Or Remote Content
+Say a natural world prompt:
 
-The app can load splat and panorama content from local files or URLs.
+- "Computer, create a moonlit alien forest with glowing mushrooms."
+- "Computer, generate a peaceful mountain temple at sunrise."
+- "Computer, make a cyberpunk street market in the rain."
+
+The app sends the prompt to World Labs, shows World Labs status on the LCARS panels, loads available panorama/splat content, and saves metadata for revisiting.
+
+When a new world loads or "end program" runs, world audio and loaded world assets are cleared so the previous world does not linger.
+
+## Generation Mode
+
+The current World Labs creation mode is visible on the LCARS operations UI at all times. You can change it by touch or by voice:
+
+- "Computer, use draft quality."
+- "Computer, use fast generation."
+- "Computer, use standard generation."
+- "Computer, use high quality."
+
+The available modes are `Draft`, `Fast`, `Standard`, and `High`. The active mode is highlighted in blue; inactive buttons use the LCARS orange palette. When a saved/generated world includes creation-mode metadata, the UI tries to reflect that mode when the world is loaded.
+
+## Image And Camera Prompting
+
+World prompts can use images as inspiration. The image can come from the headset camera or from Pixabay image search.
+
+### Headset Camera Capture
+
+Use the Camera panel or say:
+
+- "Computer, capture image."
+- "Computer, open camera."
+- "Computer, take photo."
+
+The app opens a live camera preview. When you like the frame, say:
+
+- "Computer, OK."
+- "Computer, shoot."
+- "Computer, capture."
+
+The captured image appears on the LCARS preview panel and becomes the current image prompt. You can then say:
+
+- "Computer, create world from image, make it hyper realistic."
+- "Computer, make world from capture, turn it into an ancient temple."
+- "Computer, create object from image."
+
+Object creation from image is scaffolded, but the object-generator backend is not connected yet. Its buttons are disabled unless a Meshy, Tripo, or Hitem key is configured.
+
+### Online Image Search
+
+Use the Image Search panel or say:
+
+- "Computer, search images redwood forest."
+- "Computer, search Pixabay neon Tokyo street."
+- "Computer, next image."
+- "Computer, previous image."
+- "Computer, use this image."
+
+After selecting an image, create a world from it with the UI button or voice command. Pixabay attribution is shown in the panel where available. Image-search buttons are disabled if `PIXABAY_API_KEY` is missing.
+
+## Capturing Thumbnails And Panoramas
+
+Sideloaded splats may not come with thumbnails or panoramas. The app can capture them from the currently loaded world and store them in the saved world's folder.
+
+Voice commands:
+
+- "Computer, capture thumbnail."
+- "Computer, capture panorama."
+- "Computer, save thumbnail."
+- "Computer, save panorama."
+
+The capture runs on a 3-second countdown. Thumbnail capture uses the current headset/camera pose. Panorama capture renders an equirectangular image. If a panorama exists and no explicit thumbnail exists yet, the panorama can be used as the world card image until replaced by a thumbnail.
+
+The Arch and configured UI objects are temporarily hidden during world-view capture so they do not appear in the thumbnail or panorama.
+
+## Loading Local Or Remote Content
+
+The Local/URL panel can load splats and panoramas from local files or internet URLs.
 
 Supported splat formats:
 
 - `.spz`
 - `.ply`
 
-Supported panorama formats:
+Supported panorama/image formats:
 
 - `.jpg`
 - `.jpeg`
 - `.png`
 
-You can use the content loading UI or voice commands such as:
+You can use the panel, virtual keyboard, or voice commands such as:
 
-- "Load the splat from [path or URL]."
-- "Load the panorama from [path or URL]."
+- "Computer, load the splat from [path or URL]."
+- "Computer, load the panorama from [path or URL]."
 
-Local content defaults to the app's persistent `WorldContent` folder unless the UI is configured to use the saved-world cache. The Local Files panel scans for supported files and creates a row for each one. The URLs panel lets you enter a URL and keeps a small history of recent entries.
+The app also keeps URL history and local file lists. The virtual keyboard appears for text fields so the app can be used without a physical keyboard or voice availability.
 
-## My Worlds And Saved Configurations
+## My Worlds And Cached Worlds
 
-The app has a saved-world configuration system. It can save world metadata, cached splats/panoramas, and object changes.
+The My Worlds panel lists local saved worlds. It supports loading, saving as a new local config, and deleting saved configs.
 
 Useful commands:
 
-- "Show my worlds."
-- "Save this world."
-- "Save as Desert Temple."
-- "Load Desert Temple."
+- "Computer, show my worlds."
+- "Computer, save this world."
+- "Computer, save as Desert Temple."
+- "Computer, load Desert Temple."
 
-The My Worlds panel shows saved configurations as cards. Each card can load a saved world, save a copy under a new name, or delete the config.
+Worlds are cached for faster revisiting. The world info panel shows name, dates, source, object/prompt counts, file sizes where calculable, model mode where known, and attribution. When no generated world is loaded, the static world attribution is:
 
-Deletion is immediate in the current prototype, so treat delete buttons carefully.
+```text
+model by Set Blueprint Archive
+```
 
-## Object And Scene Commands
+## Status, Info, And LCARS UI
 
-The speech-intent layer can route commands for scene manipulation when the relevant scene controllers are wired.
+The Arch has two main UI pillars and a crossbeam status area.
 
-Examples:
+- Operations side: My Worlds, World Labs, Files/URL, Camera, Image Search, creation controls, model mode buttons.
+- Status/info side: current world metadata, dates, sizes, source, status, and attribution.
+- Crossbeam: realtime clock, total app runtime, current-world runtime, status ticker, and warning/error flashing.
 
-- "Move this object over there."
-- "Make it bigger."
-- "Rotate it 45 degrees."
-- "Reset its transform."
-- "Put a cube where I'm pointing."
-- "Set the lighting to sunset."
-- "Point the sun this way."
+If no world is loaded, the current-world timer displays `--:--:--`.
 
-Targeted commands depend on what the app can infer from pointing, recent interactions, object names, and the current scene context. If the app cannot resolve the target, the command may do nothing or log a warning.
+Voice examples:
+
+- "Computer, show arch."
+- "Computer, hide arch."
+- "Computer, show my worlds."
+- "Computer, open the content loader."
 
 ## World Sounds And Ambience
 
-When a generated World Labs world finishes loading, the app can create matching ambience automatically. The current implementation infers likely sound layers from the world name or prompt, such as forest birds, wind in trees, river water, rapids, ocean waves, rain, thunder, cave drips, or distant city ambience.
+When a World Labs world loads, the app can infer appropriate ambience from the prompt or world metadata. For example, a Roman coliseum prompt may produce crowd, cheering, armor, or arena ambience rather than a generic electronic loop.
 
-You can also ask for sounds directly without changing the visual world:
+You can add sounds without changing the visual world:
 
-- "Add birds in the trees."
-- "Play river rapids and wind."
-- "Add ocean waves around me."
-- "Add a red-tailed hawk call."
+- "Computer, add sounds of the beach."
+- "Computer, add seagull sounds."
+- "Computer, add forest birds and wind."
+- "Computer, add river rapids."
 
-For collective sound requests, the app may create multiple spatial `AudioSource` objects, one per layer. Audio files are downloaded into the saved-world cache when the save system is wired, and explicit sound additions are registered as scene object changes so they can be saved with the current world configuration.
+For collective requests, the app may create multiple audio sources. Background ambience such as rain, ocean, crowds, rivers, wind, traffic, or machinery loops. Discrete events play once. Natural calls and sparse events such as birds, frogs, insects, thunder, bells, and chimes play at randomized intervals.
 
-The app chooses a playback style automatically unless you ask for one. Continuous backgrounds such as ocean, rain, rivers, wind, crowds, traffic, or machinery loop. Discrete event sounds such as doors, impacts, buttons, or footsteps play once. Natural calls and sparse events such as birds, frogs, insects, thunder, bells, or chimes play at intervals, usually with randomized timing.
+Audio controls:
 
-The reusable prefab for interval-based sounds is `Assets/App/Prefabs/RandomIntervalAudioSource.prefab`. It contains an `AudioSource` and `AudioPlaybackController`, defaulting to random interval playback every 10 seconds with 3 seconds of variance.
+- "Computer, stop all sounds."
+- "Computer, mute all sounds."
+- "Computer, unmute all sounds."
+- "Computer, make the river louder."
+- "Computer, make the birds quieter."
+- "Computer, play seagull sounds."
+- "Computer, make the crowd ambient."
+- "Computer, make the river spatialized."
 
-You can control existing sounds by voice:
+The app first looks for existing matching audio by canonical name or object name before downloading a new clip for "play" commands. World audio is destroyed when the world ends or another world loads; UX audio such as TTS and cues is kept separate.
 
-- "Make the river louder."
-- "Make the birds quieter."
-- "Mute the rain."
-- "Unmute it."
-- "Play the hawk now."
-- "Play the birds every 20 seconds."
-- "Play the thunder at random intervals with a 10 second variance."
-- "Make the crowd ambient."
-- "Make the river spatialized."
+Downloaded audio stores attribution metadata, including provider, title, creator/recordist, license, source URL, prompt, tags, duration, cached file name, and byte count.
 
-Ambient means 2D audio with `spatialBlend` set to `0`. Spatialized means 3D audio with `spatialBlend` set to `1`.
+## Object Creation And Editing
 
-Sound providers are tried automatically. Freesound is the preferred general sound-effects source when `FREESOUND_API_KEY` is available, Openverse is the no-key fallback, and xeno-canto is used for bird or birdsong requests when configured.
-
-Downloaded audio sources store attribution metadata with the saved world, including provider, title, creator/recordist, license, license URL, landing URL, source URLs, prompt, tags, duration, cached file name, and downloaded byte count. This metadata is intended for the world information and attribution UI.
-
-## UI Commands
-
-Some panels can be shown by voice if they are registered in the scene's UI panel controller.
+The app can create built-in interactable primitives and wrap them with XR interaction components.
 
 Examples:
 
-- "Show my worlds."
-- "Open the content loader."
+- "Computer, create a cube where I'm pointing."
+- "Computer, create a sphere at world origin."
+- "Computer, create a ball in my left hand."
+- "Computer, put a cube in my right hand."
+- "Computer, create a capsule in front of me."
 
-Panel names are matched by configured keys, so exact behavior depends on the current scene setup.
+Objects get default URP-compatible materials. If no material is specified, a medium gray material is used. Materials are reused through a runtime material catalog.
 
-## Audio Feedback And TTS
+Material commands:
 
-The app has hooks for assistant responses and audio feedback. When the speech-intent model returns a spoken response, it is routed through the app events. Depending on scene wiring, this may appear as UI text, text-to-speech, or console output.
+- "Computer, make this red."
+- "Computer, make the cube blue metallic."
+- "Computer, make all cubes matte black."
+
+Material adjectives can also identify targets:
+
+- "Computer, move the red cube up one meter."
+- "Computer, make the red metallic sphere smaller."
+
+If more than one target matches, the app should ask for clarification, such as "Which red cube?"
+
+## Movement, Targeting, And Spatial Language
+
+The app uses recent interactions, object names, gaze, hand/controller pointing, and body-relative language to resolve targets.
+
+Examples:
+
+- "Computer, move me one meter forward."
+- "Computer, move me one meter to my left."
+- "Computer, move the cube in front of me."
+- "Computer, move the sphere to my right hand."
+- "Computer, delete this cube."
+- "Computer, make this larger."
+
+`This` and `that` use pointing/gaze context where available. `All` commands affect matching app-created scene objects, not UX systems.
+
+The app also tracks "my parts":
+
+- head: `Main Camera`
+- left hand: active left hand/controller object
+- right hand: active right hand/controller object
+
+## Delete Commands
+
+You can delete objects or categories:
+
+- "Computer, delete this cube."
+- "Computer, delete all cubes."
+- "Computer, delete all sounds."
+- "Computer, delete the red sphere."
+
+For "this" commands, point or look at the object when speaking. Delete commands are intended for app-created/interactable scene content and world audio, not the LCARS UI or system objects.
+
+## Lighting And Sun Direction
+
+Lighting commands depend on spatial context and scene wiring:
+
+- "Computer, set lighting to sunset."
+- "Computer, point the sun this way."
+
+For directional commands, point with a hand/controller so the app can infer the intended direction.
+
+## Virtual Keyboard
+
+When voice is unavailable, or when entering URLs/search text, use the LCARS virtual keyboard. It appears when supported text fields are selected, fades in, updates a preview field and the target field, then fades out and disables itself when dismissed to avoid rendering cost in VR.
 
 ## Troubleshooting
 
-### Nothing happens when I speak
+### Voice Does Not Respond
 
-- Make sure you pressed the wake button once to begin recording and again to stop.
-- Check that microphone permission is granted.
-- In the Editor, try the `Space` key.
-- Check the Unity Console for transcription or recorder errors.
+- Say `Computer` clearly, then the command.
+- Try the push-to-talk fallback.
+- Run `Headset Holodeck > Validate Install`.
+- Confirm microphone permission.
+- Confirm Sherpa model files are present.
+- Confirm `OPENAI_API_KEY` is configured if using OpenAI-backed command interpretation.
+- Make sure TTS is not currently speaking over the wake detector.
 
-### The app says no audio was recorded
+### The App Hears Its Own Voice
 
-- Confirm the headset or computer microphone is selected and working.
-- Speak after recording has started.
-- Avoid very short recordings.
-- On Android, permission may still be pending when recording starts.
+Wake detection should be suppressed while known TTS audio sources are playing. If this happens, check that the voice/TTS audio sources are assigned to the suppression list or discoverable by the voice activation system.
 
-### World generation does not start
+### Camera Capture Does Not Work
 
-- Confirm the OpenAI transcription step succeeded.
+- In the Editor, approve macOS camera permission when prompted.
+- On Quest, confirm the Android manifest includes camera/headset-camera permission.
+- Say "capture image" first to open preview, then "OK", "shoot", or "capture" to save the frame.
+- If no preview appears, check whether the device exposes a `WebCamTexture` camera to Unity.
+
+### Image Search Buttons Are Disabled
+
+- Add `PIXABAY_API_KEY` to `.env`.
+- Reopen or refresh the panel.
+
+### World Generation Does Not Start
+
+- Confirm `WORLDLABS_API_KEY`.
 - Confirm internet access.
-- Confirm the World Labs key is available in the project-root `.env`.
-- Check the Console for World Labs API errors.
+- Check the World Labs status panel and Unity Console.
+- Try a shorter prompt.
 
-### The panorama appears but no 3D world loads
+### Panorama Appears But No 3D Splat Loads
 
 - The generated world may not have a usable splat URL.
-- The splat download may have failed.
-- The runtime splat loader may have failed while processing the file.
-- Try switching to panorama view if the panorama is available.
+- The download or runtime splat conversion may have failed.
+- Try switching to panorama view.
+- Try loading another saved/cached world.
 
-### Local file loading fails
+### Local File Loading Fails
 
-- Confirm the path or URL ends in a supported extension.
-- For local files, confirm the file exists in the expected folder.
-- Use `.spz` when possible. `.ply` support exists, but is more experimental in the current runtime path.
+- Confirm the URL or path is reachable.
+- Confirm the extension is supported.
+- Prefer `.spz`; `.ply` support is more experimental.
 
-### Saved worlds do not appear
+### Requested Sounds Do Not Match The Scene
 
-- Open the My Worlds panel and refresh by closing/reopening it.
-- Confirm that the world config store has scanned the persistent Worlds folder.
-- Check whether the app has write access to its persistent data path.
-
-### Requested sounds do not play
-
-- Confirm internet access.
-- For Freesound, confirm `FREESOUND_API_KEY` is available in the local environment or assigned on the provider component.
-- For xeno-canto bird searches, confirm `XENO_CANTO_API_KEY` is available if the provider requires one.
-- Check the Unity Console for search, download, or audio decode warnings.
+- Add `FREESOUND_API_KEY` for better general sound search.
+- Add `XENO_CANTO_API_KEY` for bird/wildlife searches.
+- Try specific sound names: "ocean waves", "seagulls", "forest birds", "crowd cheering".
+- The app now tries to rewrite broad world prompts into better sound search terms, but third-party search quality still varies.
 
 ## Current Prototype Limitations
 
-- This is a local prototype, not a hardened distribution build.
-- API credentials are currently handled locally.
-- Remote generation and loading are only partially cancellable.
-- Some voice commands depend on scene references being assigned correctly.
-- Some UI panels and assistant responses depend on current scene wiring.
-- Sound search depends on third-party library availability, licensing metadata, and whether the returned file can be decoded by Unity on the current platform.
-- `.ply` loading is more experimental than `.spz` loading.
-- Delete actions in My Worlds are immediate.
+- This is still a local prototype, not a hardened consumer build.
+- API credentials are handled locally through `.env` or runtime config.
+- World generation and network downloads depend on third-party service availability.
+- Object generation from image is scaffolded but not connected to Meshy, Tripo, or Hitem yet.
+- Multiplayer and avatars are planned future phases.
+- Some voice commands depend on scene references and active hand/controller tracking.
+- `.ply` loading is less mature than `.spz` loading.
+- Delete actions are immediate.
 
 ## Quick Command Examples
 
-- "Create a quiet redwood forest at dawn."
-- "Use high quality."
-- "Show the panorama."
-- "Show the 3D world."
-- "Show my worlds."
-- "Save as Redwood Dawn."
-- "Load Redwood Dawn."
-- "Load the splat from example.spz."
-- "Load the panorama from example.jpg."
-- "Make this bigger."
-- "Rotate this 45 degrees."
-- "Reset it."
-- "Add forest birds and wind in the trees."
-- "Play river rapids over there."
+- "Computer, create a quiet redwood forest at dawn."
+- "Computer, use high quality."
+- "Computer, capture image."
+- "Computer, OK."
+- "Computer, create world from image, make it cinematic."
+- "Computer, search images Japanese garden."
+- "Computer, next image."
+- "Computer, use this image."
+- "Computer, capture thumbnail."
+- "Computer, capture panorama."
+- "Computer, show my worlds."
+- "Computer, save as Redwood Dawn."
+- "Computer, load Redwood Dawn."
+- "Computer, add forest birds and wind in the trees."
+- "Computer, stop all sounds."
+- "Computer, create a ball in my left hand."
+- "Computer, make the ball red metallic."
+- "Computer, move me one meter forward."
+- "Computer, delete this cube."
+- "Computer, exit holodeck."
+- "Computer, end program."
