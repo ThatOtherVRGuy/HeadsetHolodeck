@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e16bc4980764b2fb7a9316df31e4ca8, type: 3}
+  m_Name: DefaultLcarsPalette
+  m_EditorClassIdentifier: 
+  spaceBlack: {r: 0.006, g: 0.007, b: 0.008, a: 0.98}
+  panelBlack: {r: 0.018, g: 0.018, b: 0.024, a: 0.96}
+  panelBlue: {r: 0.035, g: 0.04, b: 0.085, a: 0.96}
+  inputBlack: {r: 0.07, g: 0.08, b: 0.11, a: 1}
+  disabled: {r: 0.16, g: 0.16, b: 0.18, a: 0.7}
+  orange: {r: 1, g: 0.48, b: 0.04, a: 1}
+  amber: {r: 0.9, g: 0.38, b: 0.05, a: 1}
+  gold: {r: 1, g: 0.76, b: 0.07, a: 1}
+  redOrange: {r: 0.8, g: 0.08, b: 0, a: 1}
+  blue: {r: 0.25, g: 0.32, b: 1, a: 1}
+  lightBlue: {r: 0.48, g: 0.55, b: 1, a: 1}
+  violet: {r: 0.5, g: 0.27, b: 0.88, a: 1}
+  lavender: {r: 0.66, g: 0.52, b: 0.94, a: 1}
+  paleViolet: {r: 0.78, g: 0.72, b: 0.88, a: 1}
+  text: {r: 0.94, g: 0.9, b: 0.82, a: 1}
+  dimText: {r: 0.58, g: 0.6, b: 0.68, a: 1}
+  buttonText: {r: 0, g: 0, b: 0, a: 1}
+  info: {r: 1, g: 0.78, b: 0.08, a: 1}
+  success: {r: 0.48, g: 0.55, b: 1, a: 1}
+  warning: {r: 1, g: 0.55, b: 0.07, a: 1}
+  error: {r: 0.9, g: 0.2, b: 0.1, a: 1}
+  modelActive: {r: 0.25, g: 0.34, b: 1, a: 1}
+  modelDraft: {r: 1, g: 0.55, b: 0.03, a: 1}
+  modelFast: {r: 1, g: 0.55, b: 0.03, a: 1}
+  modelStandard: {r: 1, g: 0.55, b: 0.03, a: 1}
+  modelHigh: {r: 1, g: 0.55, b: 0.03, a: 1}

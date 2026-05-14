@@ -1,0 +1,68 @@
+{
+    "version": 1,
+    "name": "HolodeckInputActions",
+    "maps": [
+        {
+            "name": "Holodeck",
+            "id": "f1b8a630-7d19-4f70-9280-713a7e500001",
+            "actions": [
+                {
+                    "name": "WakeCommand",
+                    "type": "Button",
+                    "id": "fae39a3d-7f39-4c5d-90d7-713a7e500002",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "f3a76f2b-c66a-47a0-8df0-713a7e500003",
+                    "path": "<XRController>{RightHand}/secondaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "WakeCommand",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a6227551-f22d-4fe1-9f8d-713a7e500005",
+                    "path": "<XRController>{RightHand}/{SecondaryButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "WakeCommand",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "bb624aa7-4a97-4fe0-b9f3-713a7e500006",
+                    "path": "<XRController>{LeftHand}/{SecondaryButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "WakeCommand",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "32e5b58b-8a8b-4f7b-b365-713a7e500004",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "WakeCommand",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

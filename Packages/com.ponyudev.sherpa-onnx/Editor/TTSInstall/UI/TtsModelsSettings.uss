@@ -1,0 +1,60 @@
+/* ══════════════════════════════════════════════
+   TTS-specific styles.
+   Shared layout rules are in ModelSettings.uss
+   ══════════════════════════════════════════════ */
+
+/* ── Separator ── */
+
+.tts-separator {
+    opacity: 0.4;
+}
+
+/* ── URL preview ── */
+
+.tts-url-preview {
+    opacity: 0.6;
+    font-size: 11px;
+    white-space: normal;
+}
+
+/* ── Cache ── */
+
+.tts-cache-group {
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+}
+
+.tts-cache-description {
+    opacity: 0.5;
+    font-size: 11px;
+    margin-left: 20px;
+    margin-top: 2px;
+    white-space: normal;
+}
+
+.tts-cache-size-field {
+    margin-left: 20px;
+    margin-top: 4px;
+}
+
+/* ── Vocoder ── */
+
+.tts-vocoder-container {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.tts-vocoder-row {
+    flex-direction: row;
+    align-items: center;
+}
+
+.tts-vocoder-dropdown {
+    flex-grow: 1;
+}
+
+.tts-vocoder-download-btn {
+    flex-shrink: 0;
+}

@@ -1,0 +1,21 @@
+{
+  "name": "PonyuDev.SherpaOnnx",
+  "rootNamespace": "PonyuDev.SherpaOnnx",
+  "references": [
+    "Unity.SharpZipLib.Utils",
+    "UniTask"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "internalsVisibleTo": [
+    "PonyuDev.SherpaOnnx.Tests.Editor",
+    "PonyuDev.SherpaOnnx.Tests.Runtime"
+  ]
+}

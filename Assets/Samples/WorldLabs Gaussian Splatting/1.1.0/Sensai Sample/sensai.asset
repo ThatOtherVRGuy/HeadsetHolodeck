@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33b71fae31e6c7d438e8566dc713e666, type: 3}
+  m_Name: sensai
+  m_EditorClassIdentifier: 
+  m_FormatVersion: 20240801
+  m_SplatCount: 500000
+  m_BoundsMin: {x: -117.09375, y: -52.67578, z: -117.40918}
+  m_BoundsMax: {x: 134.90625, y: 145.41797, z: 89.825195}
+  m_DataHash:
+    serializedVersion: 2
+    Hash: 20a10700a1d934010000000000000000
+  m_LayerInfo:
+  - x: 0
+    y: 500000
+  m_PosFormat: 2
+  m_ScaleFormat: 2
+  m_SHFormat: 3
+  m_ColorFormat: 2
+  m_clusteredSHData: {fileID: 0}
+  m_layerData:
+  - layer: 0
+    m_PosData: {fileID: 4900000, guid: 0a6480fd73be7bf4d9522d0a5ea16bea, type: 3}
+    m_ColorData: {fileID: 4900000, guid: 797ca9e84d5f16549a1cc36865bc6293, type: 3}
+    m_OtherData: {fileID: 4900000, guid: 6251f1d7570080a499e9e88e70f4ed46, type: 3}
+    m_SHData: {fileID: 4900000, guid: 4bba5a6f8ad55574083297fbd1b6dd6e, type: 3}
+    m_ChunkData: {fileID: 4900000, guid: 97d2789cea9398140874c89e06caf8ed, type: 3}
+  m_Cameras: []

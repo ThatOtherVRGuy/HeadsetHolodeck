@@ -1,0 +1,441 @@
+using UnityEngine;
+
+namespace SpeechIntent
+{
+    public class TargetTransformController : MonoBehaviour
+    {
+        public SceneEntityResolver entityResolver;
+        public InteractionMemory interactionMemory;
+
+        [Header("Origin")]
+        [Tooltip("World-space origin point used for spatial_reference=WorldOrigin. Defaults to Vector3.zero if null.")]
+        public Transform originPoint;
+
+        [Tooltip("Frame of reference for spatial_reference=RelativeToMe. Defaults to a GameObject named 'Me'.")]
+        public Transform meReference;
+
+        [Header("Defaults")]
+        public float defaultScaleUpMultiplier = 1.25f;
+        public float defaultScaleDownMultiplier = 0.8f;
+        public float defaultRotationDegrees = 45f;
+        public float defaultMoveDistance = 2f;
+        public float defaultRelativeToMeDistance = 2f;
+        public float minScaleComponent = 0.01f;
+        public float pointingSurfaceOffset = 0.01f;
+
+        public string LastFailureMessage { get; private set; } = "";
+
+        public bool TryMoveTarget(VoiceIntentCommand command, SpatialSnapshot spatial, out GameObject target)
+        {
+            LastFailureMessage = "";
+            target = ResolveTarget(command, spatial);
+            if (target == null)
+            {
+                return false;
+            }
+
+            if (!TryResolveDestination(command, spatial, out Vector3 destination))
+            {
+                return false;
+            }
+
+            target.transform.position = destination;
+            RegisterInteraction(target);
+            return true;
+        }
+
+        public bool TryScaleTarget(VoiceIntentCommand command, SpatialSnapshot spatial, out GameObject target)
+        {
+            LastFailureMessage = "";
+            target = ResolveTarget(command, spatial);
+            if (target == null)
+            {
+                return false;
+            }
+
+            if (command.reset_to_default_scale)
+            {
+                target.transform.localScale = Vector3.one;
+                RegisterInteraction(target);
+                return true;
+            }
+
+            float multiplier = command.scale_multiplier;
+            if (Mathf.Approximately(multiplier, 0f))
+            {
+                multiplier = InferDefaultScaleMultiplier(command.transcript);
+            }
+
+            if (multiplier <= 0f)
+            {
+                return false;
+            }
+
+            Vector3 newScale = target.transform.localScale * multiplier;
+            newScale.x = Mathf.Max(newScale.x, minScaleComponent);
+            newScale.y = Mathf.Max(newScale.y, minScaleComponent);
+            newScale.z = Mathf.Max(newScale.z, minScaleComponent);
+            target.transform.localScale = newScale;
+            RegisterInteraction(target);
+            return true;
+        }
+
+        public bool TryResetTransform(VoiceIntentCommand command, SpatialSnapshot spatial, out GameObject target)
+        {
+            LastFailureMessage = "";
+            target = ResolveTarget(command, spatial);
+            if (target == null)
+            {
+                return false;
+            }
+
+            target.transform.position   = originPoint != null ? originPoint.position : Vector3.zero;
+            target.transform.rotation   = Quaternion.identity;
+            target.transform.localScale = Vector3.one;
+            RegisterInteraction(target);
+            return true;
+        }
+
+        public bool TryRotateTarget(VoiceIntentCommand command, SpatialSnapshot spatial, out GameObject target)
+        {
+            LastFailureMessage = "";
+            target = ResolveTarget(command, spatial);
+            if (target == null)
+            {
+                return false;
+            }
+
+            RotationAxis axis = command.rotation_axis == RotationAxis.None ? InferDefaultRotationAxis(command.transcript) : command.rotation_axis;
+            float degrees = Mathf.Approximately(command.rotation_degrees, 0f) ? InferDefaultRotationDegrees(command.transcript) : command.rotation_degrees;
+            Vector3 axisVector = ToAxisVector(axis);
+
+            if (axisVector == Vector3.zero || Mathf.Approximately(degrees, 0f))
+            {
+                return false;
+            }
+
+            target.transform.rotation = Quaternion.AngleAxis(degrees, axisVector) * target.transform.rotation;
+            RegisterInteraction(target);
+            return true;
+        }
+
+        private GameObject ResolveTarget(VoiceIntentCommand command, SpatialSnapshot spatial)
+        {
+            if (entityResolver == null)
+            {
+                return interactionMemory != null ? interactionMemory.GetLastCreatedOrInteracted() : null;
+            }
+
+            SceneTargetResolution resolution = entityResolver.ResolveTargetDetailed(command, spatial);
+            if (resolution.status == SceneTargetResolutionStatus.Ambiguous)
+            {
+                LastFailureMessage = resolution.message;
+                return null;
+            }
+
+            if (resolution.status == SceneTargetResolutionStatus.None)
+            {
+                LastFailureMessage = resolution.message;
+                return null;
+            }
+
+            return resolution.Target;
+        }
+
+        private void RegisterInteraction(GameObject target)
+        {
+            if (interactionMemory != null && target != null)
+            {
+                interactionMemory.RegisterInteraction(target);
+            }
+        }
+
+        private bool TryResolveDestination(VoiceIntentCommand command, SpatialSnapshot spatial, out Vector3 destination)
+        {
+            destination = Vector3.zero;
+
+            if (command.spatial_reference == SpatialReferenceMode.RelativeToMe)
+            {
+                return TryResolveRelativeToMeDestination(command, out destination);
+            }
+
+            if (command.spatial_reference == SpatialReferenceMode.BodyAnchor)
+            {
+                if (BodyAnchorResolver.TryResolve(spatial, command.body_anchor, command.target_hand, out destination, out _))
+                    return true;
+
+                return false;
+            }
+
+            if (spatial == null)
+            {
+                return false;
+            }
+
+            if (command.spatial_reference == SpatialReferenceMode.PointingHit)
+            {
+                if (TryGetPreferredHand(command.target_hand, spatial, out HandRaySnapshot hand) && hand.has_hit)
+                {
+                    destination = hand.hit_point + hand.hit_normal * pointingSurfaceOffset;
+                    return true;
+                }
+            }
+
+            if (command.spatial_reference == SpatialReferenceMode.HandMidpoint && spatial.has_hand_midpoint)
+            {
+                destination = spatial.hand_midpoint;
+                return true;
+            }
+
+            if (command.spatial_reference == SpatialReferenceMode.PointingRay)
+            {
+                if (TryGetPreferredHand(command.target_hand, spatial, out HandRaySnapshot rayHand))
+                {
+                    destination = rayHand.origin + rayHand.direction.normalized * defaultMoveDistance;
+                    return true;
+                }
+            }
+
+            if (command.spatial_reference == SpatialReferenceMode.HeadForward && spatial.head_forward.sqrMagnitude > 0.0001f)
+            {
+                destination = spatial.head_position + spatial.head_forward.normalized * defaultMoveDistance;
+                return true;
+            }
+
+            if (command.spatial_reference == SpatialReferenceMode.WorldOrigin)
+            {
+                destination = originPoint != null ? originPoint.position : Vector3.zero;
+                return true;
+            }
+
+            if (TryGetPreferredHand(command.target_hand, spatial, out HandRaySnapshot fallbackHand))
+            {
+                if (fallbackHand.has_hit)
+                {
+                    destination = fallbackHand.hit_point + fallbackHand.hit_normal * pointingSurfaceOffset;
+                    return true;
+                }
+
+                destination = fallbackHand.origin + fallbackHand.direction.normalized * defaultMoveDistance;
+                return true;
+            }
+
+            if (spatial.head_forward.sqrMagnitude > 0.0001f)
+            {
+                destination = spatial.head_position + spatial.head_forward.normalized * defaultMoveDistance;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool TryResolveRelativeToMeDestination(VoiceIntentCommand command, out Vector3 destination)
+        {
+            destination = Vector3.zero;
+
+            Transform me = ResolveMeReference();
+            if (me == null)
+            {
+                return false;
+            }
+
+            RelativeDirection direction = command.relative_direction == RelativeDirection.None
+                ? InferRelativeDirection(command.transcript)
+                : command.relative_direction;
+
+            Vector3 directionVector = ResolveRelativeDirection(me, direction);
+            if (directionVector.sqrMagnitude <= 0.0001f)
+            {
+                return false;
+            }
+
+            float distance = command.relative_distance_meters > 0f
+                ? command.relative_distance_meters
+                : defaultRelativeToMeDistance;
+
+            destination = me.position + directionVector.normalized * distance;
+            return true;
+        }
+
+        private Transform ResolveMeReference()
+        {
+            if (meReference != null)
+            {
+                return meReference;
+            }
+
+            GameObject me = GameObject.Find("Me");
+            if (me != null)
+            {
+                meReference = me.transform;
+                return meReference;
+            }
+
+            return null;
+        }
+
+        private static bool IsMeTarget(VoiceIntentCommand command)
+        {
+            return IsMeName(command?.target_entity) ||
+                   IsMeName(command?.target_name) ||
+                   IsMeName(command?.object_name);
+        }
+
+        private static bool IsMeName(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return false;
+
+            string normalized = value.Trim().ToLowerInvariant();
+            return normalized == "me" ||
+                   normalized == "myself" ||
+                   normalized == "player" ||
+                   normalized == "xr origin";
+        }
+
+        private RelativeDirection InferRelativeDirection(string transcript)
+        {
+            string text = (transcript ?? string.Empty).ToLowerInvariant();
+            if (text.Contains("behind") || text.Contains("backward") || text.Contains("backwards") || text.Contains(" back"))
+                return RelativeDirection.Back;
+            if (text.Contains("left"))
+                return RelativeDirection.Left;
+            if (text.Contains("right"))
+                return RelativeDirection.Right;
+            if (text.Contains("above") || text.Contains(" up"))
+                return RelativeDirection.Up;
+            if (text.Contains("below") || text.Contains(" down"))
+                return RelativeDirection.Down;
+            return RelativeDirection.Forward;
+        }
+
+        private static Vector3 ResolveRelativeDirection(Transform me, RelativeDirection direction)
+        {
+            if (me == null)
+                return Vector3.zero;
+
+            Vector3 forward = Vector3.ProjectOnPlane(me.forward, Vector3.up);
+            if (forward.sqrMagnitude <= 0.0001f)
+                forward = Vector3.ProjectOnPlane(me.rotation * Vector3.forward, Vector3.up);
+            if (forward.sqrMagnitude <= 0.0001f)
+                forward = Vector3.forward;
+            forward.Normalize();
+
+            Vector3 right = Vector3.ProjectOnPlane(me.right, Vector3.up);
+            if (right.sqrMagnitude <= 0.0001f)
+                right = Vector3.Cross(Vector3.up, forward);
+            right.Normalize();
+
+            switch (direction)
+            {
+                case RelativeDirection.Forward:
+                case RelativeDirection.InFront:
+                    return forward;
+                case RelativeDirection.Back:
+                case RelativeDirection.Behind:
+                    return -forward;
+                case RelativeDirection.Left:
+                    return -right;
+                case RelativeDirection.Right:
+                    return right;
+                case RelativeDirection.Up:
+                    return Vector3.up;
+                case RelativeDirection.Down:
+                    return Vector3.down;
+                default:
+                    return Vector3.zero;
+            }
+        }
+
+        private bool TryGetPreferredHand(HandSelection selection, SpatialSnapshot spatial, out HandRaySnapshot hand)
+        {
+            hand = null;
+
+            if (selection == HandSelection.Left && spatial.left_hand != null && spatial.left_hand.is_available)
+            {
+                hand = spatial.left_hand;
+                return true;
+            }
+
+            if (selection == HandSelection.Right && spatial.right_hand != null && spatial.right_hand.is_available)
+            {
+                hand = spatial.right_hand;
+                return true;
+            }
+
+            if (spatial.right_hand != null && spatial.right_hand.is_available && spatial.right_hand.is_pointing)
+            {
+                hand = spatial.right_hand;
+                return true;
+            }
+
+            if (spatial.left_hand != null && spatial.left_hand.is_available && spatial.left_hand.is_pointing)
+            {
+                hand = spatial.left_hand;
+                return true;
+            }
+
+            if (spatial.right_hand != null && spatial.right_hand.is_available)
+            {
+                hand = spatial.right_hand;
+                return true;
+            }
+
+            if (spatial.left_hand != null && spatial.left_hand.is_available)
+            {
+                hand = spatial.left_hand;
+                return true;
+            }
+
+            return false;
+        }
+
+        private float InferDefaultScaleMultiplier(string transcript)
+        {
+            string text = (transcript ?? string.Empty).ToLowerInvariant();
+            if (text.Contains("smaller") || text.Contains("too big") || text.Contains("shrink") || text.Contains("reduce"))
+            {
+                return defaultScaleDownMultiplier;
+            }
+
+            return defaultScaleUpMultiplier;
+        }
+
+        private RotationAxis InferDefaultRotationAxis(string transcript)
+        {
+            string text = (transcript ?? string.Empty).ToLowerInvariant();
+            if (text.Contains("upside down") || text.Contains("flip"))
+            {
+                return RotationAxis.X;
+            }
+
+            return RotationAxis.Y;
+        }
+
+        private float InferDefaultRotationDegrees(string transcript)
+        {
+            string text = (transcript ?? string.Empty).ToLowerInvariant();
+            if (text.Contains("upside down") || text.Contains("flip"))
+            {
+                return 180f;
+            }
+
+            return defaultRotationDegrees;
+        }
+
+        private Vector3 ToAxisVector(RotationAxis axis)
+        {
+            switch (axis)
+            {
+                case RotationAxis.X:
+                    return Vector3.right;
+                case RotationAxis.Y:
+                    return Vector3.up;
+                case RotationAxis.Z:
+                    return Vector3.forward;
+                default:
+                    return Vector3.zero;
+            }
+        }
+    }
+}
