@@ -4,12 +4,15 @@ using System.Collections;
 using System.IO;
 using System.Threading.Tasks;
 using GaussianSplatting.Runtime;
+using Holodeck.Direct;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
 using WorldLabs.API;
 using WorldLabs.Runtime;
 using SpeechIntent;
+using WorldLabs.Runtime.Tools;
 
 namespace Holodeck.Save
 {
@@ -25,6 +28,8 @@ namespace Holodeck.Save
         public LocalRemoteSplatLoader    splatLoader;
         public LocalRemotePanoLoader     panoLoader;
         public Transform                 placedObjectsParent;
+        public CachedObjectStore         cachedObjectStore;
+        public ObjectGenerationService   objectGenerationService;
 
         [Header("Events")]
         public UnityEvent onRestoreStarted;
@@ -32,6 +37,7 @@ namespace Holodeck.Save
         public UnityEvent onRestoreComplete;
 
         const float RestoreTimeoutSeconds = 30f;
+        const float CachedObjectImportTimeoutSeconds = 15f;
 
         public async Task RestoreAsync(WorldConfig config)
         {
@@ -57,6 +63,8 @@ namespace Holodeck.Save
                 return;
             }
 
+            ApplyWorldTransform(config);
+
             // 1b. Preload cached pano into skybox (without displaying it) so "pano" voice command works.
             _ = PreloadPanoAsync(config);
 
@@ -66,7 +74,7 @@ namespace Holodeck.Save
 
             foreach (SavedObject savedObj in config.objects)
             {
-                try   { RestoreObject(savedObj, ctx); }
+                try   { await RestoreObjectAsync(savedObj, ctx); }
                 catch (Exception ex)
                 {
                     Debug.LogWarning($"[WorldConfigRestorer] Object '{savedObj.instance_id}' restore failed: {ex.Message}");
@@ -107,7 +115,7 @@ namespace Holodeck.Save
             if (!string.IsNullOrEmpty(src.cached_pano))
             {
                 string absPath = ResolvePath(config.config_id, src.cached_pano);
-                if (File.Exists(absPath))
+                if (!string.IsNullOrEmpty(absPath) && File.Exists(absPath))
                 {
                     panoLoader.PreloadAsync(absPath);
                     return;
@@ -140,9 +148,11 @@ namespace Holodeck.Save
             if (!string.IsNullOrEmpty(src.cached_splat))
             {
                 string absPath = ResolvePath(config.config_id, src.cached_splat);
-                if (File.Exists(absPath))
+                if (!string.IsNullOrEmpty(absPath) && File.Exists(absPath))
                 {
-                    bool loaded = await WaitForWorldLoadedAsync(() => splatLoader?.LoadAsync(absPath));
+                    RuntimeSplatFloorLoader.SplatSourceKind sourceKind = ResolveSplatSourceKindForWorldSource(src);
+                    SplatSpawnMetadata savedSpawn = FirstSavedSpawnMetadata(config);
+                    bool loaded = await WaitForWorldLoadedAsync(() => splatLoader?.LoadAsync(absPath, src.display_name ?? config.display_name, sourceKind, savedSpawn));
                     if (loaded) return true;
                 }
             }
@@ -167,7 +177,7 @@ namespace Holodeck.Save
             if (!string.IsNullOrEmpty(src.cached_pano))
             {
                 string absPath = ResolvePath(config.config_id, src.cached_pano);
-                if (File.Exists(absPath))
+                if (!string.IsNullOrEmpty(absPath) && File.Exists(absPath))
                 {
                     bool loaded = await WaitForWorldLoadedAsync(() => panoLoader?.LoadAsync(absPath));
                     if (loaded) return true;
@@ -181,6 +191,49 @@ namespace Holodeck.Save
             }
 
             return false;
+        }
+
+        static RuntimeSplatFloorLoader.SplatSourceKind ResolveSplatSourceKindForWorldSource(WorldSourceData source)
+        {
+            return string.Equals(source?.type, "worldlabs", StringComparison.OrdinalIgnoreCase)
+                ? RuntimeSplatFloorLoader.SplatSourceKind.WorldLabs
+                : RuntimeSplatFloorLoader.SplatSourceKind.LooseSplat;
+        }
+
+        static SplatSpawnMetadata FirstSavedSpawnMetadata(WorldConfig config)
+        {
+            SpawnPointData spawn = config?.spawn_points != null && config.spawn_points.Count > 0
+                ? config.spawn_points[0]
+                : null;
+            if (spawn == null)
+                return null;
+
+            return new SplatSpawnMetadata
+            {
+                hasPose = true,
+                method = string.IsNullOrWhiteSpace(spawn.method) ? "saved_spawn_point" : spawn.method,
+                spawn = spawn.position,
+                rotation = spawn.rotation,
+                lookAt = spawn.look_at,
+                confidence = spawn.confidence,
+                warnings = Array.Empty<string>()
+            };
+        }
+
+        void ApplyWorldTransform(WorldConfig config)
+        {
+            if (config?.world_transform == null)
+                return;
+
+            GameObject worldRoot = interactionMemory != null ? interactionMemory.currentWorldRoot : null;
+            if (worldRoot == null)
+            {
+                Debug.LogWarning($"[WorldConfigRestorer] Cannot apply saved world transform for '{config.display_name}': no current world root.");
+                return;
+            }
+
+            config.world_transform.ApplyTo(worldRoot.transform);
+            Debug.Log($"[WorldConfigRestorer] Applied saved world transform for '{config.display_name}'.");
         }
 
         // OnWorldLoaded is Action<string, GaussianSplatRenderer> (worldId, renderer)
@@ -208,23 +261,14 @@ namespace Holodeck.Save
             return received;
         }
 
-        void RestoreObject(SavedObject savedObj, RestorationContext ctx)
+        async Task RestoreObjectAsync(SavedObject savedObj, RestorationContext ctx)
         {
-            GameObject go;
-            if (!string.IsNullOrEmpty(savedObj.prefab_name) && objectPlacement != null)
-            {
-                GameObject prefab = objectPlacement.FindPrefab(savedObj.prefab_name);
-                go = prefab != null
-                    ? Instantiate(prefab, placedObjectsParent)
-                    : new GameObject($"Restored_{savedObj.prefab_name}");
-            }
-            else
-            {
-                go = new GameObject(savedObj.display_name ?? "RestoredObject");
-            }
+            GameObject go = await TryRestoreCachedObjectAsync(savedObj);
+            if (go == null)
+                go = CreatePlaceholderObject(savedObj);
 
-            if (placedObjectsParent != null && go.transform.parent == null)
-                go.transform.SetParent(placedObjectsParent, false);
+            if (placedObjectsParent != null && go.transform.parent != placedObjectsParent)
+                go.transform.SetParent(placedObjectsParent, true);
 
             SpeechIntentTrackable trackable = go.GetComponent<SpeechIntentTrackable>()
                                            ?? go.AddComponent<SpeechIntentTrackable>();
@@ -234,6 +278,195 @@ namespace Holodeck.Save
             WorldConfigComponentRegistry.RestoreAll(go, savedObj.components, ctx);
 
             interactionMemory?.RegisterCreatedObject(go);
+        }
+
+        GameObject CreatePlaceholderObject(SavedObject savedObj)
+        {
+            if (!string.IsNullOrEmpty(savedObj.prefab_name) && objectPlacement != null)
+            {
+                GameObject prefab = objectPlacement.FindPrefab(savedObj.prefab_name);
+                return prefab != null
+                    ? Instantiate(prefab, placedObjectsParent)
+                    : new GameObject($"Restored_{savedObj.prefab_name}");
+            }
+
+            return new GameObject(savedObj.display_name ?? "RestoredObject");
+        }
+
+        async Task<GameObject> TryRestoreCachedObjectAsync(SavedObject savedObj)
+        {
+            string cachedObjectId = TryGetCachedObjectId(savedObj);
+            if (string.IsNullOrWhiteSpace(cachedObjectId))
+                return null;
+
+            ResolveCachedObjectDependencies();
+
+            if (!TryLoadCachedObjectRecord(cachedObjectStore, cachedObjectId, out CachedObjectRecord record, out string loadError))
+            {
+                string suffix = string.IsNullOrWhiteSpace(loadError) ? "" : $" {loadError}";
+                Debug.LogWarning($"[WorldConfigRestorer] Cached object '{cachedObjectId}' could not be loaded. Restoring placeholder for '{savedObj.instance_id}'.{suffix}");
+                return null;
+            }
+
+            if (objectGenerationService == null)
+            {
+                Debug.LogWarning($"[WorldConfigRestorer] ObjectGenerationService was not found. Restoring placeholder for cached object '{cachedObjectId}'.");
+                return null;
+            }
+
+            GameObject imported = null;
+            GameObject importRoot = null;
+            string importError = null;
+            bool done = false;
+            bool cancelled = false;
+            Coroutine importCoroutine = null;
+
+            try
+            {
+                importCoroutine = StartCoroutine(objectGenerationService.ImportCachedObject(record, null, null, (go, error) =>
+                {
+                    if (cancelled)
+                    {
+                        if (go != null)
+                            Destroy(go);
+                        return;
+                    }
+
+                    imported = go;
+                    importError = error;
+                    done = true;
+                }, root =>
+                {
+                    importRoot = root;
+                    if (cancelled && importRoot != null)
+                    {
+                        Destroy(importRoot);
+                        importRoot = null;
+                    }
+                }));
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[WorldConfigRestorer] Cached object '{cachedObjectId}' import could not start: {ex.Message}. Restoring placeholder.");
+                return null;
+            }
+
+            float startTime = Time.realtimeSinceStartup;
+            while (!done && (Time.realtimeSinceStartup - startTime) < CachedObjectImportTimeoutSeconds)
+                await Task.Yield();
+
+            if (!done)
+            {
+                cancelled = true;
+                if (importCoroutine != null)
+                    StopCoroutine(importCoroutine);
+                if (importRoot != null)
+                {
+                    Destroy(importRoot);
+                    importRoot = null;
+                }
+
+                Debug.LogWarning($"[WorldConfigRestorer] Cached object '{cachedObjectId}' import timed out after {CachedObjectImportTimeoutSeconds:0.#} seconds. Restoring placeholder.");
+                return null;
+            }
+
+            if (imported == null)
+            {
+                Debug.LogWarning($"[WorldConfigRestorer] Cached object '{cachedObjectId}' import failed: {importError ?? "Unknown error"}. Restoring placeholder.");
+                return null;
+            }
+
+            WrapRestoredCachedObject(imported, savedObj.display_name ?? record.canonical_name);
+            return imported;
+        }
+
+        void WrapRestoredCachedObject(GameObject imported, string canonicalName)
+        {
+            if (imported == null)
+                return;
+
+            objectPlacement ??= FindFirstObjectByType<ObjectPlacementController>(FindObjectsInactive.Include);
+            if (objectPlacement == null)
+                return;
+
+            Vector3 position = imported.transform.position;
+            Quaternion rotation = imported.transform.rotation;
+            Vector3 scale = imported.transform.localScale;
+
+            objectPlacement.WrapExistingGeometry(imported, canonicalName);
+            imported.transform.SetPositionAndRotation(position, rotation);
+            imported.transform.localScale = scale;
+        }
+
+        void ResolveCachedObjectDependencies()
+        {
+            if (cachedObjectStore == null)
+                cachedObjectStore = FindFirstObjectByType<CachedObjectStore>(FindObjectsInactive.Include);
+            if (cachedObjectStore == null)
+                cachedObjectStore = CachedObjectStore.GetOrCreate();
+
+            if (objectGenerationService == null)
+                objectGenerationService = FindFirstObjectByType<ObjectGenerationService>(FindObjectsInactive.Include);
+            if (objectGenerationService == null)
+                objectGenerationService = ObjectGenerationService.GetOrCreate();
+
+            if (objectGenerationService != null)
+            {
+                if (objectGenerationService.cachedObjectStore == null)
+                    objectGenerationService.cachedObjectStore = cachedObjectStore;
+                if (objectGenerationService.defaultParent == null)
+                    objectGenerationService.defaultParent = placedObjectsParent;
+            }
+        }
+
+        public static string TryGetCachedObjectId(SavedObject savedObj)
+        {
+            if (savedObj?.components == null)
+                return null;
+
+            foreach (SavedComponent component in savedObj.components)
+            {
+                if (!string.Equals(component?.type, "CachedObjectReference", StringComparison.Ordinal))
+                    continue;
+
+                JObject data = component.data;
+                string cachedObjectId = data?["cached_object_id"]?.Value<string>();
+                return string.IsNullOrWhiteSpace(cachedObjectId) ? null : cachedObjectId;
+            }
+
+            return null;
+        }
+
+        public static bool TryLoadCachedObjectRecord(
+            CachedObjectStore store,
+            string cachedObjectId,
+            out CachedObjectRecord record,
+            out string error)
+        {
+            record = null;
+            error = null;
+
+            if (store == null)
+            {
+                error = "Cached object store is missing.";
+                return false;
+            }
+
+            try
+            {
+                record = store.Load(cachedObjectId);
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
+
+            if (record != null)
+                return true;
+
+            error = "Cached object metadata was not found.";
+            return false;
         }
 
         IEnumerator LoadAudioClipsCoroutine()
@@ -267,6 +500,29 @@ namespace Holodeck.Save
         }
 
         string ResolvePath(string configId, string relativePath) =>
-            Path.GetFullPath(Path.Combine(worldConfigStore.WorldsRootPath, configId, relativePath));
+            ResolveCachedWorldAssetPath(worldConfigStore?.WorldsRootPath, configId, relativePath);
+
+        public static string ResolveCachedWorldAssetPath(string worldsRootPath, string configId, string relativePath)
+        {
+            if (string.IsNullOrWhiteSpace(worldsRootPath) ||
+                string.IsNullOrWhiteSpace(configId) ||
+                string.IsNullOrWhiteSpace(relativePath) ||
+                Path.IsPathRooted(relativePath))
+            {
+                return null;
+            }
+
+            string worldsRoot = Path.GetFullPath(worldsRootPath);
+            string configFolder = Path.GetFullPath(Path.Combine(worldsRoot, configId));
+            string candidate = Path.GetFullPath(Path.Combine(configFolder, relativePath));
+            return IsPathUnder(worldsRoot, candidate) ? candidate : null;
+        }
+
+        static bool IsPathUnder(string rootPath, string candidatePath)
+        {
+            string root = Path.GetFullPath(rootPath).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            string candidate = Path.GetFullPath(candidatePath);
+            return candidate.StartsWith(root, StringComparison.Ordinal);
+        }
     }
 }

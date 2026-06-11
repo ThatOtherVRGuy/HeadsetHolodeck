@@ -20,9 +20,12 @@ namespace Holodeck.Save
 
         readonly List<WorldConfig> _configs = new List<WorldConfig>();
         Task _scanTask;
+        static readonly object s_migrationLock = new object();
+        static readonly Dictionary<string, Task> s_migrationTasksByRoot = new Dictionary<string, Task>();
 
         public string WorldsRootPath   => RootPath;
         public string CachedWorldsPath => CachedPath;
+        public string CachedObjectsPath => Path.Combine(RootPath, "CachedObjects");
 
         // ── Lifecycle ──────────────────────────────────────────────────────────
 
@@ -52,8 +55,9 @@ namespace Holodeck.Save
         public WorldConfig CreateConfig(WorldSourceData source, string displayName, PromptEntry creationPrompt)
         {
             string now = DateTime.UtcNow.ToString("yyyy-MM-ddTHHmmssZ");
-            string id  = MakeFolderName(displayName ?? source?.display_name ?? "World");
-            string dir = Path.Combine(RootPath, id);
+            string id  = CreateUniqueFolderId(RootPath, displayName ?? source?.display_name ?? "World");
+            string dir = GetSafeConfigDirectory(id);
+            if (dir == null) throw new InvalidOperationException("[WorldConfigStore] Could not create a safe config path.");
             Directory.CreateDirectory(dir);
 
             var config = new WorldConfig
@@ -89,7 +93,10 @@ namespace Holodeck.Save
         /// <summary>Reads world.json for the given config_id from disk.</summary>
         public WorldConfig LoadConfig(string configId)
         {
-            string path = Path.Combine(RootPath, configId, "world.json");
+            string dir = GetSafeConfigDirectory(configId);
+            if (dir == null) return null;
+
+            string path = Path.Combine(dir, "world.json");
             if (!File.Exists(path)) return null;
             return JsonConvert.DeserializeObject<WorldConfig>(File.ReadAllText(path));
         }
@@ -97,7 +104,9 @@ namespace Holodeck.Save
         /// <summary>Deletes the config folder from disk and removes it from the in-memory list. Does NOT touch CachedWorlds.</summary>
         public void DeleteConfig(string configId)
         {
-            string dir = Path.Combine(RootPath, configId);
+            string dir = GetSafeConfigDirectory(configId);
+            if (dir == null) return;
+
             if (Directory.Exists(dir))
                 Directory.Delete(dir, recursive: true);
 
@@ -110,12 +119,12 @@ namespace Holodeck.Save
         public string GetConfigFolderPath(WorldConfig config) =>
             config == null || string.IsNullOrWhiteSpace(config.config_id)
                 ? null
-                : Path.Combine(RootPath, config.config_id);
+                : GetSafeConfigDirectory(config.config_id);
 
         public string GetConfigFolderPath(string configId) =>
             string.IsNullOrWhiteSpace(configId)
                 ? null
-                : Path.Combine(RootPath, configId);
+                : GetSafeConfigDirectory(configId);
 
         public bool HasConfigForWorldId(string worldId)
         {
@@ -130,8 +139,9 @@ namespace Holodeck.Save
         public WorldConfig ForkConfig(WorldConfig source, string newDisplayName)
         {
             string now = DateTime.UtcNow.ToString("yyyy-MM-ddTHHmmssZ");
-            string id  = MakeFolderName(newDisplayName);
-            string dir = Path.Combine(RootPath, id);
+            string id  = CreateUniqueFolderId(RootPath, newDisplayName);
+            string dir = GetSafeConfigDirectory(id);
+            if (dir == null) throw new InvalidOperationException("[WorldConfigStore] Could not create a safe fork path.");
             Directory.CreateDirectory(dir);
 
             // Deep copy via JSON round-trip
@@ -175,15 +185,11 @@ namespace Holodeck.Save
             string root   = RootPath;
             string cached = CachedPath;
 
-            // Phase 1: ensure directories
-            await Task.Run(() =>
-            {
-                Directory.CreateDirectory(root);
-                Directory.CreateDirectory(cached);
-            });
-
-            // Phase 2: migrate loose files
-            await Task.Run(() => MigrateLooseFiles(root, cached));
+            // Phase 1-2: ensure directories and migrate loose files.
+            // This is serialized globally per root because a scene can contain more than one
+            // WorldConfigStore component. Without this, each instance can migrate the same
+            // startup files and create duplicate world.json folders.
+            await GetOrCreateMigrationTask(root, cached);
 
             // Phase 3: load existing config folders
             List<WorldConfig> loaded = await Task.Run(() => LoadExistingConfigs(root));
@@ -192,6 +198,36 @@ namespace Holodeck.Save
 
             OnConfigsChanged?.Invoke();
             // Phase 4 (WorldLabs reconcile) is handled by WorldConfigAutoSave.
+        }
+
+        static Task GetOrCreateMigrationTask(string root, string cached)
+        {
+            string key = Path.GetFullPath(root);
+
+            lock (s_migrationLock)
+            {
+                if (s_migrationTasksByRoot.TryGetValue(key, out Task existing))
+                    return existing;
+
+                Task created = Task.Run(() =>
+                {
+                    Directory.CreateDirectory(root);
+                    Directory.CreateDirectory(cached);
+                    MigrateLooseFiles(root, cached);
+                });
+
+                s_migrationTasksByRoot[key] = created;
+                _ = created.ContinueWith(_ =>
+                {
+                    lock (s_migrationLock)
+                    {
+                        if (s_migrationTasksByRoot.TryGetValue(key, out Task current) && ReferenceEquals(current, created))
+                            s_migrationTasksByRoot.Remove(key);
+                    }
+                });
+
+                return created;
+            }
         }
 
         /// <summary>
@@ -214,8 +250,9 @@ namespace Holodeck.Save
                     display_name = w.display_name
                 };
                 string now = DateTime.UtcNow.ToString("yyyy-MM-ddTHHmmssZ");
-                string id  = MakeFolderName(w.display_name ?? "World");
-                string dir = Path.Combine(RootPath, id);
+                string id  = CreateUniqueFolderId(RootPath, w.display_name ?? "World");
+                string dir = GetSafeConfigDirectory(id);
+                if (dir == null) continue;
                 Directory.CreateDirectory(dir);
 
                 var config = new WorldConfig
@@ -237,7 +274,18 @@ namespace Holodeck.Save
 
         void WriteJson(WorldConfig config)
         {
-            string dir  = Path.Combine(RootPath, config.config_id);
+            if (config == null) throw new ArgumentNullException(nameof(config));
+            if (!IsSafeConfigId(config.config_id))
+                config.config_id = CreateUniqueFolderId(RootPath, config.display_name ?? "World");
+
+            string dir = GetSafeConfigDirectory(config.config_id);
+            if (dir == null)
+            {
+                config.config_id = CreateUniqueFolderId(RootPath, config.display_name ?? "World");
+                dir = GetSafeConfigDirectory(config.config_id);
+            }
+            if (dir == null) throw new InvalidOperationException("[WorldConfigStore] Could not create a safe config path.");
+
             string path = Path.Combine(dir, "world.json");
             Directory.CreateDirectory(dir);
             File.WriteAllText(path, JsonConvert.SerializeObject(config, Formatting.Indented));
@@ -248,6 +296,43 @@ namespace Holodeck.Save
             string sanitized = Regex.Replace(displayName ?? "World", @"[^a-zA-Z0-9]", "_");
             if (sanitized.Length > 40) sanitized = sanitized.Substring(0, 40);
             return $"{sanitized}_{DateTime.UtcNow:yyyy-MM-ddTHHmmss}Z";
+        }
+
+        static string CreateUniqueFolderId(string root, string displayName)
+        {
+            string baseName = MakeFolderName(displayName);
+            for (int attempt = 0; attempt < 20; attempt++)
+            {
+                string suffix = Guid.NewGuid().ToString("N").Substring(0, 6);
+                string id = $"{baseName}_{suffix}";
+                string dir = GetSafeConfigDirectory(root, id);
+                if (dir != null && !Directory.Exists(dir)) return id;
+            }
+
+            return $"{baseName}_{Guid.NewGuid():N}";
+        }
+
+        string GetSafeConfigDirectory(string configId) => GetSafeConfigDirectory(RootPath, configId);
+
+        static string GetSafeConfigDirectory(string root, string configId)
+        {
+            if (!IsSafeConfigId(configId)) return null;
+
+            string candidate = Path.GetFullPath(Path.Combine(root, configId));
+            return IsPathUnder(root, candidate) ? candidate : null;
+        }
+
+        static bool IsSafeConfigId(string configId)
+        {
+            return !string.IsNullOrWhiteSpace(configId)
+                && Regex.IsMatch(configId, @"^[A-Za-z0-9_.-]+$");
+        }
+
+        static bool IsPathUnder(string rootPath, string candidatePath)
+        {
+            string root = Path.GetFullPath(rootPath).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            string candidate = Path.GetFullPath(candidatePath);
+            return candidate.StartsWith(root, StringComparison.Ordinal);
         }
 
         static readonly string[] SplatExtensions = { ".spz", ".ply" };
@@ -284,12 +369,24 @@ namespace Holodeck.Save
 
                 string name = Path.GetFileNameWithoutExtension(fileName);
                 string now  = DateTime.UtcNow.ToString("yyyy-MM-ddTHHmmssZ");
-                string id   = MakeFolderName(name);
-                string dir  = Path.Combine(root, id);
+                string cachedFileName = Path.GetFileName(destination);
+                if (HasExistingConfigForCachedAsset(root, cachedFileName))
+                {
+                    Debug.LogWarning($"[WorldConfigStore] Migrated {fileName} to CachedWorlds, but a config already references {cachedFileName}; skipping duplicate config.");
+                    continue;
+                }
+
+                string id   = CreateUniqueFolderId(root, name);
+                string dir  = GetSafeConfigDirectory(root, id);
+                if (dir == null)
+                {
+                    Debug.LogWarning($"[WorldConfigStore] Could not create safe config folder for {fileName}.");
+                    continue;
+                }
                 Directory.CreateDirectory(dir);
 
                 // Relative path from config folder to CachedWorlds
-                string relativePath = $"../CachedWorlds/{Path.GetFileName(destination)}";
+                string relativePath = $"../CachedWorlds/{cachedFileName}";
                 var config = new WorldConfig
                 {
                     config_id    = id,
@@ -310,6 +407,39 @@ namespace Holodeck.Save
             }
         }
 
+        static bool HasExistingConfigForCachedAsset(string root, string cachedFileName)
+        {
+            if (string.IsNullOrWhiteSpace(cachedFileName) || !Directory.Exists(root))
+                return false;
+
+            foreach (string dir in Directory.GetDirectories(root))
+            {
+                if (Path.GetFileName(dir) == "CachedWorlds") continue;
+
+                string jsonPath = Path.Combine(dir, "world.json");
+                if (!File.Exists(jsonPath)) continue;
+
+                try
+                {
+                    WorldConfig config = JsonConvert.DeserializeObject<WorldConfig>(File.ReadAllText(jsonPath));
+                    string splatName = Path.GetFileName(config?.world_source?.cached_splat ?? string.Empty);
+                    string panoName = Path.GetFileName(config?.world_source?.cached_pano ?? string.Empty);
+
+                    if (string.Equals(splatName, cachedFileName, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(panoName, cachedFileName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning($"[WorldConfigStore] Could not inspect {jsonPath} for duplicate cached asset references: {ex.Message}");
+                }
+            }
+
+            return false;
+        }
+
         static List<WorldConfig> LoadExistingConfigs(string root)
         {
             var result = new List<WorldConfig>();
@@ -321,7 +451,14 @@ namespace Holodeck.Save
                 try
                 {
                     WorldConfig c = JsonConvert.DeserializeObject<WorldConfig>(File.ReadAllText(jsonPath));
-                    if (c != null) result.Add(c);
+                    if (c != null)
+                    {
+                        string folderId = Path.GetFileName(dir);
+                        if (!IsSafeConfigId(c.config_id) || GetSafeConfigDirectory(root, c.config_id) != Path.GetFullPath(dir))
+                            c.config_id = folderId;
+
+                        result.Add(c);
+                    }
                 }
                 catch (Exception ex)
                 {

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 namespace SpeechIntent
@@ -26,6 +27,8 @@ namespace SpeechIntent
             if (root == null)
                 return;
 
+            NormalizeRendering(root, fallbackMaterial, fallbackColor);
+
             if (applyMaterialWhenMissing)
                 ApplyMaterial(root, fallbackMaterial, fallbackColor, false);
 
@@ -39,20 +42,17 @@ namespace SpeechIntent
             if (addRigidbody)
             {
                 body = root.GetComponent<Rigidbody>();
-                bool createdBody = false;
+                if (body == null)
+                    body = root.GetComponentInChildren<Rigidbody>(true);
                 if (body == null)
                 {
                     body = root.AddComponent<Rigidbody>();
-                    createdBody = true;
                 }
 
-                if (createdBody)
-                {
-                    body.useGravity = useGravity;
-                    body.isKinematic = isKinematic;
-                    body.mass = Mathf.Max(0.001f, mass);
-                    body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
-                }
+                body.useGravity = useGravity;
+                body.isKinematic = isKinematic;
+                body.mass = Mathf.Max(0.001f, mass);
+                body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
             }
 
             if (addGrabInteractable)
@@ -107,6 +107,129 @@ namespace SpeechIntent
 
         static Material _runtimeDefaultMaterial;
         static Color _runtimeDefaultColor;
+
+        public static void NormalizeRendering(GameObject root, Material fallbackMaterial, Color fallbackColor)
+        {
+            if (root == null)
+                return;
+
+            Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+            foreach (Renderer renderer in renderers)
+            {
+                if (renderer == null)
+                    continue;
+
+                renderer.shadowCastingMode = ShadowCastingMode.On;
+                renderer.receiveShadows = true;
+                NormalizeRendererMaterials(renderer, fallbackMaterial, fallbackColor);
+            }
+        }
+
+        static void NormalizeRendererMaterials(Renderer renderer, Material fallbackMaterial, Color fallbackColor)
+        {
+            Material[] materials = renderer.sharedMaterials;
+            if (materials == null || materials.Length == 0)
+            {
+                renderer.sharedMaterial = fallbackMaterial != null ? fallbackMaterial : GetRuntimeDefaultMaterial(fallbackColor);
+                return;
+            }
+
+            bool changed = false;
+            for (int i = 0; i < materials.Length; i++)
+            {
+                Material material = materials[i];
+                if (material == null)
+                {
+                    materials[i] = fallbackMaterial != null ? fallbackMaterial : GetRuntimeDefaultMaterial(fallbackColor);
+                    changed = true;
+                    continue;
+                }
+
+                if (!IsProbablyUnlit(material))
+                    continue;
+
+                Material lit = CreateLitCopy(material, fallbackColor);
+                if (lit == null)
+                    continue;
+
+                materials[i] = lit;
+                changed = true;
+            }
+
+            if (changed)
+                renderer.sharedMaterials = materials;
+        }
+
+        static bool IsProbablyUnlit(Material material)
+        {
+            if (material == null || material.shader == null)
+                return true;
+
+            string shaderName = material.shader.name ?? "";
+            return shaderName.IndexOf("Unlit", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   shaderName.IndexOf("glTFast/Unlit", System.StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        static Material CreateLitCopy(Material source, Color fallbackColor)
+        {
+            Shader shader =
+                Shader.Find("Universal Render Pipeline/Lit") ??
+                Shader.Find("Universal Render Pipeline/Simple Lit") ??
+                Shader.Find("Standard");
+            if (shader == null)
+                return null;
+
+            Material lit = new Material(shader)
+            {
+                name = source.name + " Lit"
+            };
+
+            Texture texture = GetFirstTexture(source, "_BaseMap", "_MainTex", "baseColorTexture");
+            if (texture != null)
+            {
+                if (lit.HasProperty("_BaseMap"))
+                    lit.SetTexture("_BaseMap", texture);
+                else if (lit.HasProperty("_MainTex"))
+                    lit.SetTexture("_MainTex", texture);
+            }
+
+            Color color = ReadColor(source, fallbackColor);
+            if (lit.HasProperty("_BaseColor"))
+                lit.SetColor("_BaseColor", color);
+            else if (lit.HasProperty("_Color"))
+                lit.SetColor("_Color", color);
+
+            if (lit.HasProperty("_Metallic"))
+                lit.SetFloat("_Metallic", source.HasProperty("_Metallic") ? source.GetFloat("_Metallic") : 0f);
+            if (lit.HasProperty("_Smoothness"))
+                lit.SetFloat("_Smoothness", source.HasProperty("_Smoothness") ? source.GetFloat("_Smoothness") : 0.45f);
+
+            return lit;
+        }
+
+        static Texture GetFirstTexture(Material material, params string[] propertyNames)
+        {
+            foreach (string propertyName in propertyNames)
+            {
+                if (material.HasProperty(propertyName))
+                {
+                    Texture texture = material.GetTexture(propertyName);
+                    if (texture != null)
+                        return texture;
+                }
+            }
+
+            return material.mainTexture;
+        }
+
+        static Color ReadColor(Material material, Color fallbackColor)
+        {
+            if (material.HasProperty("_BaseColor"))
+                return material.GetColor("_BaseColor");
+            if (material.HasProperty("_Color"))
+                return material.GetColor("_Color");
+            return fallbackColor;
+        }
 
         static Material GetRuntimeDefaultMaterial(Color color)
         {

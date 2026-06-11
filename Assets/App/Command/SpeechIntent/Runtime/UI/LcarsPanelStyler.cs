@@ -29,7 +29,12 @@ namespace SpeechIntent
             }
 
             foreach (RawImage raw in panel.GetComponentsInChildren<RawImage>(true))
+            {
+                if (raw.GetComponentInParent<CachedObjectCardUI>(true) != null)
+                    continue;
+
                 raw.color = raw.texture != null ? Color.white : new Color(0f, 0f, 0f, 0.78f);
+            }
 
             foreach (Button button in panel.GetComponentsInChildren<Button>(true))
             {

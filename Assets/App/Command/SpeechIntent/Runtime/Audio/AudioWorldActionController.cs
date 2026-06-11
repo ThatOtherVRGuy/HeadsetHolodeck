@@ -799,6 +799,11 @@ namespace SpeechIntent.Audio
                 ? result.title
                 : query.prompt;
 
+            RuntimeProxyVisual proxy = go.AddComponent<RuntimeProxyVisual>();
+            proxy.visibleByDefault = false;
+            proxy.SetVisible(false);
+            proxy.RebuildPrimitive(RuntimeProxyCategory.Audio, new Color(0.18f, 0.75f, 1f, 1f));
+
             return go;
         }
 

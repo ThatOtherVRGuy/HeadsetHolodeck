@@ -10,7 +10,7 @@ namespace Holodeck.Editor
     public static class XRHeadTrackingSetup
     {
         const string XriDefaultActionsPath =
-            "Assets/Samples/XR Interaction Toolkit/3.3.0/Starter Assets/XRI Default Input Actions.inputactions";
+            "Assets/Samples/XR Interaction Toolkit/3.5.0/Starter Assets/XRI Default Input Actions.inputactions";
         const string HolodeckActionsPath =
             "Assets/App/Input/HolodeckInputActions.inputactions";
 

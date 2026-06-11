@@ -135,48 +135,63 @@ namespace WorldLabs.Runtime.Tools
             NativeArray<byte> input, int count, int stride,
             List<(string name, ElementType type)> attributes)
         {
-            // Build per-attribute byte offsets
-            NativeArray<int> fileAttrOffsets = new NativeArray<int>(attributes.Count, Allocator.Temp);
-            int offset = 0;
-            for (int ai = 0; ai < attributes.Count; ai++)
+            NativeArray<int> fileAttrOffsets = default;
+            NativeArray<int> srcOffsets = default;
+            NativeArray<InputSplatData> dst = default;
+
+            try
             {
-                fileAttrOffsets[ai] = offset;
-                offset += TypeToSize(attributes[ai].type);
+                // This parser can run from a managed background thread. Allocator.Temp is
+                // only valid on Unity's main/job threads, so use Persistent and dispose
+                // explicitly even for these tiny offset tables.
+                fileAttrOffsets = new NativeArray<int>(attributes.Count, Allocator.Persistent);
+                int offset = 0;
+                for (int ai = 0; ai < attributes.Count; ai++)
+                {
+                    fileAttrOffsets[ai] = offset;
+                    offset += TypeToSize(attributes[ai].type);
+                }
+
+                // Canonical attribute order matches InputSplatData field layout (all float32)
+                string[] splatAttrs =
+                {
+                    "x","y","z","nx","ny","nz",
+                    "f_dc_0","f_dc_1","f_dc_2",
+                    "f_rest_0","f_rest_1","f_rest_2","f_rest_3","f_rest_4",
+                    "f_rest_5","f_rest_6","f_rest_7","f_rest_8","f_rest_9",
+                    "f_rest_10","f_rest_11","f_rest_12","f_rest_13","f_rest_14",
+                    "f_rest_15","f_rest_16","f_rest_17","f_rest_18","f_rest_19",
+                    "f_rest_20","f_rest_21","f_rest_22","f_rest_23","f_rest_24",
+                    "f_rest_25","f_rest_26","f_rest_27","f_rest_28","f_rest_29",
+                    "f_rest_30","f_rest_31","f_rest_32","f_rest_33","f_rest_34",
+                    "f_rest_35","f_rest_36","f_rest_37","f_rest_38","f_rest_39",
+                    "f_rest_40","f_rest_41","f_rest_42","f_rest_43","f_rest_44",
+                    "opacity","scale_0","scale_1","scale_2","rot_0","rot_1","rot_2","rot_3",
+                };
+                Assert.AreEqual(UnsafeUtility.SizeOf<InputSplatData>() / 4, splatAttrs.Length);
+
+                srcOffsets = new NativeArray<int>(splatAttrs.Length, Allocator.Persistent);
+                for (int ai = 0; ai < splatAttrs.Length; ai++)
+                {
+                    int attrIndex = attributes.IndexOf((splatAttrs[ai], ElementType.Float));
+                    srcOffsets[ai] = attrIndex >= 0 ? fileAttrOffsets[attrIndex] : -1;
+                }
+
+                dst = new NativeArray<InputSplatData>(count, Allocator.Persistent);
+                ReorderPLYData(count, (byte*)input.GetUnsafeReadOnlyPtr(), stride,
+                               (byte*)dst.GetUnsafePtr(), UnsafeUtility.SizeOf<InputSplatData>(),
+                               (int*)srcOffsets.GetUnsafeReadOnlyPtr());
+
+                NativeArray<InputSplatData> result = dst;
+                dst = default;
+                return result;
             }
-
-            // Canonical attribute order matches InputSplatData field layout (all float32)
-            string[] splatAttrs =
+            finally
             {
-                "x","y","z","nx","ny","nz",
-                "f_dc_0","f_dc_1","f_dc_2",
-                "f_rest_0","f_rest_1","f_rest_2","f_rest_3","f_rest_4",
-                "f_rest_5","f_rest_6","f_rest_7","f_rest_8","f_rest_9",
-                "f_rest_10","f_rest_11","f_rest_12","f_rest_13","f_rest_14",
-                "f_rest_15","f_rest_16","f_rest_17","f_rest_18","f_rest_19",
-                "f_rest_20","f_rest_21","f_rest_22","f_rest_23","f_rest_24",
-                "f_rest_25","f_rest_26","f_rest_27","f_rest_28","f_rest_29",
-                "f_rest_30","f_rest_31","f_rest_32","f_rest_33","f_rest_34",
-                "f_rest_35","f_rest_36","f_rest_37","f_rest_38","f_rest_39",
-                "f_rest_40","f_rest_41","f_rest_42","f_rest_43","f_rest_44",
-                "opacity","scale_0","scale_1","scale_2","rot_0","rot_1","rot_2","rot_3",
-            };
-            Assert.AreEqual(UnsafeUtility.SizeOf<InputSplatData>() / 4, splatAttrs.Length);
-
-            NativeArray<int> srcOffsets = new NativeArray<int>(splatAttrs.Length, Allocator.Temp);
-            for (int ai = 0; ai < splatAttrs.Length; ai++)
-            {
-                int attrIndex = attributes.IndexOf((splatAttrs[ai], ElementType.Float));
-                srcOffsets[ai] = attrIndex >= 0 ? fileAttrOffsets[attrIndex] : -1;
+                if (dst.IsCreated) dst.Dispose();
+                if (srcOffsets.IsCreated) srcOffsets.Dispose();
+                if (fileAttrOffsets.IsCreated) fileAttrOffsets.Dispose();
             }
-
-            NativeArray<InputSplatData> dst = new NativeArray<InputSplatData>(count, Allocator.Persistent);
-            ReorderPLYData(count, (byte*)input.GetUnsafeReadOnlyPtr(), stride,
-                           (byte*)dst.GetUnsafePtr(), UnsafeUtility.SizeOf<InputSplatData>(),
-                           (int*)srcOffsets.GetUnsafeReadOnlyPtr());
-
-            srcOffsets.Dispose();
-            fileAttrOffsets.Dispose();
-            return dst;
         }
 
         [BurstCompile]

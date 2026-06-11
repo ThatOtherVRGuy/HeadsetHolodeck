@@ -300,7 +300,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.xr.arfoundation": {
-      "version": "6.3.1",
+      "version": "6.3.4",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -327,7 +327,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.xr.hands": {
-      "version": "1.7.1",
+      "version": "1.7.3",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -340,7 +340,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.xr.interaction.toolkit": {
-      "version": "3.3.0",
+      "version": "3.5.0",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -366,7 +366,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.xr.management": {
-      "version": "4.5.3",
+      "version": "4.5.4",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -378,13 +378,14 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.xr.openxr": {
-      "version": "1.15.1",
+      "version": "1.17.0-pre.2",
       "depth": 0,
       "source": "registry",
       "dependencies": {
         "com.unity.inputsystem": "1.6.3",
         "com.unity.xr.core-utils": "2.3.0",
         "com.unity.xr.management": "4.4.0",
+        "com.unity.modules.androidjni": "1.0.0",
         "com.unity.xr.legacyinputhelpers": "2.1.2"
       },
       "url": "https://packages.unity.com"

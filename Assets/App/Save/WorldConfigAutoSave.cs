@@ -10,6 +10,7 @@ using WorldLabs.Runtime;
 using WorldLabs.API;
 using SpeechIntent;
 using Holodeck.Direct;
+using WorldLabs.Runtime.Tools;
 
 namespace Holodeck.Save
 {
@@ -24,6 +25,7 @@ namespace Holodeck.Save
         public LocalRemotePanoLoader  panoLoader;
         public WorldActionDispatcher dispatcher;
         public VoiceToWorldLabsPluginCoordinator coordinator;
+        public InteractionMemory interactionMemory;
 
         /// <summary>The config that corresponds to the currently loaded world.</summary>
         public WorldConfig ActiveConfig { get; set; }
@@ -112,6 +114,7 @@ namespace Holodeck.Save
             if (ActiveConfig != null &&
                 ActiveConfig.world_source?.world_id == worldId)
             {
+                EnsureEstimatedSpawnPoint(renderer);
                 DrainPendingBytes(worldId);
                 return;
             }
@@ -130,6 +133,7 @@ namespace Holodeck.Save
             if (existing != null)
             {
                 ActiveConfig = existing;
+                EnsureEstimatedSpawnPoint(renderer);
                 DrainPendingBytes(worldId);
                 return;
             }
@@ -140,6 +144,7 @@ namespace Holodeck.Save
             if (ActiveConfig != null && worldId.StartsWith("local_", StringComparison.Ordinal))
             {
                 Debug.Log($"[WorldConfigAutoSave] OnWorldLoaded: local worldId '{worldId}' fired during restore of '{ActiveConfig.display_name}' — skipping new config creation.");
+                EnsureEstimatedSpawnPoint(renderer);
                 return;
             }
 
@@ -161,6 +166,7 @@ namespace Holodeck.Save
 
             ActiveConfig = worldConfigStore.CreateConfig(source, world?.display_name ?? "World", prompt);
             ApplyGenerationModel(ActiveConfig);
+            EnsureEstimatedSpawnPoint(renderer);
             DrainPendingBytes(worldId);
         }
 
@@ -347,14 +353,16 @@ namespace Holodeck.Save
 
         void ResolveOptionalDependencies()
         {
-            if (coordinator != null)
-                return;
+            if (interactionMemory == null)
+                interactionMemory = FindFirstObjectByType<InteractionMemory>(FindObjectsInactive.Include);
 
-            if (dispatcher != null && dispatcher.coordinator != null)
+            if (coordinator == null && dispatcher != null && dispatcher.coordinator != null)
             {
                 coordinator = dispatcher.coordinator;
-                return;
             }
+
+            if (coordinator != null)
+                return;
 
 #if UNITY_2023_1_OR_NEWER
             coordinator = FindFirstObjectByType<VoiceToWorldLabsPluginCoordinator>();
@@ -376,6 +384,70 @@ namespace Holodeck.Save
             worldConfigStore.SaveConfig(config);
         }
 
+        public bool SaveManualSpawnPoint(Transform playerRoot, string displayName = null)
+        {
+            if (playerRoot == null || ActiveConfig == null || worldConfigStore == null)
+                return false;
+
+            ActiveConfig.spawn_points ??= new List<SpawnPointData>();
+            ActiveConfig.spawn_points.Add(new SpawnPointData
+            {
+                id = Guid.NewGuid().ToString("N"),
+                name = string.IsNullOrWhiteSpace(displayName)
+                    ? $"Spawn {ActiveConfig.spawn_points.Count + 1}"
+                    : displayName,
+                source = "manual",
+                method = "manual",
+                created_at = DateTime.UtcNow.ToString("yyyy-MM-ddTHHmmssZ"),
+                position = playerRoot.position,
+                rotation = playerRoot.rotation,
+                look_at = playerRoot.position + playerRoot.forward,
+                confidence = 1f
+            });
+
+            worldConfigStore.SaveConfig(ActiveConfig);
+            Debug.Log($"[WorldConfigAutoSave] Saved manual spawn point for '{ActiveConfig.display_name}'.");
+            return true;
+        }
+
+        public bool SaveActiveConfig()
+        {
+            if (ActiveConfig == null || worldConfigStore == null)
+                return false;
+
+            worldConfigStore.SaveConfig(ActiveConfig);
+            return true;
+        }
+
+        void EnsureEstimatedSpawnPoint(GaussianSplatRenderer renderer)
+        {
+            if (ActiveConfig == null || worldConfigStore == null || renderer == null)
+                return;
+
+            ActiveConfig.spawn_points ??= new List<SpawnPointData>();
+            if (ActiveConfig.spawn_points.Count > 0)
+                return;
+
+            SplatSpawnPose pose = renderer.GetComponent<SplatSpawnPose>();
+            if (pose == null || !pose.hasPose)
+                return;
+
+            ActiveConfig.spawn_points.Add(new SpawnPointData
+            {
+                id = Guid.NewGuid().ToString("N"),
+                name = "Estimated Spawn 1",
+                source = "estimated",
+                method = pose.method,
+                created_at = DateTime.UtcNow.ToString("yyyy-MM-ddTHHmmssZ"),
+                position = pose.playerPosition,
+                rotation = pose.playerRotation,
+                look_at = pose.lookAt,
+                confidence = pose.confidence
+            });
+            worldConfigStore.SaveConfig(ActiveConfig);
+            Debug.Log($"[WorldConfigAutoSave] Saved estimated spawn point for '{ActiveConfig.display_name}' using {pose.method}.");
+        }
+
         string CurrentGenerationModelLabel()
         {
             if (coordinator != null)
@@ -395,6 +467,22 @@ namespace Holodeck.Save
         void OnObjectMutated(VoiceIntentCommand command, GameObject go)
         {
             if (worldConfigStore == null || ActiveConfig == null) return;
+            if (go == null) return;
+
+            if (IsCurrentWorldRoot(go))
+            {
+                ActiveConfig.world_transform = WorldTransformData.FromTransform(go.transform);
+                ActiveConfig.prompts.Add(new PromptEntry
+                {
+                    timestamp  = DateTime.UtcNow.ToString("yyyy-MM-ddTHHmmssZ"),
+                    type       = "voice_command",
+                    intent     = command.intent.ToString(),
+                    transcript = command.transcript
+                });
+                worldConfigStore.SaveConfig(ActiveConfig);
+                Debug.Log($"[WorldConfigAutoSave] Saved world transform for '{ActiveConfig.display_name}'.");
+                return;
+            }
 
             // Ensure stable instance ID
             SpeechIntentTrackable trackable = go.GetComponent<SpeechIntentTrackable>();
@@ -432,6 +520,17 @@ namespace Holodeck.Save
             });
 
             worldConfigStore.SaveConfig(ActiveConfig);
+        }
+
+        bool IsCurrentWorldRoot(GameObject go)
+        {
+            if (go == null)
+                return false;
+
+            if (interactionMemory == null)
+                interactionMemory = FindFirstObjectByType<InteractionMemory>(FindObjectsInactive.Include);
+
+            return interactionMemory != null && interactionMemory.currentWorldRoot == go;
         }
     }
 }

@@ -29,7 +29,9 @@ MonoBehaviour:
     For ''exit holodeck'', ''quit holodeck'', ''close holodeck'', ''exit the app'',
     or ''quit the app'', use intent=QuitApplication.
 
-    All distances should be converted to meters.
+    All distance fields sent to Unity must be expressed in meters. Convert spoken
+    units before filling numeric fields: 10 inches -> 0.254, 3 feet -> 0.9144,
+    50 centimeters -> 0.5, 12 millimeters -> 0.012, 2 yards -> 1.8288.
 
     For ''end
     program'', use intent=SwitchToStaticWorld.
@@ -90,11 +92,60 @@ MonoBehaviour:
     prefer PointingHit for surface placement and PointingRay for direction/mid-air
     placement.
 
-    If the user asks to place something but gives no place,
-    no pointing phrase, and no spatial cue, ask for clarification with ''Where?''.
+    For object creation relative to the user, use intent=PlaceObject with spatial_reference=RelativeToMe.
+    Example: "create a teddy bear 1 meter in front of me" -> object_name="teddy bear",
+    relative_direction=InFront, relative_distance_meters=1. Example: "create a
+    teddy bear at world origin" -> object_name="teddy bear", spatial_reference=WorldOrigin.
+
+    For plain object creation with no explicit location, default to one meter in
+    front of the user: spatial_reference=RelativeToMe, relative_direction=InFront,
+    relative_distance_meters=1. Do not ask ''Where?'' for ordinary create/make
+    object commands.
+
+    For object creation with attributes, keep the noun in object_name and put modifiers
+    into fields. Examples: "make a green cube" -> object_name="cube", material_prompt="green".
+    "make a 2 meter wide cube" -> object_name="cube", object_width_meters=2.
+    "make a weightless sphere" -> object_name="sphere", object_weightless=true.
+
+    For target-relative creation such as "create a cube to the left of the sphere",
+    use spatial_reference=RelativeToTarget, target_name="sphere", relative_direction=Left,
+    and placement_mode="me_frame", meaning left/right/front/back are relative to
+    the user. For possessive wording such as "create a cube to the sphere''s left",
+    use placement_mode="target_local", meaning the target object''s local frame.
+    Also support above/below as Up/Down.
+
+    Ask ''Where?'' only when the user refers to an unresolved destination such as
+    ''put it there'' without usable pointing/spatial context, not for ordinary object
+    creation.
 
     For
     ''make it night time'', use intent=SetLightingPreset with lighting_preset=''night''.
+
+    For light creation, use intent=CreateLight. "add a light" means light_type="point"
+    and white by default. "add a yellow light" uses light_color_prompt="yellow".
+    "add a spotlight" or "add a spot light" uses light_type="spot". "add a
+    directional light" or "add a sun" uses light_type="directional". "add ambient
+    light" uses light_type="ambient". "flashlight" uses light_type="flashlight",
+    a tight-cone spot light, and should prefer BodyAnchor LeftHand or RightHand
+    when the user names a hand.
+
+    For light placement words like "here", "there", or "where I am pointing",
+    use PointingRay for spot, directional, and flashlight lights, and PointingHit
+    for point lights. For named hands, set spatial_reference=BodyAnchor,
+    body_anchor=LeftHand or RightHand, and target_hand accordingly.
+
+    For light changes, use intent=ModifyLight. Examples: "make this light redder"
+    -> target_reference=PointedObject, target_name="light", light_action="redder".
+    "make all lights dimmer" -> target_reference=All, target_name="lights",
+    light_action="dimmer". "make this the sun" -> light_action="set_sun" and
+    target_reference=PointedObject. "sun" and "directional light" can refer to
+    the same object, but "sun" should resolve to the designated sun role.
+
+    For proxy visibility commands, use intent=SetProxyVisibility. "show proxies"
+    -> proxy_category="all", proxy_visible=true. "hide proxies" -> proxy_category="all",
+    proxy_visible=false. "show light proxies" or "hide light proxies" targets
+    proxy_category="light". "show sound proxies", "show audio proxies", and their
+    hide equivalents target proxy_category="audio".
 
     For
     ''place tree here'', use intent=PlaceObject, set object_name=''tree'', and use
@@ -137,6 +188,12 @@ MonoBehaviour:
     ''move that here'', use intent=MoveTarget and use the spatial reference to capture
     the destination.
 
+    For physics changes to existing objects, use intent=ModifyPhysics. Examples:
+    "make it weightless" -> target_reference=LastCreatedOrInteracted, physics_action="set_weightless",
+    object_weightless=true. "make the sphere weightless" -> target_reference=NamedObject,
+    target_name="sphere", physics_action="set_weightless". "turn gravity back on"
+    -> physics_action="enable_gravity".
+
     For ''move me to the origin'' or ''move me to origin'',
     use intent=MoveTarget, target_entity=''Me'', and spatial_reference=WorldOrigin.
 
@@ -160,8 +217,17 @@ MonoBehaviour:
     - Example: "delete the cube" → target_reference=NamedObject, target_name="cube".
     - Never map delete requests to world unload unless the user says end program.
 
+    Behavior commands:
+    - For requests to add temporary runtime behaviors to existing objects, use intent=AttachBehavior.
+    - Supported behavior_name values are spin, orbit, throw, follow_hand, and attach_to_hand.
+    - Examples: "make the cube spin" -> behavior_name="spin", target_name="cube". "make the cube orbit the sun" -> behavior_name="orbit", target_name="cube", behavior_secondary_target_name="sun". "throw the ball" -> behavior_name="throw".
+    - For hand behaviors, set target_hand and body_anchor when the user names a hand. Example: "make the cube follow my left hand" -> behavior_name="follow_hand", target_hand=Left, body_anchor=LeftHand. "attach the cube to my right hand" -> behavior_name="attach_to_hand", target_hand=Right, body_anchor=RightHand.
+    - Fill behavior_speed, behavior_radius, and behavior_axis when specified.
+    - For requests to stop/remove behaviors, use intent=StopBehavior. Examples: "stop the cube spinning" -> behavior_name="spin", target_name="cube". "stop all behaviors" or "remove all behaviors" -> behavior_stop_all=true and target_reference=All. "stop this following my hand" -> target_reference=PointedObject, behavior_name="follow_hand".
+    - Do not map behavior commands to one-time transform/material/light/audio edits unless the user asks for a direct one-time edit.
+
     Audio commands:
-    - If the user asks to add, create, download, generate, place, or get a new sound, use intent=CreateAudioSource. Do not change world_prompt and do not change the visual world.
+    - If the user asks to add, create, download, generate, place, or get a new sound, use intent=CreateAudioSource. Do not change world_prompt and do not change the visual world. For "quiet" sounds, set audio_volume=0.25 unless another value is specified.
     - If the user says "play [name]" or "play [name] sounds", assume [name] refers to an existing audio source. Use intent=ControlAudioSource, audio_control="play_now", audio_play_now=true, and target_name or sound_prompt set to the named sound. Do not create/download a new sound unless the user clearly asks for a new one.
     - For collective sound requests, split layers into sound_prompts. Example: "add birds in trees and river rapids" → sound_prompts=["birds in trees","river rapids"], sound_count=2.
     - Use audio_playback_mode=loop for continuous background ambience such as ocean, rain, river, wind, crowds, traffic, machinery, hum, or general ambience.

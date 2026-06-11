@@ -28,6 +28,7 @@ namespace SpeechIntent
 
         private bool _isSplatReady;
         private string _loadedSplatWorldId;  // world_id of the splat currently held by worldManager
+        private GaussianSplatRenderer _loadedSplatRenderer;
         private bool _isPanoReady;  // re-synced from thumbnailSkybox.IsReady at start of every TryApply()
         private bool _panoPreloadPending;  // true while LocalRemotePanoLoader.PreloadAsync is in flight
 
@@ -169,9 +170,10 @@ namespace SpeechIntent
 
         private void OnWorldLoaded(string worldId, GaussianSplatRenderer renderer)
         {
-            Debug.Log($"[ViewModeController] OnWorldLoaded worldId={worldId} — setting _isSplatReady=true");
+            Debug.Log($"[ViewModeController] OnWorldLoaded worldId={worldId}, renderer={(renderer != null ? renderer.gameObject.name : "NULL")} — setting _isSplatReady=true");
             _isSplatReady = true;
             _loadedSplatWorldId = worldId;
+            _loadedSplatRenderer = renderer;
             TryApply();
         }
 
@@ -180,6 +182,7 @@ namespace SpeechIntent
             Debug.Log($"[ViewModeController] OnWorldUnloaded worldId={worldId} — setting _isSplatReady=false");
             _isSplatReady = false;
             _loadedSplatWorldId = null;
+            _loadedSplatRenderer = null;
         }
 
         // IMPORTANT: Must remain synchronous. StateChanged fires inside TryTransitionTo,
@@ -334,10 +337,23 @@ namespace SpeechIntent
             // Re-enable the dynamic world parent so the loaded splat root can be shown.
             if (worldManager != null && worldManager.worldParent != null)
                 worldManager.worldParent.gameObject.SetActive(true);
+
             // Hide all dynamic worlds so only the current one is shown.
             worldManager?.SetAllWorldsActive(false);
-            if (interactionMemory != null && interactionMemory.currentWorldRoot != null)
-                interactionMemory.currentWorldRoot.SetActive(true);
+
+            GameObject worldRoot = _loadedSplatRenderer != null
+                ? _loadedSplatRenderer.gameObject
+                : interactionMemory != null ? interactionMemory.currentWorldRoot : null;
+
+            if (worldRoot != null)
+            {
+                worldRoot.SetActive(true);
+                Debug.Log($"[ViewModeController] ShowCurrentWorldRoot — set '{worldRoot.name}' active=true.");
+            }
+            else
+            {
+                Debug.LogWarning("[ViewModeController] ShowCurrentWorldRoot — no loaded renderer/currentWorldRoot available to activate.");
+            }
         }
 
         private void HideStaticHolodeckModel(string reason)

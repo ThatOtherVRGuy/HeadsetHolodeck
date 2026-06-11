@@ -30,6 +30,10 @@ namespace SpeechIntent
         public StringEvent onLoadStarted;
         public StringEvent onLoadFailed;
 
+        [Header("User Feedback")]
+        [Tooltip("Optional TTS player used to speak concise load failure messages.")]
+        public TtsPlayer voiceFeedback;
+
         void Awake()
         {
             if (string.IsNullOrWhiteSpace(localBasePath))
@@ -41,6 +45,26 @@ namespace SpeechIntent
         /// </summary>
         public void LoadAsync(string pathOrUrl, string displayName = null)
         {
+            LoadAsync(pathOrUrl, displayName, RuntimeSplatFloorLoader.SplatSourceKind.LooseSplat);
+        }
+
+        /// <summary>
+        /// Load an SPZ or PLY splat from a local path or URL with an explicit source orientation.
+        /// </summary>
+        public void LoadAsync(
+            string pathOrUrl,
+            string displayName,
+            RuntimeSplatFloorLoader.SplatSourceKind sourceKind)
+        {
+            LoadAsync(pathOrUrl, displayName, sourceKind, null);
+        }
+
+        public void LoadAsync(
+            string pathOrUrl,
+            string displayName,
+            RuntimeSplatFloorLoader.SplatSourceKind sourceKind,
+            SplatSpawnMetadata savedSpawnMetadata)
+        {
             if (string.IsNullOrWhiteSpace(pathOrUrl))
             {
                 Debug.LogWarning("[LocalRemoteSplatLoader] pathOrUrl is empty.");
@@ -48,10 +72,14 @@ namespace SpeechIntent
                 onLoadFailed?.Invoke("No path or URL provided.");
                 return;
             }
-            StartCoroutine(LoadCoroutine(pathOrUrl, displayName));
+            StartCoroutine(LoadCoroutine(pathOrUrl, displayName, sourceKind, savedSpawnMetadata));
         }
 
-        System.Collections.IEnumerator LoadCoroutine(string pathOrUrl, string displayName)
+        System.Collections.IEnumerator LoadCoroutine(
+            string pathOrUrl,
+            string displayName,
+            RuntimeSplatFloorLoader.SplatSourceKind sourceKind,
+            SplatSpawnMetadata savedSpawnMetadata)
         {
             string resolved = ResolveLocalPath(pathOrUrl);
             string worldId  = "local_" + Path.GetFileNameWithoutExtension(resolved)
@@ -109,9 +137,7 @@ namespace SpeechIntent
 
             if (error != null)
             {
-                Debug.LogError($"[LocalRemoteSplatLoader] {error}");
-                ArchStatusBus.Error(error, "LOAD");
-                onLoadFailed?.Invoke(error);
+                ReportLoadFailure(worldId, error, "Could not load that splat file.");
                 yield break;
             }
 
@@ -122,16 +148,13 @@ namespace SpeechIntent
             if (ext != ".spz" && ext != ".ply")
             {
                 string msg = $"Unsupported format '{ext}'. Expected .spz or .ply.";
-                Debug.LogError($"[LocalRemoteSplatLoader] {msg}");
-                ArchStatusBus.Error(msg, "LOAD");
-                onLoadFailed?.Invoke(msg);
+                ReportLoadFailure(worldId, msg, "That file format is not supported.");
                 yield break;
             }
 
             if (floorLoader == null)
             {
-                ArchStatusBus.Error("RuntimeSplatFloorLoader not assigned.", "LOAD");
-                onLoadFailed?.Invoke("RuntimeSplatFloorLoader not assigned.");
+                ReportLoadFailure(worldId, "RuntimeSplatFloorLoader not assigned.", "Splat loader is not configured.");
                 yield break;
             }
 
@@ -143,38 +166,41 @@ namespace SpeechIntent
             if (ext == ".spz")
             {
                 loadTask = floorLoader.LoadPlacedRuntimeWorldAsync(
-                    fileBytes, worldId, worldName, gameObjectName: worldName);
+                    fileBytes,
+                    worldId,
+                    worldName,
+                    gameObjectName: worldName,
+                    sourceKind: sourceKind,
+                    savedSpawnMetadata: savedSpawnMetadata);
             }
             else // .ply
             {
                 // LoadPlacedRuntimeWorldFromSplatsAsync takes ownership of splats and disposes them.
-                Task<RuntimeSplatFloorLoader.LoadResult> plyTask = null;
-                Task parseTask = Task.Run(() =>
+                Task<NativeArray<InputSplatData>> parseTask = Task.Run(() =>
                 {
                     RuntimePlyReader.ReadFromBytes(fileBytes, out NativeArray<InputSplatData> splats);
-                    plyTask = floorLoader.LoadPlacedRuntimeWorldFromSplatsAsync(
-                        splats, worldId, worldName, gameObjectName: worldName);
+                    return splats;
                 });
                 while (!parseTask.IsCompleted) yield return null;
                 if (parseTask.IsFaulted)
                 {
                     string msg = $"PLY parse failed: {parseTask.Exception?.GetBaseException().Message}";
-                    Debug.LogError($"[LocalRemoteSplatLoader] {msg}");
-                    ArchStatusBus.Error(msg, "LOAD");
-                    worldManager?.NotifyWorldLoadFailed(worldId, msg);
-                    onLoadFailed?.Invoke(msg);
+                    ReportLoadFailure(worldId, msg, "Could not load that PLY file.");
                     yield break;
                 }
-                if (plyTask == null)
+                if (!parseTask.Result.IsCreated)
                 {
-                    string msg = "PLY loader returned null task.";
-                    Debug.LogError($"[LocalRemoteSplatLoader] {msg}");
-                    ArchStatusBus.Error(msg, "LOAD");
-                    worldManager?.NotifyWorldLoadFailed(worldId, msg);
-                    onLoadFailed?.Invoke(msg);
+                    string msg = "PLY parser returned no splats.";
+                    ReportLoadFailure(worldId, msg, "Could not load that PLY file.");
                     yield break;
                 }
-                loadTask = plyTask;
+                loadTask = floorLoader.LoadPlacedRuntimeWorldFromSplatsAsync(
+                    parseTask.Result,
+                    worldId,
+                    worldName,
+                    gameObjectName: worldName,
+                    sourceKind: sourceKind,
+                    savedSpawnMetadata: savedSpawnMetadata);
             }
 
             while (!loadTask.IsCompleted) yield return null;
@@ -182,10 +208,7 @@ namespace SpeechIntent
             if (loadTask.IsFaulted)
             {
                 string msg = $"Load failed: {loadTask.Exception?.GetBaseException().Message}";
-                Debug.LogError($"[LocalRemoteSplatLoader] {msg}");
-                ArchStatusBus.Error(msg, "LOAD");
-                worldManager?.NotifyWorldLoadFailed(worldId, msg);
-                onLoadFailed?.Invoke(msg);
+                ReportLoadFailure(worldId, msg, "Could not finish loading that splat.");
                 yield break;
             }
 
@@ -195,6 +218,26 @@ namespace SpeechIntent
 
             Debug.Log($"[LocalRemoteSplatLoader] Loaded '{worldName}' ({ext}) as worldId='{worldId}'.");
             ArchStatusBus.Success("Loaded splat " + worldName + ".", "READY");
+        }
+
+        void ReportLoadFailure(string worldId, string detailedMessage, string spokenMessage = null)
+        {
+            string safeDetail = string.IsNullOrWhiteSpace(detailedMessage)
+                ? "Splat load failed."
+                : detailedMessage.Trim();
+
+            Debug.LogError($"[LocalRemoteSplatLoader] {safeDetail}");
+            ArchStatusBus.Error(safeDetail, "LOAD");
+            worldManager?.NotifyWorldLoadFailed(worldId, safeDetail);
+            onLoadFailed?.Invoke(safeDetail);
+
+            if (voiceFeedback != null)
+            {
+                string speech = string.IsNullOrWhiteSpace(spokenMessage)
+                    ? "Splat load failed."
+                    : spokenMessage.Trim();
+                voiceFeedback.Say(speech);
+            }
         }
 
         string ResolveLocalPath(string pathOrUrl)

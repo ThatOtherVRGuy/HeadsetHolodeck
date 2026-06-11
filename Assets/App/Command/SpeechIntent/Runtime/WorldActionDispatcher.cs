@@ -15,6 +15,7 @@ namespace SpeechIntent
     {
         [Header("Scene Controllers")]
         public LightRigController lightRig;
+        public LightActionController lightActionController;
         public UiPanelController uiPanels;
         public ObjectPlacementController objectPlacement;
         public StaticWorldController staticWorldController;
@@ -27,9 +28,15 @@ namespace SpeechIntent
         public WorldMeshController worldMeshController;
         public AudioWorldActionController audioWorldActionController;
         public MaterialTargetController materialTargetController;
+        public RuntimeProxyVisibilityController proxyVisibilityController;
+        public SpeechIntent.Behaviors.BehaviorCommandController behaviorCommandController;
         public VoiceToWorldLabsPluginCoordinator coordinator;
         public WorldBrowserController worldBrowser;
         public HeadsetCameraCaptureService headsetCameraCapture;
+        public ObjectGenerationService objectGenerationService;
+        public CachedObjectStore cachedObjectStore;
+        public CachedObjectChoiceController cachedObjectChoiceController;
+        public CachedObjectChoicePanel cachedObjectChoicePanel;
         public ImageSearchPanel imageSearchPanel;
         public WorldViewCaptureService worldViewCaptureService;
 
@@ -62,6 +69,36 @@ namespace SpeechIntent
             if (materialTargetController == null)
                 materialTargetController = GetComponent<MaterialTargetController>()
                                            ?? FindFirstObjectByType<MaterialTargetController>();
+            if (lightActionController == null)
+                lightActionController = GetComponent<LightActionController>()
+                                        ?? FindFirstObjectByType<LightActionController>();
+            if (lightActionController == null)
+                lightActionController = gameObject.AddComponent<LightActionController>();
+            if (proxyVisibilityController == null)
+                proxyVisibilityController = GetComponent<RuntimeProxyVisibilityController>()
+                                            ?? FindFirstObjectByType<RuntimeProxyVisibilityController>();
+            if (proxyVisibilityController == null)
+                proxyVisibilityController = gameObject.AddComponent<RuntimeProxyVisibilityController>();
+            if (objectGenerationService == null)
+                objectGenerationService = FindFirstObjectByType<ObjectGenerationService>(FindObjectsInactive.Include);
+            if (cachedObjectStore == null)
+                cachedObjectStore = FindFirstObjectByType<CachedObjectStore>(FindObjectsInactive.Include);
+            if (cachedObjectChoiceController == null)
+                cachedObjectChoiceController = FindFirstObjectByType<CachedObjectChoiceController>(FindObjectsInactive.Include);
+            if (cachedObjectChoicePanel == null)
+                cachedObjectChoicePanel = FindFirstObjectByType<CachedObjectChoicePanel>(FindObjectsInactive.Include);
+            if (behaviorCommandController == null)
+                behaviorCommandController = GetComponent<SpeechIntent.Behaviors.BehaviorCommandController>()
+                                            ?? FindFirstObjectByType<SpeechIntent.Behaviors.BehaviorCommandController>(FindObjectsInactive.Include);
+            if (behaviorCommandController == null)
+                behaviorCommandController = gameObject.AddComponent<SpeechIntent.Behaviors.BehaviorCommandController>();
+
+            if (behaviorCommandController.entityResolver == null && targetTransformController != null)
+                behaviorCommandController.entityResolver = targetTransformController.entityResolver;
+            if (behaviorCommandController.interactionMemory == null)
+                behaviorCommandController.interactionMemory = interactionMemory;
+            if (behaviorCommandController.spatialContextProvider == null)
+                behaviorCommandController.spatialContextProvider = FindFirstObjectByType<SpatialContextProvider>(FindObjectsInactive.Include);
         }
 
         void OnEnable()
@@ -147,8 +184,28 @@ namespace SpeechIntent
                     HandleSetLightingPreset(command);
                     break;
 
+                case VoiceIntentType.CreateLight:
+                    HandleCreateLight(command, spatial);
+                    break;
+
+                case VoiceIntentType.ModifyLight:
+                    HandleModifyLight(command, spatial);
+                    break;
+
                 case VoiceIntentType.PlaceObject:
                     HandlePlaceObject(command, spatial);
+                    break;
+
+                case VoiceIntentType.SelectCachedObject:
+                    HandleSelectCachedObject(command);
+                    break;
+
+                case VoiceIntentType.CancelGeneration:
+                    HandleCancelGeneration(command);
+                    break;
+
+                case VoiceIntentType.ContinueGeneration:
+                    HandleContinueGeneration(command);
                     break;
 
                 case VoiceIntentType.MoveTarget:
@@ -167,8 +224,41 @@ namespace SpeechIntent
                     HandleResetTransform(command, spatial);
                     break;
 
+                case VoiceIntentType.AttachBehavior:
+                case VoiceIntentType.StopBehavior:
+                    HandleBehaviorCommand(command, spatial);
+                    break;
+
                 case VoiceIntentType.SetTargetMaterial:
                     HandleSetTargetMaterial(command, spatial);
+                    break;
+
+                case VoiceIntentType.ModifyPhysics:
+                    HandleModifyPhysics(command, spatial);
+                    break;
+
+                case VoiceIntentType.SaveSpawnPoint:
+                    HandleSaveSpawnPoint(command);
+                    break;
+
+                case VoiceIntentType.NextSpawnPoint:
+                    HandleStepSpawnPoint(command, next: true);
+                    break;
+
+                case VoiceIntentType.PreviousSpawnPoint:
+                    HandleStepSpawnPoint(command, next: false);
+                    break;
+
+                case VoiceIntentType.RemoveSpawnPoint:
+                    HandleRemoveSpawnPoint(command);
+                    break;
+
+                case VoiceIntentType.RemoveAllSpawnPoints:
+                    HandleRemoveAllSpawnPoints(command);
+                    break;
+
+                case VoiceIntentType.SuggestSpawnPoint:
+                    HandleSuggestSpawnPoint(command);
                     break;
 
                 case VoiceIntentType.LoadSplat:
@@ -230,6 +320,10 @@ namespace SpeechIntent
 
                 case VoiceIntentType.DeleteTarget:
                     HandleDeleteTarget(command, spatial);
+                    break;
+
+                case VoiceIntentType.SetProxyVisibility:
+                    HandleSetProxyVisibility(command);
                     break;
 
                 case VoiceIntentType.QuitApplication:
@@ -299,8 +393,73 @@ namespace SpeechIntent
             }
         }
 
+        void HandleSaveSpawnPoint(VoiceIntentCommand command)
+        {
+            if (playerOriginController == null)
+                playerOriginController = FindFirstObjectByType<PlayerOriginController>(FindObjectsInactive.Include);
+
+            bool saved = playerOriginController != null && playerOriginController.SaveCurrentSpawnPoint();
+            command.spoken_response = saved
+                ? "Saved spawn point."
+                : "I could not save a spawn point. No active world is loaded.";
+        }
+
+        void HandleStepSpawnPoint(VoiceIntentCommand command, bool next)
+        {
+            if (playerOriginController == null)
+                playerOriginController = FindFirstObjectByType<PlayerOriginController>(FindObjectsInactive.Include);
+
+            bool moved = playerOriginController != null &&
+                         (next ? playerOriginController.GoToNextSpawnPoint() : playerOriginController.GoToPreviousSpawnPoint());
+            command.spoken_response = moved
+                ? (next ? "Moved to next spawn point." : "Moved to previous spawn point.")
+                : "No saved spawn points are available.";
+        }
+
+        void HandleRemoveSpawnPoint(VoiceIntentCommand command)
+        {
+            if (playerOriginController == null)
+                playerOriginController = FindFirstObjectByType<PlayerOriginController>(FindObjectsInactive.Include);
+
+            bool removed = playerOriginController != null && playerOriginController.RemoveCurrentSpawnPoint();
+            command.spoken_response = removed
+                ? "Removed spawn point."
+                : "No saved spawn point is available to remove.";
+        }
+
+        void HandleRemoveAllSpawnPoints(VoiceIntentCommand command)
+        {
+            if (playerOriginController == null)
+                playerOriginController = FindFirstObjectByType<PlayerOriginController>(FindObjectsInactive.Include);
+
+            bool removed = playerOriginController != null && playerOriginController.RemoveAllSpawnPoints();
+            command.spoken_response = removed
+                ? "Removed all spawn points."
+                : "No saved spawn points are available to remove.";
+        }
+
+        void HandleSuggestSpawnPoint(VoiceIntentCommand command)
+        {
+            if (playerOriginController == null)
+                playerOriginController = FindFirstObjectByType<PlayerOriginController>(FindObjectsInactive.Include);
+
+            bool moved = playerOriginController != null && playerOriginController.SuggestSpawnPoint();
+            command.spoken_response = moved
+                ? "Moved to a suggested spawn point."
+                : "No estimated spawn point is available.";
+        }
+
         private void HandleGenerateWorld(VoiceIntentCommand command)
         {
+            if (coordinator == null)
+                coordinator = FindFirstObjectByType<VoiceToWorldLabsPluginCoordinator>(FindObjectsInactive.Include);
+            if (coordinator != null && coordinator.IsBusy)
+            {
+                command.spoken_response = coordinator.BusyMessage;
+                ArchStatusBus.Warning(coordinator.BusyMessage, "WORLD");
+                return;
+            }
+
             Debug.Log($"Generate world: {command.world_prompt}");
             onGenerateWorldPrompt?.Invoke(command.world_prompt);
         }
@@ -348,6 +507,13 @@ namespace SpeechIntent
                 return;
             }
 
+            if (coordinator.IsBusy)
+            {
+                command.spoken_response = coordinator.BusyMessage;
+                ArchStatusBus.Warning(coordinator.BusyMessage, "WORLD");
+                return;
+            }
+
             coordinator.TriggerWorldGenerationFromLastCapture(command.world_prompt);
         }
 
@@ -355,7 +521,9 @@ namespace SpeechIntent
         {
             if (!ObjectGenerationApiConfig.IsAnyProviderConfigured())
             {
-                ArchStatusBus.Warning("Object generator API key missing. Set MESHY_API_KEY, TRIPO_API_KEY, or HITEM_API_KEY.", "OBJECT");
+                string message = "Object generator API key missing. Set THREEDAISTUDIO_API_KEY, or HITEM_ACCESS_KEY and HITEM_SECRET_KEY.";
+                command.spoken_response = message;
+                ArchStatusBus.Warning(message, "OBJECT");
                 return;
             }
 
@@ -363,7 +531,18 @@ namespace SpeechIntent
                 ? command.object_name
                 : command.world_prompt;
             Debug.Log($"[WorldActionDispatcher] GenerateObjectFromCapture requested: {prompt}");
-            ArchStatusBus.Warning("Object creator integration is not connected yet.", "OBJECT");
+
+            if (objectGenerationService == null)
+                objectGenerationService = ObjectGenerationService.GetOrCreate();
+
+            if (objectGenerationService == null || !objectGenerationService.GenerateFromLastCapture(prompt))
+            {
+                string message = objectGenerationService != null && !string.IsNullOrWhiteSpace(objectGenerationService.LastFailureMessage)
+                    ? objectGenerationService.LastFailureMessage
+                    : "Object generation could not start.";
+                command.spoken_response = message;
+                Debug.LogWarning("[WorldActionDispatcher] GenerateObjectFromCapture could not start object generation: " + message);
+            }
         }
 
         private void HandleSearchImages(VoiceIntentCommand command)
@@ -467,6 +646,7 @@ namespace SpeechIntent
             playerOriginController?.ResetToOrigin();
             ArchWorldInfoPanel infoPanel = FindFirstObjectByType<ArchWorldInfoPanel>();
             infoPanel?.ResetToNoWorldLoaded();
+            uiPanels?.Show("arch_menu");
             onSwitchToStaticWorld?.Invoke();
         }
 
@@ -522,8 +702,101 @@ namespace SpeechIntent
             }
         }
 
+        private void HandleCreateLight(VoiceIntentCommand command, SpatialSnapshot spatial)
+        {
+            if (lightActionController == null)
+            {
+                Debug.LogWarning("[WorldActionDispatcher] LightActionController not assigned.");
+                ArchStatusBus.Warning("Light controller not assigned.", "LIGHT");
+                return;
+            }
+
+            GameObject created = lightActionController.CreateLight(command, spatial);
+            if (created == null && !string.Equals(command.light_type, "ambient", StringComparison.OrdinalIgnoreCase))
+            {
+                string message = FirstNonEmpty(lightActionController.LastFailureMessage, "Could not create light.");
+                command.spoken_response = message;
+                ArchStatusBus.Warning(message, "LIGHT");
+                Debug.LogWarning("[WorldActionDispatcher] CreateLight: " + message);
+                return;
+            }
+
+            string status = string.Equals(command.light_type, "ambient", StringComparison.OrdinalIgnoreCase)
+                ? "Updated ambient light."
+                : $"Created {created.name}.";
+            Debug.Log("[WorldActionDispatcher] " + status);
+            ArchStatusBus.Info(status, "LIGHT");
+            if (created != null)
+                OnObjectMutated?.Invoke(command, created);
+        }
+
+        private void HandleModifyLight(VoiceIntentCommand command, SpatialSnapshot spatial)
+        {
+            if (lightActionController == null)
+            {
+                Debug.LogWarning("[WorldActionDispatcher] LightActionController not assigned.");
+                ArchStatusBus.Warning("Light controller not assigned.", "LIGHT");
+                return;
+            }
+
+            if (!lightActionController.TryModifyLight(command, spatial, out List<GameObject> targets))
+            {
+                string message = FirstNonEmpty(lightActionController.LastFailureMessage, "No matching light found.");
+                command.spoken_response = message;
+                ArchStatusBus.Warning(message, "LIGHT");
+                Debug.LogWarning("[WorldActionDispatcher] ModifyLight: " + message);
+                return;
+            }
+
+            string status = targets.Count == 1 ? $"Updated {targets[0].name}." : $"Updated {targets.Count} lights.";
+            Debug.Log("[WorldActionDispatcher] " + status);
+            ArchStatusBus.Info(status, "LIGHT");
+            foreach (GameObject target in targets)
+                OnObjectMutated?.Invoke(command, target);
+        }
+
         private void HandlePlaceObject(VoiceIntentCommand command, SpatialSnapshot spatial)
         {
+            string objectName = command != null ? command.object_name : "";
+            bool canPlaceLocally = objectPlacement != null && objectPlacement.CanPlaceLocally(objectName);
+            if (!canPlaceLocally && !string.IsNullOrWhiteSpace(objectName))
+            {
+                if (TryBlockForActiveObjectGeneration(command))
+                    return;
+
+                if (!TryValidateGeneratedObjectPlacement(command, spatial, out string placementFailure))
+                {
+                    command.spoken_response = placementFailure;
+                    ArchStatusBus.Warning(placementFailure, "SPATIAL");
+                    Debug.LogWarning($"[WorldActionDispatcher] Generate text object placement unresolved for '{objectName}': {placementFailure}");
+                    return;
+                }
+
+                if (TryBeginCachedObjectChoice(command, spatial, objectName))
+                    return;
+
+                if (ObjectGenerationApiConfig.IsAnyProviderConfigured())
+                {
+                    if (objectGenerationService == null)
+                        objectGenerationService = ObjectGenerationService.GetOrCreate();
+
+                    if (objectGenerationService != null && objectGenerationService.GenerateFromText(objectName, command, spatial))
+                    {
+                        Debug.Log($"[WorldActionDispatcher] Generate text object requested: {objectName}");
+                        ArchStatusBus.Info($"Creating {objectName}.", "OBJECT");
+                        return;
+                    }
+
+                    string message = objectGenerationService != null && !string.IsNullOrWhiteSpace(objectGenerationService.LastFailureMessage)
+                        ? objectGenerationService.LastFailureMessage
+                        : "Object generation could not start.";
+                    command.spoken_response = message;
+                    ArchStatusBus.Warning(message, "OBJECT");
+                    Debug.LogWarning("[WorldActionDispatcher] Generate text object did not start: " + message);
+                    return;
+                }
+            }
+
             if (objectPlacement != null)
             {
                 GameObject placed = objectPlacement.Place(command, spatial);
@@ -531,7 +804,11 @@ namespace SpeechIntent
                 {
                     interactionMemory.RegisterCreatedObject(placed);
                 }
-                if (placed != null) OnObjectMutated?.Invoke(command, placed);
+                if (placed != null)
+                {
+                    ApplyCreatedObjectAttributes(command, spatial, placed);
+                    OnObjectMutated?.Invoke(command, placed);
+                }
                 else
                 {
                     string message = string.IsNullOrWhiteSpace(objectPlacement.LastFailureMessage)
@@ -545,6 +822,385 @@ namespace SpeechIntent
             {
                 Debug.Log($"Place object requested: {command.object_name}");
             }
+        }
+
+        private void ApplyCreatedObjectAttributes(VoiceIntentCommand command, SpatialSnapshot spatial, GameObject placed)
+        {
+            if (command == null || placed == null)
+                return;
+
+            if (!string.IsNullOrWhiteSpace(command.material_prompt) && materialTargetController != null)
+            {
+                VoiceIntentCommand materialCommand = new VoiceIntentCommand
+                {
+                    transcript = command.transcript,
+                    intent = VoiceIntentType.SetTargetMaterial,
+                    should_execute = true,
+                    target_reference = TargetReferenceMode.LastCreatedObject,
+                    material_prompt = command.material_prompt
+                };
+
+                if (!materialTargetController.TryApplyMaterial(materialCommand, spatial, out _))
+                    Debug.LogWarning("[WorldActionDispatcher] Could not apply create-time material: " + materialTargetController.LastFailureMessage);
+            }
+
+            if (command.object_width_meters > 0f)
+                ScaleObjectToWidth(placed, command.object_width_meters);
+
+            if (command.object_weightless)
+                MakeObjectWeightless(placed);
+        }
+
+        private static void ScaleObjectToWidth(GameObject target, float widthMeters)
+        {
+            if (target == null || widthMeters <= 0f)
+                return;
+
+            Bounds bounds = CalculateRendererBounds(target);
+            if (bounds.size.x <= 0.0001f)
+                return;
+
+            float scaleFactor = widthMeters / bounds.size.x;
+            target.transform.localScale *= scaleFactor;
+        }
+
+        private static Bounds CalculateRendererBounds(GameObject target)
+        {
+            Renderer[] renderers = target.GetComponentsInChildren<Renderer>(true);
+            Bounds bounds = new Bounds(target.transform.position, Vector3.zero);
+            bool hasBounds = false;
+            foreach (Renderer renderer in renderers)
+            {
+                if (renderer == null)
+                    continue;
+
+                if (!hasBounds)
+                {
+                    bounds = renderer.bounds;
+                    hasBounds = true;
+                }
+                else
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+            }
+
+            return bounds;
+        }
+
+        private static void MakeObjectWeightless(GameObject target)
+        {
+            if (target == null)
+                return;
+
+            Rigidbody body = target.GetComponent<Rigidbody>() ?? target.GetComponentInChildren<Rigidbody>();
+            if (body == null)
+                body = target.AddComponent<Rigidbody>();
+
+            body.useGravity = false;
+            body.mass = 0.0001f;
+            body.linearVelocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
+            body.isKinematic = true;
+        }
+
+        public bool TryBeginCachedObjectChoiceForTests(VoiceIntentCommand command, SpatialSnapshot spatial)
+        {
+            string objectName = command != null ? command.object_name : "";
+            bool canPlaceLocally = objectPlacement != null && objectPlacement.CanPlaceLocally(objectName);
+            return !canPlaceLocally && TryBeginCachedObjectChoice(command, spatial, objectName);
+        }
+
+        bool TryBeginCachedObjectChoice(VoiceIntentCommand command, SpatialSnapshot spatial, string objectName)
+        {
+            if (command == null || string.IsNullOrWhiteSpace(objectName))
+                return false;
+
+            if (cachedObjectStore == null)
+                cachedObjectStore = FindFirstObjectByType<CachedObjectStore>(FindObjectsInactive.Include);
+            if (cachedObjectChoiceController == null)
+                cachedObjectChoiceController = FindFirstObjectByType<CachedObjectChoiceController>(FindObjectsInactive.Include);
+            if (cachedObjectStore == null || cachedObjectChoiceController == null)
+                return false;
+
+            List<CachedObjectRecord> matches = cachedObjectStore.FindAllByName(objectName);
+            if (matches == null || matches.Count == 0)
+                return false;
+
+            cachedObjectChoiceController.BeginChoice(command, spatial, matches);
+            if (!cachedObjectChoiceController.HasPendingChoice)
+                return false;
+
+            command.spoken_response = matches.Count == 1
+                ? $"I found a saved {objectName}. Use it, or create a new one?"
+                : $"I found {matches.Count} saved {objectName} objects. Which one should I use, or should I create a new one?";
+
+            cachedObjectChoicePanel?.Show(
+                matches,
+                record => UseSavedCachedObject(record),
+                CreateNewFromCachedObjectChoice,
+                CancelCachedObjectChoice);
+
+            ArchStatusBus.Info(command.spoken_response, "OBJECT");
+            Debug.Log($"[WorldActionDispatcher] Cached object choice pending for '{objectName}' ({matches.Count} match(es)).");
+            return true;
+        }
+
+        void HandleSelectCachedObject(VoiceIntentCommand command)
+        {
+            string action = (command != null ? command.object_choice_action : "").Trim().ToLowerInvariant();
+            if ((action == "use_saved" || action == "create_new") && TryBlockForActiveObjectGeneration(command))
+                return;
+
+            switch (action)
+            {
+                case "use_saved":
+                    UseSavedCachedObject(null);
+                    break;
+                case "create_new":
+                    CreateNewFromCachedObjectChoice();
+                    break;
+                case "cancel":
+                    CancelCachedObjectChoice();
+                    if (command != null)
+                        command.spoken_response = "Cancelled.";
+                    break;
+                default:
+                    if (command != null)
+                        command.spoken_response = "Say use saved, create new, or cancel.";
+                    ArchStatusBus.Warning("Say use saved, create new, or cancel.", "OBJECT");
+                    break;
+            }
+        }
+
+        void HandleCancelGeneration(VoiceIntentCommand command)
+        {
+            string target = NormalizeGenerationTarget(command);
+            bool handled = false;
+
+            if (target == "object" || target == "all")
+            {
+                if (objectGenerationService == null)
+                    objectGenerationService = FindFirstObjectByType<ObjectGenerationService>(FindObjectsInactive.Include);
+                handled |= objectGenerationService != null &&
+                           objectGenerationService.CancelActiveGeneration("Cancelled object generation.");
+            }
+
+            if (target == "world" || target == "all")
+            {
+                if (coordinator == null)
+                    coordinator = FindFirstObjectByType<VoiceToWorldLabsPluginCoordinator>(FindObjectsInactive.Include);
+                handled |= coordinator != null &&
+                           coordinator.CancelActiveGeneration("Cancelled world generation.");
+            }
+
+            if (handled)
+            {
+                if (command != null)
+                    command.spoken_response = "";
+                return;
+            }
+
+            string message = target == "object"
+                ? "No object generation is currently running."
+                : target == "world"
+                    ? "No world generation is currently running."
+                    : "No generation is currently running.";
+            if (command != null)
+                command.spoken_response = message;
+            ArchStatusBus.Info(message, "GEN");
+        }
+
+        void HandleContinueGeneration(VoiceIntentCommand command)
+        {
+            string target = NormalizeGenerationTarget(command);
+            bool handled = false;
+
+            if (target == "object" || target == "all")
+            {
+                if (objectGenerationService == null)
+                    objectGenerationService = FindFirstObjectByType<ObjectGenerationService>(FindObjectsInactive.Include);
+                handled |= objectGenerationService != null &&
+                           objectGenerationService.ContinueActiveGeneration();
+            }
+
+            if (target == "world" || target == "all")
+            {
+                if (coordinator == null)
+                    coordinator = FindFirstObjectByType<VoiceToWorldLabsPluginCoordinator>(FindObjectsInactive.Include);
+                handled |= coordinator != null &&
+                           coordinator.ContinueActiveGeneration();
+            }
+
+            if (handled)
+            {
+                if (command != null)
+                    command.spoken_response = "";
+                return;
+            }
+
+            string message = target == "object"
+                ? "No object generation is currently running."
+                : target == "world"
+                    ? "No world generation is currently running."
+                    : "No generation is currently running.";
+            if (command != null)
+                command.spoken_response = message;
+            ArchStatusBus.Info(message, "GEN");
+        }
+
+        public void UseSavedCachedObject(CachedObjectRecord selectedRecord)
+        {
+            if (TryBlockForActiveObjectGeneration(null))
+                return;
+
+            VoiceIntentCommand pendingCommand = null;
+            SpatialSnapshot pendingSpatial = null;
+            CachedObjectRecord record = null;
+            bool consumed = cachedObjectChoiceController != null &&
+                (selectedRecord != null
+                    ? cachedObjectChoiceController.TryConsumeUseSaved(selectedRecord, out pendingCommand, out pendingSpatial, out record)
+                    : cachedObjectChoiceController.TryConsumeUseSaved(out pendingCommand, out pendingSpatial, out record));
+
+            if (!consumed)
+            {
+                ArchStatusBus.Warning("No saved object choice is pending.", "OBJECT");
+                return;
+            }
+
+            cachedObjectChoicePanel?.Hide();
+            StartCoroutine(ImportSavedCachedObject(record, pendingCommand, pendingSpatial));
+        }
+
+        public void CreateNewFromCachedObjectChoice()
+        {
+            if (TryBlockForActiveObjectGeneration(null))
+                return;
+
+            if (cachedObjectChoiceController == null ||
+                !cachedObjectChoiceController.TryConsumeCreateNew(out VoiceIntentCommand pendingCommand, out SpatialSnapshot pendingSpatial))
+            {
+                ArchStatusBus.Warning("No saved object choice is pending.", "OBJECT");
+                return;
+            }
+
+            cachedObjectChoicePanel?.Hide();
+            string objectName = pendingCommand != null ? pendingCommand.object_name : "";
+            if (string.IsNullOrWhiteSpace(objectName))
+            {
+                ArchStatusBus.Warning("No object name is pending.", "OBJECT");
+                return;
+            }
+
+            if (!TryValidateGeneratedObjectPlacement(pendingCommand, pendingSpatial, out string placementFailure))
+            {
+                pendingCommand.spoken_response = placementFailure;
+                ArchStatusBus.Warning(placementFailure, "SPATIAL");
+                return;
+            }
+
+            if (!ObjectGenerationApiConfig.IsAnyProviderConfigured())
+            {
+                string message = "Object generator credentials missing.";
+                pendingCommand.spoken_response = message;
+                ArchStatusBus.Warning(message, "OBJECT");
+                return;
+            }
+
+            if (objectGenerationService == null)
+                objectGenerationService = ObjectGenerationService.GetOrCreate();
+
+            if (objectGenerationService != null && objectGenerationService.GenerateFromText(objectName, pendingCommand, pendingSpatial))
+            {
+                Debug.Log($"[WorldActionDispatcher] Generate new text object requested after cache choice: {objectName}");
+                ArchStatusBus.Info($"Creating {objectName}.", "OBJECT");
+                return;
+            }
+
+            string startFailure = objectGenerationService != null && !string.IsNullOrWhiteSpace(objectGenerationService.LastFailureMessage)
+                ? objectGenerationService.LastFailureMessage
+                : "Object generation could not start.";
+            pendingCommand.spoken_response = startFailure;
+            ArchStatusBus.Warning(startFailure, "OBJECT");
+        }
+
+        public void CancelCachedObjectChoice()
+        {
+            cachedObjectChoiceController?.Cancel();
+            cachedObjectChoicePanel?.Hide();
+            ArchStatusBus.Info("Object choice cancelled.", "OBJECT");
+        }
+
+        System.Collections.IEnumerator ImportSavedCachedObject(CachedObjectRecord record, VoiceIntentCommand pendingCommand, SpatialSnapshot pendingSpatial)
+        {
+            if (record == null)
+            {
+                ArchStatusBus.Warning("Cached object was not found.", "OBJECT");
+                yield break;
+            }
+
+            if (objectGenerationService == null)
+                objectGenerationService = ObjectGenerationService.GetOrCreate();
+            if (objectGenerationService == null)
+            {
+                ArchStatusBus.Warning("Object generation service is missing.", "OBJECT");
+                yield break;
+            }
+
+            if (cachedObjectStore != null && objectGenerationService.cachedObjectStore == null)
+                objectGenerationService.cachedObjectStore = cachedObjectStore;
+
+            GameObject imported = null;
+            string importError = null;
+            ArchStatusBus.Info($"Loading saved {record.canonical_name}.", "OBJECT");
+            yield return objectGenerationService.ImportCachedObject(record, pendingCommand, pendingSpatial, (go, error) =>
+            {
+                imported = go;
+                importError = error;
+            });
+
+            if (imported == null)
+            {
+                string message = string.IsNullOrWhiteSpace(importError) ? "Could not load saved object." : importError;
+                ArchStatusBus.Warning(message, "OBJECT");
+                Debug.LogWarning("[WorldActionDispatcher] Cached object import failed: " + message);
+                yield break;
+            }
+
+            interactionMemory?.RegisterCreatedObject(imported);
+            OnObjectMutated?.Invoke(pendingCommand, imported);
+            ArchStatusBus.Success($"Loaded saved {record.canonical_name}.", "OBJECT");
+        }
+
+        bool TryValidateGeneratedObjectPlacement(VoiceIntentCommand command, SpatialSnapshot spatial, out string failureMessage)
+        {
+            failureMessage = "";
+            if (objectPlacement == null)
+                return true;
+
+            if (objectPlacement.TryResolvePlacementPose(command, spatial, out _, out _))
+                return true;
+
+            failureMessage = string.IsNullOrWhiteSpace(objectPlacement.LastFailureMessage)
+                ? "Where?"
+                : objectPlacement.LastFailureMessage;
+            return false;
+        }
+
+        bool TryBlockForActiveObjectGeneration(VoiceIntentCommand command)
+        {
+            if (objectGenerationService == null)
+                objectGenerationService = FindFirstObjectByType<ObjectGenerationService>(FindObjectsInactive.Include);
+
+            if (objectGenerationService == null || !objectGenerationService.IsBusy)
+                return false;
+
+            string message = objectGenerationService.BusyMessage;
+            if (command != null)
+                command.spoken_response = message;
+            ArchStatusBus.Warning(message, "OBJECT");
+            Debug.LogWarning("[WorldActionDispatcher] " + message);
+            return true;
         }
 
         private void HandleMoveTarget(VoiceIntentCommand command, SpatialSnapshot spatial)
@@ -566,6 +1222,31 @@ namespace SpeechIntent
 
             Debug.Log($"Moved target '{target.name}'.");
             OnObjectMutated?.Invoke(command, target);
+        }
+
+        private void HandleBehaviorCommand(VoiceIntentCommand command, SpatialSnapshot spatial)
+        {
+            if (behaviorCommandController == null)
+            {
+                Debug.LogWarning("[WorldActionDispatcher] BehaviorCommandController not assigned.");
+                command.spoken_response = "Behavior controller not assigned.";
+                ArchStatusBus.Warning(command.spoken_response, "BEHAVIOR");
+                return;
+            }
+
+            SpeechIntent.Behaviors.BehaviorCommandResult result = behaviorCommandController.Execute(command, spatial);
+            if (result == null)
+            {
+                command.spoken_response = "Behavior command returned no result.";
+                ArchStatusBus.Warning(command.spoken_response, "BEHAVIOR");
+                return;
+            }
+
+            command.spoken_response = result.message;
+            if (result.success)
+                ArchStatusBus.Info(result.message, "BEHAVIOR");
+            else
+                ArchStatusBus.Warning(result.message, "BEHAVIOR");
         }
 
         private void HandleScaleTarget(VoiceIntentCommand command, SpatialSnapshot spatial)
@@ -656,6 +1337,189 @@ namespace SpeechIntent
                 OnObjectMutated?.Invoke(command, target);
         }
 
+        private void HandleModifyPhysics(VoiceIntentCommand command, SpatialSnapshot spatial)
+        {
+            List<GameObject> targets = ResolvePhysicsTargets(command, spatial);
+            if (targets.Count == 0)
+            {
+                string message = "No matching physics target found.";
+                command.spoken_response = message;
+                ArchStatusBus.Warning(message, "PHYSICS");
+                Debug.LogWarning("[WorldActionDispatcher] ModifyPhysics: " + message);
+                return;
+            }
+
+            foreach (GameObject target in targets)
+            {
+                ApplyPhysicsCommand(command, target);
+                interactionMemory?.RegisterInteraction(target);
+                OnObjectMutated?.Invoke(command, target);
+            }
+
+            string status = targets.Count == 1 ? $"Updated {targets[0].name} physics." : $"Updated {targets.Count} physics targets.";
+            command.spoken_response = status;
+            ArchStatusBus.Info(status, "PHYSICS");
+            Debug.Log("[WorldActionDispatcher] " + status);
+        }
+
+        private List<GameObject> ResolvePhysicsTargets(VoiceIntentCommand command, SpatialSnapshot spatial)
+        {
+            List<GameObject> targets = new List<GameObject>();
+            if (command == null)
+                return targets;
+
+            SceneEntityResolver resolver = null;
+            if (targetTransformController != null && targetTransformController.entityResolver != null)
+                resolver = targetTransformController.entityResolver;
+            else if (materialTargetController != null && materialTargetController.entityResolver != null)
+                resolver = materialTargetController.entityResolver;
+            else
+                resolver = FindFirstObjectByType<SceneEntityResolver>(FindObjectsInactive.Include);
+
+            if (resolver != null)
+            {
+                SceneTargetResolution resolution = resolver.ResolveTargets(command, spatial);
+                if (resolution.status == SceneTargetResolutionStatus.Single ||
+                    resolution.status == SceneTargetResolutionStatus.All)
+                {
+                    targets.AddRange(resolution.targets);
+                    return targets;
+                }
+            }
+
+            GameObject remembered = interactionMemory != null ? interactionMemory.GetLastCreatedOrInteracted() : null;
+            if (remembered != null && PhysicsTargetMatches(command, remembered))
+                targets.Add(remembered);
+
+            if (targets.Count == 0 && !string.IsNullOrWhiteSpace(command.target_name))
+                targets.AddRange(FindPhysicsTargetsByName(command.target_name));
+
+            return targets;
+        }
+
+        private static bool PhysicsTargetMatches(VoiceIntentCommand command, GameObject target)
+        {
+            if (target == null || command == null)
+                return false;
+
+            if (command.target_reference == TargetReferenceMode.LastCreatedOrInteracted ||
+                string.IsNullOrWhiteSpace(command.target_name))
+                return true;
+
+            string expected = NormalizePhysicsTargetName(command.target_name);
+            SpeechIntentTrackable trackable = target.GetComponent<SpeechIntentTrackable>();
+            if (trackable != null)
+            {
+                if (NormalizePhysicsTargetName(trackable.EffectiveName) == expected)
+                    return true;
+                foreach (string alias in trackable.aliases)
+                    if (NormalizePhysicsTargetName(alias) == expected)
+                        return true;
+            }
+
+            return NormalizePhysicsTargetName(target.name) == expected;
+        }
+
+        private static List<GameObject> FindPhysicsTargetsByName(string targetName)
+        {
+            List<GameObject> targets = new List<GameObject>();
+            string expected = NormalizePhysicsTargetName(targetName);
+            if (string.IsNullOrWhiteSpace(expected))
+                return targets;
+
+            SpeechIntentTrackable[] trackables = FindObjectsByType<SpeechIntentTrackable>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (SpeechIntentTrackable trackable in trackables)
+            {
+                if (trackable == null || trackable.gameObject == null)
+                    continue;
+
+                if (NormalizePhysicsTargetName(trackable.EffectiveName) == expected)
+                    targets.Add(trackable.gameObject);
+            }
+
+            if (targets.Count == 0)
+            {
+                GameObject byName = GameObject.Find(targetName);
+                if (byName != null)
+                    targets.Add(byName);
+            }
+
+            return targets;
+        }
+
+        private static string NormalizePhysicsTargetName(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return "";
+
+            string normalized = value.Trim().ToLowerInvariant();
+            normalized = System.Text.RegularExpressions.Regex.Replace(normalized, @"^(the|a|an)\s+", "").Trim();
+            normalized = System.Text.RegularExpressions.Regex.Replace(normalized, @"^generated[_\s-]+", "").Trim();
+            if (normalized.EndsWith("s", StringComparison.Ordinal) && normalized.Length > 1)
+                normalized = normalized.Substring(0, normalized.Length - 1);
+            return normalized;
+        }
+
+        private static void ApplyPhysicsCommand(VoiceIntentCommand command, GameObject target)
+        {
+            if (target == null || command == null)
+                return;
+
+            Rigidbody body = target.GetComponent<Rigidbody>() ?? target.GetComponentInChildren<Rigidbody>();
+            if (body == null)
+                body = target.AddComponent<Rigidbody>();
+
+            string action = command.physics_action ?? "";
+            if (action == "enable_gravity")
+            {
+                body.useGravity = true;
+                body.isKinematic = false;
+                if (body.mass <= 0.0001f)
+                    body.mass = 1f;
+                return;
+            }
+
+            if (action == "set_mass" && command.physics_mass > 0f)
+            {
+                body.mass = command.physics_mass;
+                return;
+            }
+
+            body.useGravity = false;
+            if (action == "set_weightless" || command.object_weightless)
+            {
+                body.mass = 0.0001f;
+                body.linearVelocity = Vector3.zero;
+                body.angularVelocity = Vector3.zero;
+                body.isKinematic = true;
+            }
+        }
+
+        private void HandleSetProxyVisibility(VoiceIntentCommand command)
+        {
+            if (proxyVisibilityController == null)
+            {
+                Debug.LogWarning("[WorldActionDispatcher] RuntimeProxyVisibilityController not assigned.");
+                ArchStatusBus.Warning("Proxy controller not assigned.", "PROXY");
+                return;
+            }
+
+            int changed = proxyVisibilityController.SetVisibility(command.proxy_category, command.proxy_visible);
+            if (changed <= 0)
+            {
+                string message = FirstNonEmpty(proxyVisibilityController.LastFailureMessage, "No proxies found.");
+                command.spoken_response = message;
+                ArchStatusBus.Warning(message, "PROXY");
+                return;
+            }
+
+            string verb = command.proxy_visible ? "Showing" : "Hiding";
+            string category = string.IsNullOrWhiteSpace(command.proxy_category) ? "all" : command.proxy_category;
+            string status = $"{verb} {changed} {category} proxy object(s).";
+            Debug.Log("[WorldActionDispatcher] " + status);
+            ArchStatusBus.Info(status, "PROXY");
+        }
+
         private void HandleDeleteTarget(VoiceIntentCommand command, SpatialSnapshot spatial)
         {
             if (IsAudioDeleteCommand(command))
@@ -679,9 +1543,11 @@ namespace SpeechIntent
             if (targets.Count == 0)
             {
                 string label = FirstNonEmpty(command.target_name, command.object_name, command.target_entity);
-                string message = string.IsNullOrWhiteSpace(label)
-                    ? "What should I delete?"
-                    : $"No matching {label} found.";
+                string message = IsClarificationResponse(command.spoken_response)
+                    ? command.spoken_response
+                    : (string.IsNullOrWhiteSpace(label)
+                        ? "What should I delete?"
+                        : $"No matching {label} found.");
                 Debug.LogWarning("[WorldActionDispatcher] DeleteTarget: " + message);
                 command.spoken_response = message;
                 ArchStatusBus.Warning(message, "DELETE");
@@ -703,6 +1569,9 @@ namespace SpeechIntent
                     if (interactionMemory.currentSelection == target)
                         interactionMemory.currentSelection = null;
                 }
+
+                if (lightActionController != null)
+                    lightActionController.NotifyDeleting(target);
 
                 Destroy(target);
                 deleted++;
@@ -726,6 +1595,30 @@ namespace SpeechIntent
 
             if (command.target_reference == TargetReferenceMode.PointedObject)
             {
+                SceneEntityResolver pointedResolver = targetTransformController != null
+                    ? targetTransformController.entityResolver
+                    : null;
+                if (pointedResolver != null && HasDeleteTargetConstraints(command))
+                {
+                    SceneTargetResolution resolution = pointedResolver.ResolveTargets(command, spatial);
+                    if (resolution.status == SceneTargetResolutionStatus.Single ||
+                        resolution.status == SceneTargetResolutionStatus.All)
+                    {
+                        foreach (GameObject resolved in resolution.targets)
+                        {
+                            if (resolved != null && !IsProtectedDeleteTarget(resolved))
+                                targets.Add(resolved);
+                        }
+
+                        return targets;
+                    }
+
+                    command.spoken_response = string.IsNullOrWhiteSpace(resolution.message)
+                        ? "That object does not match."
+                        : resolution.message;
+                    return targets;
+                }
+
                 if (TryResolveIndicatedDeleteTarget(command, spatial, out GameObject indicated) &&
                     indicated != null &&
                     !IsProtectedDeleteTarget(indicated))
@@ -739,6 +1632,42 @@ namespace SpeechIntent
             string requestedName = FirstNonEmpty(command.target_name, command.object_name, command.target_entity);
             bool all = command.target_reference == TargetReferenceMode.All || IsAllToken(requestedName);
             string normalizedNeedle = NormalizeDeleteName(requestedName);
+
+            SceneEntityResolver resolver = targetTransformController != null
+                ? targetTransformController.entityResolver
+                : null;
+            if (resolver != null)
+            {
+                SceneTargetResolution resolution = resolver.ResolveTargets(command, spatial);
+                if (resolution.status == SceneTargetResolutionStatus.Single ||
+                    resolution.status == SceneTargetResolutionStatus.All)
+                {
+                    foreach (GameObject target in resolution.targets)
+                    {
+                        if (target != null && !IsProtectedDeleteTarget(target))
+                            targets.Add(target);
+                    }
+
+                    return targets;
+                }
+
+                if (resolution.status == SceneTargetResolutionStatus.Ambiguous)
+                {
+                    command.spoken_response = string.IsNullOrWhiteSpace(resolution.message)
+                        ? $"Which {requestedName}?"
+                        : resolution.message;
+                    command.should_execute = false;
+                    return targets;
+                }
+
+                if (!string.IsNullOrWhiteSpace(command.target_material_prompt))
+                {
+                    command.spoken_response = string.IsNullOrWhiteSpace(resolution.message)
+                        ? $"No matching {command.target_material_prompt} {requestedName} found."
+                        : resolution.message;
+                    return targets;
+                }
+            }
 
             if (!all)
             {
@@ -770,7 +1699,26 @@ namespace SpeechIntent
                     targets.Add(candidate);
             }
 
+            if (!all && targets.Count > 1)
+            {
+                string label = string.IsNullOrWhiteSpace(requestedName) ? "object" : requestedName;
+                command.spoken_response = $"Which {label}?";
+                command.should_execute = false;
+                targets.Clear();
+            }
+
             return targets;
+        }
+
+        private static bool HasDeleteTargetConstraints(VoiceIntentCommand command)
+        {
+            if (command == null)
+                return false;
+
+            return !string.IsNullOrWhiteSpace(command.target_name) ||
+                   !string.IsNullOrWhiteSpace(command.object_name) ||
+                   !string.IsNullOrWhiteSpace(command.target_entity) ||
+                   !string.IsNullOrWhiteSpace(command.target_material_prompt);
         }
 
         private bool TryResolveIndicatedDeleteTarget(VoiceIntentCommand command, SpatialSnapshot spatial, out GameObject target)
@@ -1035,6 +1983,17 @@ namespace SpeechIntent
                    normalized == "everything";
         }
 
+        private static bool IsClarificationResponse(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return false;
+
+            string trimmed = value.Trim();
+            return trimmed.StartsWith("Which ", StringComparison.OrdinalIgnoreCase) ||
+                   trimmed.StartsWith("What ", StringComparison.OrdinalIgnoreCase) ||
+                   trimmed.EndsWith("?", StringComparison.Ordinal);
+        }
+
         private static string NormalizeDeleteName(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -1075,6 +2034,20 @@ namespace SpeechIntent
                 if (!string.IsNullOrWhiteSpace(value))
                     return value;
             return string.Empty;
+        }
+
+        private static string NormalizeGenerationTarget(VoiceIntentCommand command)
+        {
+            string target = FirstNonEmpty(command?.target_entity, command?.target_name, command?.object_name).Trim().ToLowerInvariant();
+            if (target.Contains("object", StringComparison.Ordinal) ||
+                target.Contains("model", StringComparison.Ordinal) ||
+                target.Contains("3d", StringComparison.Ordinal))
+                return "object";
+            if (target.Contains("world", StringComparison.Ordinal) ||
+                target.Contains("worldlabs", StringComparison.Ordinal) ||
+                target.Contains("world labs", StringComparison.Ordinal))
+                return "world";
+            return "all";
         }
 
         private void HandleLoadSplat(VoiceIntentCommand command)

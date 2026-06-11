@@ -9,6 +9,7 @@ namespace SpeechIntent
     {
         public HeadsetCameraCaptureService captureService;
         public VoiceToWorldLabsPluginCoordinator worldCoordinator;
+        public ObjectGenerationService objectGenerationService;
         public RawImage previewImage;
         public AspectRatioFitter previewAspect;
         public TMP_Text statusLabel;
@@ -132,13 +133,19 @@ namespace SpeechIntent
             if (!ObjectGenerationApiConfig.IsAnyProviderConfigured())
             {
                 SetStatus("OBJECT API KEY MISSING");
-                ArchStatusBus.Warning("Object generator API key missing. Set MESHY_API_KEY, TRIPO_API_KEY, or HITEM_API_KEY.", "OBJECT");
+                ArchStatusBus.Warning("Object generator API key missing. Set THREEDAISTUDIO_API_KEY, or HITEM_ACCESS_KEY and HITEM_SECRET_KEY.", "OBJECT");
                 RefreshButtonState();
                 return;
             }
 
-            SetStatus("OBJECT CREATOR NOT CONNECTED");
-            ArchStatusBus.Warning("Object creator integration is not connected yet.", "OBJECT");
+            if (objectGenerationService == null)
+                objectGenerationService = ObjectGenerationService.GetOrCreate();
+
+            SetStatus("CREATING OBJECT...");
+            if (!objectGenerationService.GenerateFromLastCapture("Create a 3D object inspired by this image."))
+                SetStatus(string.IsNullOrWhiteSpace(objectGenerationService.LastFailureMessage)
+                    ? "OBJECT CREATION COULD NOT START"
+                    : objectGenerationService.LastFailureMessage);
         }
 
         void HandleCaptureChanged(Texture2D texture)

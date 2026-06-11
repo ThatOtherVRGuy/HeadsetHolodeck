@@ -1,6 +1,7 @@
 // Assets/App/Save/Runtime/WorldConfig.cs
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using UnityEngine;
 
 namespace Holodeck.Save
 {
@@ -13,9 +14,96 @@ namespace Holodeck.Save
         public string modified_at;  // ISO 8601 UTC
         public WorldSourceData world_source;
         public string generation_model;
+        public WorldTransformData world_transform;
         public List<PromptEntry> prompts = new List<PromptEntry>();
+        public List<SpawnPointData> spawn_points = new List<SpawnPointData>();
         public List<SavedObject> objects = new List<SavedObject>();
         public LightingData lighting;  // null if lighting not set
+    }
+
+    public class WorldTransformData
+    {
+        public JsonVector3 position;
+        public JsonQuaternion rotation = Quaternion.identity;
+        public JsonVector3 scale = Vector3.one;
+
+        public static WorldTransformData FromTransform(Transform transform)
+        {
+            if (transform == null)
+                return null;
+
+            return new WorldTransformData
+            {
+                position = transform.localPosition,
+                rotation = transform.localRotation,
+                scale = transform.localScale
+            };
+        }
+
+        public void ApplyTo(Transform transform)
+        {
+            if (transform == null)
+                return;
+
+            transform.localPosition = position;
+            transform.localRotation = rotation;
+            transform.localScale = scale;
+        }
+    }
+
+    public class SpawnPointData
+    {
+        public string id;
+        public string name;
+        public string source;       // "estimated" | "manual"
+        public string method;       // estimator method or "manual"
+        public string created_at;   // ISO 8601 UTC
+        public JsonVector3 position;
+        public JsonQuaternion rotation = Quaternion.identity;
+        public JsonVector3 look_at;
+        public float confidence;
+    }
+
+    public struct JsonVector3
+    {
+        public float x;
+        public float y;
+        public float z;
+
+        public JsonVector3(float x, float y, float z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        public static implicit operator Vector3(JsonVector3 value) =>
+            new Vector3(value.x, value.y, value.z);
+
+        public static implicit operator JsonVector3(Vector3 value) =>
+            new JsonVector3(value.x, value.y, value.z);
+    }
+
+    public struct JsonQuaternion
+    {
+        public float x;
+        public float y;
+        public float z;
+        public float w;
+
+        public JsonQuaternion(float x, float y, float z, float w)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+        }
+
+        public static implicit operator Quaternion(JsonQuaternion value) =>
+            new Quaternion(value.x, value.y, value.z, value.w);
+
+        public static implicit operator JsonQuaternion(Quaternion value) =>
+            new JsonQuaternion(value.x, value.y, value.z, value.w);
     }
 
     public class WorldSourceData

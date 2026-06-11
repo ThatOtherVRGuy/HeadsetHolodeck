@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Holodeck.Direct;
+using Holodeck.Save;
 using SpeechIntent;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -11,6 +13,7 @@ public static class InteractableObjectSetup
 {
     const string InteractablePrefabFolder = "Assets/VRTemplateAssets/Prefabs/Interactables";
     const string SetupScenePath = "Assets/Scenes/Holodeck.unity";
+    const string ObjectGenerationSpinnerPrefabPath = "Assets/App/Prefabs/ObjectGenerationSpinner.prefab";
 
     [MenuItem("Headset Holodeck/Objects/Wire Interactable Prefab Catalog")]
     public static void WireInteractablePrefabCatalog()
@@ -59,6 +62,8 @@ public static class InteractableObjectSetup
         }
 
         RuntimeMaterialCatalog materialCatalog = EnsureMaterialCatalog();
+        ThreeDAIStudioCreditService creditService = EnsureThreeDAIStudioCreditService();
+        EnsureObjectGenerationService(controller, creditService);
         EnsureMaterialController(materialCatalog);
         controller.materialCatalog = materialCatalog;
         EnsurePrimitiveHints(controller);
@@ -108,6 +113,130 @@ public static class InteractableObjectSetup
         RuntimeMaterialCatalog catalog = Undo.AddComponent<RuntimeMaterialCatalog>(go);
         EditorUtility.SetDirty(catalog);
         return catalog;
+    }
+
+    static ThreeDAIStudioCreditService EnsureThreeDAIStudioCreditService()
+    {
+        ThreeDAIStudioCreditService existing = UnityEngine.Object.FindFirstObjectByType<ThreeDAIStudioCreditService>(FindObjectsInactive.Include);
+        if (existing != null)
+            return existing;
+
+        Transform systems =
+            GameObject.Find("Holodeck/Systems")?.transform
+            ?? GameObject.Find("Systems")?.transform
+            ?? new GameObject("Systems").transform;
+
+        GameObject go = new GameObject("ThreeDAIStudioCreditService");
+        Undo.RegisterCreatedObjectUndo(go, "Create 3dAIStudio credit service");
+        go.transform.SetParent(systems, false);
+
+        ThreeDAIStudioCreditService service = Undo.AddComponent<ThreeDAIStudioCreditService>(go);
+        EditorUtility.SetDirty(service);
+        return service;
+    }
+
+    static ObjectGenerationService EnsureObjectGenerationService(
+        ObjectPlacementController objectPlacement,
+        ThreeDAIStudioCreditService creditService)
+    {
+        ObjectGenerationService existing = UnityEngine.Object.FindFirstObjectByType<ObjectGenerationService>(FindObjectsInactive.Include);
+        Transform systems = EnsureSystemsTransform();
+
+        GameObject go;
+        if (existing != null)
+        {
+            go = existing.gameObject;
+            if (go.transform.parent == null || go.transform.parent != systems)
+                go.transform.SetParent(systems, false);
+        }
+        else
+        {
+            go = new GameObject("ObjectGenerationService");
+            Undo.RegisterCreatedObjectUndo(go, "Create object generation service");
+            go.transform.SetParent(systems, false);
+            existing = Undo.AddComponent<ObjectGenerationService>(go);
+        }
+
+        if (go.name != "ObjectGenerationService")
+            go.name = "ObjectGenerationService";
+
+        existing.objectPlacement = objectPlacement;
+        existing.captureService = UnityEngine.Object.FindFirstObjectByType<HeadsetCameraCaptureService>(FindObjectsInactive.Include);
+        existing.hitemProvider = EnsureProvider<HitemObjectGenerationProvider>(go);
+        existing.threeDAIStudioProvider = EnsureProvider<ThreeDAIStudioObjectGenerationProvider>(go);
+        existing.threeDAIStudioCreditService = creditService;
+        existing.cachedObjectStore = EnsureCachedObjectStore(systems);
+        existing.thumbnailCaptureService = EnsureProvider<ObjectThumbnailCaptureService>(go);
+        existing.worldConfigAutoSave = UnityEngine.Object.FindFirstObjectByType<WorldConfigAutoSave>(FindObjectsInactive.Include);
+        existing.interactionMemory = UnityEngine.Object.FindFirstObjectByType<InteractionMemory>(FindObjectsInactive.Include);
+
+        GameObject spinnerPrefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(ObjectGenerationSpinnerPrefabPath);
+        ObjectGenerationSpinnerController spinnerPrefab = spinnerPrefabAsset != null
+            ? spinnerPrefabAsset.GetComponent<ObjectGenerationSpinnerController>()
+            : null;
+        if (spinnerPrefab != null)
+            existing.objectGenerationSpinnerPrefab = spinnerPrefab;
+        else
+            Debug.LogWarning($"[InteractableObjectSetup] Object generation spinner prefab was not found at {ObjectGenerationSpinnerPrefabPath}.");
+
+        Transform generatedWorldRoot = GameObject.Find("Holodeck/Environment/GeneratedWorldRoot")?.transform
+            ?? GameObject.Find("GeneratedWorldRoot")?.transform;
+        if (generatedWorldRoot != null)
+            existing.defaultParent = generatedWorldRoot;
+
+        EditorUtility.SetDirty(go);
+        EditorUtility.SetDirty(existing);
+        Debug.Log("[InteractableObjectSetup] Ensured ObjectGenerationService under Holodeck/Systems and wired spinner prefab.");
+        return existing;
+    }
+
+    static T EnsureProvider<T>(GameObject host) where T : Component
+    {
+        T existing = UnityEngine.Object.FindFirstObjectByType<T>(FindObjectsInactive.Include);
+        if (existing != null)
+            return existing;
+
+        T component = host.GetComponent<T>();
+        if (component != null)
+            return component;
+
+        component = Undo.AddComponent<T>(host);
+        EditorUtility.SetDirty(component);
+        return component;
+    }
+
+    static CachedObjectStore EnsureCachedObjectStore(Transform systems)
+    {
+        CachedObjectStore existing = UnityEngine.Object.FindFirstObjectByType<CachedObjectStore>(FindObjectsInactive.Include);
+        if (existing != null)
+        {
+            if (existing.transform.parent == null || existing.transform.parent != systems)
+                existing.transform.SetParent(systems, false);
+            return existing;
+        }
+
+        GameObject go = new GameObject("CachedObjectStore");
+        Undo.RegisterCreatedObjectUndo(go, "Create cached object store");
+        go.transform.SetParent(systems, false);
+        CachedObjectStore store = Undo.AddComponent<CachedObjectStore>(go);
+        EditorUtility.SetDirty(store);
+        return store;
+    }
+
+    static Transform EnsureSystemsTransform()
+    {
+        Transform systems =
+            GameObject.Find("Holodeck/Systems")?.transform
+            ?? GameObject.Find("Systems")?.transform;
+        if (systems != null)
+            return systems;
+
+        GameObject holodeck = GameObject.Find("Holodeck");
+        GameObject go = new GameObject("Systems");
+        Undo.RegisterCreatedObjectUndo(go, "Create systems container");
+        if (holodeck != null)
+            go.transform.SetParent(holodeck.transform, false);
+        return go.transform;
     }
 
     static MaterialTargetController EnsureMaterialController(RuntimeMaterialCatalog materialCatalog)

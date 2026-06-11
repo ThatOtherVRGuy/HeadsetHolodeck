@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Holodeck.Save;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace Holodeck.Save.Tests
 {
@@ -109,6 +110,28 @@ namespace Holodeck.Save.Tests
             Assert.AreEqual("chair_001", fork.objects[0].instance_id);
             Assert.IsTrue(Directory.Exists(Path.Combine(_tempRoot, fork.config_id)));
             Assert.AreNotEqual(original.created_at, fork.created_at);
+        }
+
+        [Test]
+        public async Task ScanAndMigrateAsync_WithMultipleStores_CreatesOneConfigPerLooseSplat()
+        {
+            string looseSplat = Path.Combine(_tempRoot, "ImportedRoom.spz");
+            File.WriteAllBytes(looseSplat, new byte[] { 1, 2, 3, 4 });
+
+            WorldConfigStore secondStore = WorldConfigStore.CreateForTesting(_tempRoot);
+
+            await Task.WhenAll(
+                _store.ScanAndMigrateAsync(),
+                secondStore.ScanAndMigrateAsync());
+
+            string[] configJsonFiles = Directory.GetFiles(_tempRoot, "world.json", SearchOption.AllDirectories)
+                .Where(path => Path.GetFileName(Path.GetDirectoryName(path)) != "CachedWorlds")
+                .ToArray();
+
+            Assert.AreEqual(1, configJsonFiles.Length, "Expected one migrated world config for one loose splat even with multiple WorldConfigStore instances.");
+            Assert.AreEqual(1, _store.ListConfigs().Count, "Expected first store to load one config.");
+            Assert.AreEqual(1, secondStore.ListConfigs().Count, "Expected second store to load one config.");
+            Assert.IsTrue(File.Exists(Path.Combine(_tempRoot, "CachedWorlds", "ImportedRoom.spz")), "Expected loose splat to move into CachedWorlds.");
         }
     }
 }

@@ -22,6 +22,7 @@ namespace SpeechIntent
         public float defaultRelativeToMeDistance = 2f;
         public float minScaleComponent = 0.01f;
         public float pointingSurfaceOffset = 0.01f;
+        public bool debugMovementLogging = true;
 
         public string LastFailureMessage { get; private set; } = "";
 
@@ -31,15 +32,19 @@ namespace SpeechIntent
             target = ResolveTarget(command, spatial);
             if (target == null)
             {
+                LogMoveDebug(command, null, "ResolveTarget failed. " + LastFailureMessage);
                 return false;
             }
 
-            if (!TryResolveDestination(command, spatial, out Vector3 destination))
+            Vector3 before = target.transform.position;
+            if (!TryResolveDestination(command, spatial, target, out Vector3 destination))
             {
+                LogMoveDebug(command, target, "TryResolveDestination failed. " + LastFailureMessage);
                 return false;
             }
 
             target.transform.position = destination;
+            LogMoveDebug(command, target, $"Moved from {FormatVector(before)} to {FormatVector(destination)} delta={FormatVector(destination - before)}.");
             RegisterInteraction(target);
             return true;
         }
@@ -121,6 +126,18 @@ namespace SpeechIntent
 
         private GameObject ResolveTarget(VoiceIntentCommand command, SpatialSnapshot spatial)
         {
+            if (IsMeTarget(command))
+            {
+                Transform me = ResolveMeReference();
+                if (me != null)
+                {
+                    return me.gameObject;
+                }
+
+                LastFailureMessage = "No Me object found.";
+                return null;
+            }
+
             if (entityResolver == null)
             {
                 return interactionMemory != null ? interactionMemory.GetLastCreatedOrInteracted() : null;
@@ -150,13 +167,13 @@ namespace SpeechIntent
             }
         }
 
-        private bool TryResolveDestination(VoiceIntentCommand command, SpatialSnapshot spatial, out Vector3 destination)
+        private bool TryResolveDestination(VoiceIntentCommand command, SpatialSnapshot spatial, GameObject target, out Vector3 destination)
         {
             destination = Vector3.zero;
 
-            if (command.spatial_reference == SpatialReferenceMode.RelativeToMe)
+            if (ShouldUseRelativeMove(command))
             {
-                return TryResolveRelativeToMeDestination(command, out destination);
+                return TryResolveRelativeToMeDestination(command, target, out destination);
             }
 
             if (command.spatial_reference == SpatialReferenceMode.BodyAnchor)
@@ -229,7 +246,7 @@ namespace SpeechIntent
             return false;
         }
 
-        private bool TryResolveRelativeToMeDestination(VoiceIntentCommand command, out Vector3 destination)
+        private bool TryResolveRelativeToMeDestination(VoiceIntentCommand command, GameObject target, out Vector3 destination)
         {
             destination = Vector3.zero;
 
@@ -249,12 +266,75 @@ namespace SpeechIntent
                 return false;
             }
 
-            float distance = command.relative_distance_meters > 0f
-                ? command.relative_distance_meters
-                : defaultRelativeToMeDistance;
+            float distance = ResolveRelativeDistanceMeters(command);
+
+            if (ShouldOffsetFromCurrentTarget(command, target))
+            {
+                destination = target.transform.position + directionVector.normalized * distance;
+                LogMoveDebug(command, target,
+                    $"RelativeToMe target-offset direction={direction} vector={FormatVector(directionVector.normalized)} distance={distance:0.####} me={FormatVector(me.position)} current={FormatVector(target.transform.position)} destination={FormatVector(destination)}.");
+                return true;
+            }
 
             destination = me.position + directionVector.normalized * distance;
+            LogMoveDebug(command, target,
+                $"RelativeToMe me-anchored direction={direction} vector={FormatVector(directionVector.normalized)} distance={distance:0.####} me={FormatVector(me.position)} current={(target != null ? FormatVector(target.transform.position) : "<null>")} destination={FormatVector(destination)}.");
             return true;
+        }
+
+        private static bool ShouldUseRelativeMove(VoiceIntentCommand command)
+        {
+            if (command == null)
+                return false;
+
+            return command.spatial_reference == SpatialReferenceMode.RelativeToMe ||
+                   command.relative_direction != RelativeDirection.None ||
+                   command.relative_distance_meters > 0f;
+        }
+
+        private bool ShouldOffsetFromCurrentTarget(VoiceIntentCommand command, GameObject target)
+        {
+            if (target == null || IsMeTargetObject(target))
+                return false;
+
+            RelativeDirection direction = command.relative_direction == RelativeDirection.None
+                ? InferRelativeDirection(command.transcript)
+                : command.relative_direction;
+
+            switch (direction)
+            {
+                case RelativeDirection.Up:
+                case RelativeDirection.Down:
+                case RelativeDirection.Left:
+                case RelativeDirection.Right:
+                case RelativeDirection.Forward:
+                case RelativeDirection.Back:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private float ResolveRelativeDistanceMeters(VoiceIntentCommand command)
+        {
+            if (DistanceUnitParser.TryExtractMeters(command?.transcript, out float transcriptMeters))
+            {
+                if (command == null || command.relative_distance_meters <= 0f)
+                    return transcriptMeters;
+
+                if (Mathf.Abs(command.relative_distance_meters - transcriptMeters) > 0.001f)
+                {
+                    Debug.LogWarning(
+                        "[TargetTransformController] MoveDebug distance mismatch: " +
+                        $"command.relative_distance_meters={command.relative_distance_meters:0.####}, " +
+                        $"transcriptMeters={transcriptMeters:0.####}, transcript='{command.transcript}'. Using transcript-derived meters.");
+                    return transcriptMeters;
+                }
+            }
+
+            return command != null && command.relative_distance_meters > 0f
+                ? command.relative_distance_meters
+                : defaultRelativeToMeDistance;
         }
 
         private Transform ResolveMeReference()
@@ -276,9 +356,32 @@ namespace SpeechIntent
 
         private static bool IsMeTarget(VoiceIntentCommand command)
         {
-            return IsMeName(command?.target_entity) ||
-                   IsMeName(command?.target_name) ||
-                   IsMeName(command?.object_name);
+            if (command == null)
+                return false;
+
+            if (IsMeName(command.target_name) || IsMeName(command.object_name))
+                return true;
+
+            bool hasExplicitNamedTarget = !string.IsNullOrWhiteSpace(command.target_name) ||
+                                          !string.IsNullOrWhiteSpace(command.object_name);
+
+            return !hasExplicitNamedTarget && IsMeName(command.target_entity);
+        }
+
+        private static bool IsMeTargetObject(GameObject target)
+        {
+            if (target == null)
+                return false;
+
+            Transform current = target.transform;
+            while (current != null)
+            {
+                if (IsMeName(current.name))
+                    return true;
+                current = current.parent;
+            }
+
+            return false;
         }
 
         private static bool IsMeName(string value)
@@ -288,6 +391,8 @@ namespace SpeechIntent
 
             string normalized = value.Trim().ToLowerInvariant();
             return normalized == "me" ||
+                   normalized == "i" ||
+                   normalized == "user" ||
                    normalized == "myself" ||
                    normalized == "player" ||
                    normalized == "xr origin";
@@ -296,6 +401,10 @@ namespace SpeechIntent
         private RelativeDirection InferRelativeDirection(string transcript)
         {
             string text = (transcript ?? string.Empty).ToLowerInvariant();
+            if (text.Contains("in front of me"))
+                return RelativeDirection.InFront;
+            if (text.Contains("behind me"))
+                return RelativeDirection.Behind;
             if (text.Contains("behind") || text.Contains("backward") || text.Contains("backwards") || text.Contains(" back"))
                 return RelativeDirection.Back;
             if (text.Contains("left"))
@@ -436,6 +545,35 @@ namespace SpeechIntent
                 default:
                     return Vector3.zero;
             }
+        }
+
+        private void LogMoveDebug(VoiceIntentCommand command, GameObject target, string detail)
+        {
+            if (!debugMovementLogging)
+                return;
+
+            string targetInfo = target != null
+                ? $"{target.name} pos={FormatVector(target.transform.position)}"
+                : "<null>";
+
+            Debug.Log(
+                "[TargetTransformController] MoveDebug " +
+                $"target={targetInfo}; " +
+                $"intent={command?.intent}; " +
+                $"transcript='{command?.transcript}'; " +
+                $"target_reference={command?.target_reference}; " +
+                $"target_name='{command?.target_name}'; " +
+                $"object_name='{command?.object_name}'; " +
+                $"target_entity='{command?.target_entity}'; " +
+                $"spatial_reference={command?.spatial_reference}; " +
+                $"relative_direction={command?.relative_direction}; " +
+                $"relative_distance_meters={command?.relative_distance_meters:0.####}; " +
+                detail);
+        }
+
+        private static string FormatVector(Vector3 value)
+        {
+            return $"({value.x:0.####}, {value.y:0.####}, {value.z:0.####})";
         }
     }
 }

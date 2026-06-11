@@ -10,6 +10,7 @@ namespace SpeechIntent
         public PixabayImageSearchService pixabayService;
         public HeadsetCameraCaptureService captureService;
         public VoiceToWorldLabsPluginCoordinator worldCoordinator;
+        public ObjectGenerationService objectGenerationService;
 
         [Header("UI")]
         public TMP_InputField searchInput;
@@ -152,14 +153,25 @@ namespace SpeechIntent
             if (!ObjectGenerationApiConfig.IsAnyProviderConfigured())
             {
                 SetStatus("OBJECT API KEY MISSING");
-                ArchStatusBus.Warning("Object generator API key missing. Set MESHY_API_KEY, TRIPO_API_KEY, or HITEM_API_KEY.", "OBJECT");
+                ArchStatusBus.Warning("Object generator API key missing. Set THREEDAISTUDIO_API_KEY, or HITEM_ACCESS_KEY and HITEM_SECRET_KEY.", "OBJECT");
                 RefreshButtonState();
                 return;
             }
 
             UseSelectedImage();
-            SetStatus("OBJECT CREATOR NOT CONNECTED");
-            ArchStatusBus.Warning("Object creator integration is not connected yet.", "OBJECT");
+            if (objectGenerationService == null)
+                objectGenerationService = ObjectGenerationService.GetOrCreate();
+
+            string query = pixabayService != null ? pixabayService.LastQuery : "";
+            string prompt = string.IsNullOrWhiteSpace(query)
+                ? "Create a 3D object inspired by this image."
+                : $"Create a 3D object inspired by this image of {query}.";
+
+            SetStatus("CREATING OBJECT...");
+            if (!objectGenerationService.GenerateFromLastCapture(prompt))
+                SetStatus(string.IsNullOrWhiteSpace(objectGenerationService.LastFailureMessage)
+                    ? "OBJECT CREATION COULD NOT START"
+                    : objectGenerationService.LastFailureMessage);
         }
 
         void ResolveServices()

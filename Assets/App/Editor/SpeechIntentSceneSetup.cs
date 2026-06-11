@@ -64,6 +64,8 @@ namespace Holodeck.Editor
             OpenverseProvider              openverseProvider  = GetOrAdd<OpenverseProvider>(speechRoot);
             XenoCantoSoundProvider         xenoCantoProvider  = GetOrAdd<XenoCantoSoundProvider>(speechRoot);
             AudioWorldActionController     audioController    = GetOrAdd<AudioWorldActionController>(speechRoot);
+            SpeechIntent.Behaviors.BehaviorCommandController behaviorController =
+                GetOrAdd<SpeechIntent.Behaviors.BehaviorCommandController>(speechRoot);
 
             // ── 3. Locate cross-system dependencies ───────────────────────────
             WorldLabsWorldManager worldManager = systems.GetComponentInChildren<WorldLabsWorldManager>(true);
@@ -85,7 +87,7 @@ namespace Holodeck.Editor
 
             // ── 5. Wire internal SpeechIntent references ──────────────────────
             Undo.RecordObjects(
-                new Object[] { service, dispatcher, memory, router, trigger, semantic, entityResolver, targetTransform, lightRig, uiPanels, staticWorld, playerOrigin, splatLoader, panoLoader, audioController },
+                new Object[] { service, dispatcher, memory, router, trigger, semantic, entityResolver, targetTransform, lightRig, uiPanels, staticWorld, playerOrigin, splatLoader, panoLoader, audioController, behaviorController },
                 "Wire SpeechIntent Components");
 
             service.config = config;
@@ -105,6 +107,7 @@ namespace Holodeck.Editor
             dispatcher.splatLoader = splatLoader;
             dispatcher.panoLoader  = panoLoader;
             dispatcher.audioWorldActionController = audioController;
+            dispatcher.behaviorCommandController = behaviorController;
 
             audioController.freesoundProvider = freesoundProvider;
             audioController.openverseProvider = openverseProvider;
@@ -124,6 +127,10 @@ namespace Holodeck.Editor
 
             targetTransform.entityResolver    = entityResolver;
             targetTransform.interactionMemory = memory;
+
+            behaviorController.entityResolver = entityResolver;
+            behaviorController.interactionMemory = memory;
+            behaviorController.spatialContextProvider = spatial;
 
             // Wire PushToTalkTrigger.pushToTalkAction — find the InputActionReference sub-asset
             // that Unity's Input System bakes into the .inputactions file on import.
@@ -206,6 +213,7 @@ namespace Holodeck.Editor
             Undo.RecordObject(playerOrigin, "Wire PlayerOriginController");
             playerOrigin.thumbnailSkybox = systems.GetComponentInChildren<ThumbnailSkyboxController>(true);
             playerOrigin.worldManager    = worldManager;
+            playerOrigin.worldConfigAutoSave = worldConfigAutoSave;
             GameObject meGo = GameObject.Find("Me");
             if (meGo != null)
                 playerOrigin.playerRoot = meGo.transform;
@@ -223,7 +231,10 @@ namespace Holodeck.Editor
             RuntimeSplatFloorLoader floorLoader =
                 systems.GetComponentInChildren<RuntimeSplatFloorLoader>(true);
             if (floorLoader != null)
+            {
+                ConfigureRuntimeSplatFloorLoader(floorLoader);
                 splatLoader.floorLoader = floorLoader;
+            }
             else
                 Debug.LogWarning("[SpeechIntentSceneSetup] RuntimeSplatFloorLoader not found under Systems. " +
                                  "Assign splatLoader.floorLoader manually.");
@@ -324,6 +335,32 @@ namespace Holodeck.Editor
         }
 
         // ── Scene helpers ─────────────────────────────────────────────────────
+
+        private static void ConfigureRuntimeSplatFloorLoader(RuntimeSplatFloorLoader floorLoader)
+        {
+            Undo.RecordObject(floorLoader, "Configure RuntimeSplatFloorLoader");
+
+            floorLoader.defaultSourceKind = RuntimeSplatFloorLoader.SplatSourceKind.WorldLabs;
+            floorLoader.looseSplatMirrorAxis = RuntimeSplatFloorLoader.MirrorAxis.Z;
+            floorLoader.autoPlaceAtOrigin = true;
+            floorLoader.attachEstimatedSpawnPose = true;
+            floorLoader.spawnEyeHeightMeters = 1.6f;
+            floorLoader.spawnLookDistanceMeters = 2f;
+            floorLoader.spawnEstimation ??= new SplatSpawnEstimatorSettings();
+            floorLoader.spawnEstimation.radialCaptureOpenSideOffsetFraction = 0.35f;
+            floorLoader.spawnEstimation.radialCaptureMaxOpenSideOffsetMeters = 2f;
+            floorLoader.spawnEstimation.preferNormalConsensusAsSpawn = true;
+            floorLoader.spawnEstimation.preferLongAxisConsensusAsSpawn = true;
+            floorLoader.spawnEstimation.preferOriginFallbackOverCandidateSearch = true;
+            floorLoader.spawnEstimation.refineSpawnYFromLocalFloor = true;
+            floorLoader.spawnEstimation.localFloorSearchRadiusFractionOfDiagonal = 0.06f;
+            floorLoader.spawnEstimation.localFloorMinRadiusMeters = 0.5f;
+            floorLoader.spawnEstimation.localFloorMaxHeightFraction = 0.5f;
+            floorLoader.spawnEstimation.localFloorPercentile = 0.08f;
+            floorLoader.spawnEstimation.minLocalFloorSamples = 24;
+
+            EditorUtility.SetDirty(floorLoader);
+        }
 
         private static GameObject EnsureRootObject(string objName)
         {

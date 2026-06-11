@@ -136,10 +136,14 @@ namespace SpeechIntent
                     top ? -cornerSize - verticalLength * 0.5f : cornerSize + verticalLength * 0.5f),
                 new Vector2(verticalThickness, verticalLength));
 
+            float outerCornerHeight = outerCorner.rectTransform.sizeDelta.y > 0f
+                ? outerCorner.rectTransform.sizeDelta.y
+                : cornerSize;
+
             SetFixed(outerCorner.rectTransform,
                 anchor,
-                new Vector2(left ? cornerSize * 0.5f : -cornerSize * 0.5f, top ? -cornerSize * 0.5f : cornerSize * 0.5f),
-                new Vector2(cornerSize, cornerSize));
+                new Vector2(left ? cornerSize * 0.5f : -cornerSize * 0.5f, top ? -outerCornerHeight * 0.5f : outerCornerHeight * 0.5f),
+                new Vector2(cornerSize, outerCornerHeight));
 
             SetFixed(innerCutout.rectTransform,
                 anchor,

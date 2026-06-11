@@ -71,6 +71,25 @@ namespace GaussianSplatting.Runtime
             }
         }
 
+        public void ResetForWorldSwitch()
+        {
+            if (m_CameraCommandBuffersDone != null && m_CommandBuffer != null)
+            {
+                foreach (var cam in m_CameraCommandBuffersDone)
+                {
+                    if (cam)
+                        cam.RemoveCommandBuffer(CameraEvent.BeforeForwardAlpha, m_CommandBuffer);
+                }
+            }
+
+            m_CameraCommandBuffersDone.Clear();
+            m_ActiveSplats.Clear();
+            m_Splats.Clear();
+            m_CommandBuffer?.Dispose();
+            m_CommandBuffer = null;
+            Camera.onPreCull -= OnPreCullCamera;
+        }
+
         public int CountAllGaussians()
         {
             int count = 0;
@@ -984,6 +1003,11 @@ namespace GaussianSplatting.Runtime
         public static int CompleteGaussianCount()
         {
             return GaussianSplatRenderSystem.instance.CountAllGaussians();
+        }
+
+        public static void ResetRenderSystemForWorldSwitch()
+        {
+            GaussianSplatRenderSystem.instance.ResetForWorldSwitch();
         }
 
 

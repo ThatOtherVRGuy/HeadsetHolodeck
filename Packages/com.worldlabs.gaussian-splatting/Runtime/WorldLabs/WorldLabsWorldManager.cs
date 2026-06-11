@@ -56,6 +56,8 @@ namespace WorldLabs.Runtime
         public bool clearLoadedWorldsBeforeLoad = true;
         [Tooltip("Run Resources.UnloadUnusedAssets after clearing the previous world and before loading the next one.")]
         public bool unloadUnusedAssetsBeforeLoad = true;
+        [Tooltip("Reset GaussianSplatRenderSystem after unloading worlds so stale command buffers, active splat lists, and render targets do not survive into the next load.")]
+        public bool resetSplatRenderSystemBeforeLoad = true;
         [Min(0), Tooltip("Frames to yield after destroying previous world objects before continuing a new load.")]
         public int loadCleanupFrameDelay = 2;
 
@@ -325,8 +327,10 @@ namespace WorldLabs.Runtime
 
             _cleanupVersion++;
             UnloadAllWorlds();
+            ResetSplatRenderSystemForWorldSwitch();
             for (int i = 0; i < loadCleanupFrameDelay; i++)
                 await Task.Yield();
+            ResetSplatRenderSystemForWorldSwitch();
 
             if (unloadUnusedAssetsBeforeLoad)
                 await UnloadUnusedAssetsAsync();
@@ -339,8 +343,10 @@ namespace WorldLabs.Runtime
 
             _cleanupVersion++;
             UnloadAllWorlds();
+            ResetSplatRenderSystemForWorldSwitch();
             for (int i = 0; i < loadCleanupFrameDelay; i++)
                 yield return null;
+            ResetSplatRenderSystemForWorldSwitch();
 
             if (unloadUnusedAssetsBeforeLoad)
                 yield return Resources.UnloadUnusedAssets();
@@ -364,6 +370,8 @@ namespace WorldLabs.Runtime
         {
             for (int i = 0; i < loadCleanupFrameDelay; i++)
                 yield return null;
+
+            ResetSplatRenderSystemForWorldSwitch();
 
             if (unloadUnusedAssetsBeforeLoad)
                 yield return Resources.UnloadUnusedAssets();
@@ -459,6 +467,14 @@ namespace WorldLabs.Runtime
             while (op != null && !op.isDone)
                 await Task.Yield();
             GC.Collect();
+        }
+
+        void ResetSplatRenderSystemForWorldSwitch()
+        {
+            if (!resetSplatRenderSystemBeforeLoad)
+                return;
+
+            GaussianSplatRenderer.ResetRenderSystemForWorldSwitch();
         }
 
         void AssignShaders(GaussianSplatRenderer r)

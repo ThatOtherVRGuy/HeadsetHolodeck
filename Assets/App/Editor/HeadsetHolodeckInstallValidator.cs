@@ -290,7 +290,11 @@ namespace HeadsetHolodeck.Editor
             CheckEnvKey(env, "XENO_CANTO_API_KEY", false);
             CheckEnvKey(env, "MESHY_API_KEY", false);
             CheckEnvKey(env, "TRIPO_API_KEY", false);
-            CheckEnvKey(env, "HITEM_API_KEY", false);
+            CheckEnvKey(env, "THREEDAISTUDIO_API_KEY", false);
+            CheckEnvKey(env, "THREEDAISTUDIO_BASE_URL", false);
+            CheckEnvKey(env, "HITEM_ACCESS_KEY", false);
+            CheckEnvKey(env, "HITEM_SECRET_KEY", false);
+            CheckEnvKey(env, "HITEM_BASE_URL", false);
         }
 
         void CheckEnvKey(Dictionary<string, string> env, string key, bool required)

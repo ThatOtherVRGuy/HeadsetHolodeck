@@ -136,3 +136,7 @@ DevProject~/.idea/
 Tools~/output/
 Tools~/.build-ios/
 **/.DS_Store
+
+# Headset Holodeck vendors this package directly, but does not need the
+# package author's standalone development Unity project.
+DevProject~/

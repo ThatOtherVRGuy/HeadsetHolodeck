@@ -8,12 +8,15 @@ namespace Holodeck.Direct
         [Header("Optional API Keys")]
         [SerializeField] string meshyApiKey = "";
         [SerializeField] string tripoApiKey = "";
-        [SerializeField] string hitemApiKey = "";
+        [SerializeField] string threeDAIStudioApiKey = "";
+        [SerializeField] string hitemAccessKey = "";
+        [SerializeField] string hitemSecretKey = "";
 
         public bool IsConfigured =>
             !string.IsNullOrWhiteSpace(meshyApiKey) ||
             !string.IsNullOrWhiteSpace(tripoApiKey) ||
-            !string.IsNullOrWhiteSpace(hitemApiKey) ||
+            !string.IsNullOrWhiteSpace(threeDAIStudioApiKey) ||
+            (!string.IsNullOrWhiteSpace(hitemAccessKey) && !string.IsNullOrWhiteSpace(hitemSecretKey)) ||
             HasRuntimeKey();
 
         public static bool IsAnyProviderConfigured()
@@ -26,7 +29,8 @@ namespace Holodeck.Direct
         {
             return HasRuntimeKey("MESHY_API_KEY") ||
                    HasRuntimeKey("TRIPO_API_KEY") ||
-                   HasRuntimeKey("HITEM_API_KEY");
+                   HasRuntimeKey("THREEDAISTUDIO_API_KEY") ||
+                   (HasRuntimeKey("HITEM_ACCESS_KEY") && HasRuntimeKey("HITEM_SECRET_KEY"));
         }
 
         static bool HasRuntimeKey(string key)

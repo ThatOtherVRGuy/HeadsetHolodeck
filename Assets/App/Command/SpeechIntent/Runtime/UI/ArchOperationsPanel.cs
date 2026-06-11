@@ -13,7 +13,8 @@ namespace SpeechIntent
             WorldLabs,
             ContentLoading,
             CameraCapture,
-            ImageSearch
+            ImageSearch,
+            ObjectCatalog
         }
 
         public DefaultPanel defaultPanel = DefaultPanel.MyWorlds;
@@ -22,14 +23,32 @@ namespace SpeechIntent
         public GameObject contentLoadingPanel;
         public GameObject cameraCapturePanel;
         public GameObject imageSearchPanel;
+        public GameObject objectCatalogPanel;
         public PixabayImageSearchService pixabayImageSearchService;
+
+        [Header("Startup Preload")]
+        public bool preloadObjectCatalogOnStartup = true;
+        [Min(0)] public int objectCatalogPreloadDelayFrames = 4;
+
         GameObject _activePanel;
+        Coroutine _objectCatalogPreloadCoroutine;
 
         void OnEnable()
         {
             ResolveServices();
-            if (worldLabsPanel != null || myWorldsPanel != null || contentLoadingPanel != null || cameraCapturePanel != null || imageSearchPanel != null)
+            if (worldLabsPanel != null || myWorldsPanel != null || contentLoadingPanel != null || cameraCapturePanel != null || imageSearchPanel != null || objectCatalogPanel != null)
                 ShowDefault();
+            if (preloadObjectCatalogOnStartup && objectCatalogPanel != null)
+                _objectCatalogPreloadCoroutine = StartCoroutine(PreloadObjectCatalogAfterStartup());
+        }
+
+        void OnDisable()
+        {
+            if (_objectCatalogPreloadCoroutine != null)
+            {
+                StopCoroutine(_objectCatalogPreloadCoroutine);
+                _objectCatalogPreloadCoroutine = null;
+            }
         }
 
         public void ShowDefault()
@@ -48,6 +67,9 @@ namespace SpeechIntent
                 case DefaultPanel.ImageSearch:
                     ShowImageSearch();
                     break;
+                case DefaultPanel.ObjectCatalog:
+                    ShowObjectCatalog();
+                    break;
                 default:
                     ShowMyWorlds();
                     break;
@@ -59,6 +81,22 @@ namespace SpeechIntent
         public void ShowContentLoading() => ShowOnly(contentLoadingPanel);
         public void ShowCameraCapture() => ShowOnly(cameraCapturePanel);
         public void ShowImageSearch() => ShowOnly(imageSearchPanel);
+        public void ShowObjectCatalog() => ShowOnly(objectCatalogPanel);
+
+        System.Collections.IEnumerator PreloadObjectCatalogAfterStartup()
+        {
+            int frames = Mathf.Max(0, objectCatalogPreloadDelayFrames);
+            for (int i = 0; i < frames; i++)
+                yield return null;
+
+            CachedObjectCatalogPanel catalog = objectCatalogPanel != null
+                ? objectCatalogPanel.GetComponent<CachedObjectCatalogPanel>()
+                : null;
+            if (catalog != null && objectCatalogPanel != _activePanel)
+                catalog.RefreshInBackground(this);
+
+            _objectCatalogPreloadCoroutine = null;
+        }
 
         void ShowOnly(GameObject target)
         {
@@ -68,6 +106,7 @@ namespace SpeechIntent
             SetActive(contentLoadingPanel, contentLoadingPanel == target);
             SetActive(cameraCapturePanel, cameraCapturePanel == target);
             SetActive(imageSearchPanel, imageSearchPanel == target);
+            SetActive(objectCatalogPanel, objectCatalogPanel == target);
             ApplyStyle();
         }
 
@@ -83,6 +122,7 @@ namespace SpeechIntent
             LcarsPanelStyler.StylePanel(contentLoadingPanel);
             LcarsPanelStyler.StylePanel(cameraCapturePanel);
             LcarsPanelStyler.StylePanel(imageSearchPanel);
+            LcarsPanelStyler.StylePanel(objectCatalogPanel);
 
             foreach (Button button in GetComponentsInChildren<Button>(true))
             {
@@ -90,7 +130,8 @@ namespace SpeechIntent
                     BelongsTo(button.gameObject, myWorldsPanel) ||
                     BelongsTo(button.gameObject, contentLoadingPanel) ||
                     BelongsTo(button.gameObject, cameraCapturePanel) ||
-                    BelongsTo(button.gameObject, imageSearchPanel))
+                    BelongsTo(button.gameObject, imageSearchPanel) ||
+                    BelongsTo(button.gameObject, objectCatalogPanel))
                 {
                     continue;
                 }
@@ -103,7 +144,8 @@ namespace SpeechIntent
                     (_activePanel == myWorldsPanel && (label.Contains("my worlds") || label == "load")) ||
                     (_activePanel == contentLoadingPanel && label.Contains("files")) ||
                     (_activePanel == cameraCapturePanel && label.Contains("camera")) ||
-                    (_activePanel == imageSearchPanel && label.Contains("image"));
+                    (_activePanel == imageSearchPanel && label.Contains("image")) ||
+                    (_activePanel == objectCatalogPanel && label.Contains("objects"));
                 LcarsPanelStyler.StyleNavButton(button, active);
             }
         }

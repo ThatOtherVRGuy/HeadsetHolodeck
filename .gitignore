@@ -14,6 +14,7 @@
 /Assets/_Recovery/
 *.log
 *.slnx
+.DS_Store
 
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be commited to version control.
 *.blend1
@@ -104,3 +105,6 @@ InitTestScene*.unity*
 
 # Local secrets — never commit
 .env
+
+# Vendored package development projects are not needed by this Unity app.
+/Packages/com.ponyudev.sherpa-onnx/DevProject~/

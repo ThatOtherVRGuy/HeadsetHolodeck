@@ -27,8 +27,22 @@ namespace Holodeck.Save.Tests
                     cached_splat = "../CachedWorlds/abc123.spz",
                     cached_pano  = null
                 },
+                world_transform = new WorldTransformData
+                {
+                    position = new UnityEngine.Vector3(1f, 2f, 3f),
+                    rotation = UnityEngine.Quaternion.Euler(0f, 45f, 0f),
+                    scale = new UnityEngine.Vector3(2f, 2f, 2f)
+                },
                 lighting = new LightingData { preset = "Golden Hour", sun_azimuth = 220f, sun_elevation = 35f }
             };
+            config.spawn_points.Add(new SpawnPointData
+            {
+                name = "Entry",
+                source = "manual",
+                position = new UnityEngine.Vector3(1f, 1.6f, 2f),
+                rotation = UnityEngine.Quaternion.Euler(0f, 90f, 0f),
+                created_at = "2026-04-15T10:35:00Z"
+            });
             config.prompts.Add(new PromptEntry
             {
                 timestamp  = "2026-04-15T10:30:00Z",
@@ -67,6 +81,16 @@ namespace Holodeck.Save.Tests
             Assert.AreEqual(1.2f, (float)restored.objects[0].components[0].data["position"]["x"], 0.001f);
             Assert.AreEqual(1, restored.schema_version);
             Assert.AreEqual(220f, restored.lighting.sun_azimuth, 0.001f);
+            Assert.IsNotNull(restored.world_transform);
+            Assert.AreEqual(2f, restored.world_transform.position.y, 0.001f);
+            Assert.AreEqual(45f, ((UnityEngine.Quaternion)restored.world_transform.rotation).eulerAngles.y, 0.001f);
+            Assert.AreEqual(2f, restored.world_transform.scale.x, 0.001f);
+            Assert.AreEqual(1, restored.spawn_points.Count);
+            Assert.AreEqual("Entry", restored.spawn_points[0].name);
+            Assert.AreEqual("manual", restored.spawn_points[0].source);
+            Assert.AreEqual(1f, restored.spawn_points[0].position.x, 0.001f);
+            UnityEngine.Quaternion restoredRotation = restored.spawn_points[0].rotation;
+            Assert.AreEqual(90f, restoredRotation.eulerAngles.y, 0.001f);
         }
 
         [Test]
@@ -86,6 +110,7 @@ namespace Holodeck.Save.Tests
             Assert.IsNull(restored.world_source.world_id);
             Assert.AreEqual(0, restored.prompts.Count);
             Assert.AreEqual(0, restored.objects.Count);
+            Assert.AreEqual(0, restored.spawn_points.Count);
         }
     }
 }

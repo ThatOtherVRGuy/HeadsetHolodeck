@@ -21,6 +21,7 @@ CGPROGRAM
 #include "Packages/com.worldlabs.gaussian-splatting/Shaders/GaussianSplatting.hlsl"
 
 StructuredBuffer<uint> _OrderBuffer;
+Texture2D _CameraDepthTexture;
 
 struct v2f
 {
@@ -89,6 +90,15 @@ v2f vert (uint vtxID : SV_VertexID, uint instID : SV_InstanceID)
 
 half4 frag (v2f i) : SV_Target
 {
+	float sceneDepth = _CameraDepthTexture.Load(int3(i.vertex.xy, 0)).r;
+#if UNITY_REVERSED_Z
+	if (sceneDepth > 0.000001 && i.vertex.z < sceneDepth - 0.0001)
+		discard;
+#else
+	if (sceneDepth < 0.999999 && i.vertex.z > sceneDepth + 0.0001)
+		discard;
+#endif
+
 	float power = -dot(i.pos, i.pos);
 	half alpha = exp(power);
 	if (i.col.a >= 0)

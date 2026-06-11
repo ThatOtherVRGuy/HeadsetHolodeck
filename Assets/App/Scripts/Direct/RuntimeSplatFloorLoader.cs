@@ -24,22 +24,62 @@ namespace WorldLabs.Runtime.Tools
             VeryLow
         }
 
+        public enum SplatSourceKind
+        {
+            WorldLabs,
+            LooseSplat
+        }
+
+        public enum MirrorAxis
+        {
+            None,
+            X,
+            Y,
+            Z
+        }
+
+        public struct SourceOrientation
+        {
+            public Quaternion rotation;
+            public Vector3 scale;
+
+            public Matrix4x4 Matrix => Matrix4x4.TRS(Vector3.zero, rotation, scale);
+        }
+
         [Header("Parent")]
         [Tooltip("Parent transform for spawned worlds. Uses this transform if null.")]
         public Transform worldParent;
 
         [Header("Placement")]
-        [Tooltip("Apply the same -180 X rotation used by WorldLabsWorldManager.")]
+        [Tooltip("Legacy toggle. When true, default sourceKind is WorldLabs; when false, identity is used unless sourceKind is overridden by the caller.")]
         public bool applyWorldLabsDefaultRotation = true;
+
+        [Tooltip("Default source orientation for loader calls that do not pass an explicit source kind.")]
+        public SplatSourceKind defaultSourceKind = SplatSourceKind.WorldLabs;
+
+        [Tooltip("Loose .ply/.spz files need +90 X plus a mirror. Z matches the current local import convention.")]
+        public MirrorAxis looseSplatMirrorAxis = MirrorAxis.Z;
 
         [Tooltip("If true, move the loaded splat so the detected floor is at Y=0 and floor center is at X=Z=0.")]
         public bool autoPlaceAtOrigin = true;
+
+        [Tooltip("Attach an estimated player spawn pose to loaded splats so PlayerOriginController can place Me inside the world.")]
+        public bool attachEstimatedSpawnPose = true;
+
+        [Min(0.1f)]
+        public float spawnEyeHeightMeters = 1.6f;
+
+        [Min(0.25f)]
+        public float spawnLookDistanceMeters = 2f;
 
         [Header("Processing")]
         public SplatQualityPreset quality = SplatQualityPreset.Medium;
 
         [Header("Floor Detection")]
         public SplatFloorAnalysisOptions floorAnalysis = new();
+
+        [Header("Spawn Estimation")]
+        public SplatSpawnEstimatorSettings spawnEstimation = new();
 
         [Header("Shaders")]
         [HideInInspector] public Shader splatShader;
@@ -56,6 +96,7 @@ namespace WorldLabs.Runtime.Tools
             public GaussianSplatRenderer renderer;
             public RuntimeSplatData runtimeData;
             public SplatFloorEstimate floorEstimate;
+            public SplatSpawnMetadata spawnMetadata;
         }
 
         void Awake()
@@ -74,30 +115,48 @@ namespace WorldLabs.Runtime.Tools
             string worldId = null,
             string worldName = null,
             string thumbnailUrl = null,
-            string gameObjectName = null)
+            string gameObjectName = null,
+            SplatSourceKind? sourceKind = null,
+            SplatSpawnMetadata savedSpawnMetadata = null)
         {
             if (spzBytes == null || spzBytes.Length == 0)
                 throw new ArgumentException("SPZ bytes are null or empty.", nameof(spzBytes));
 
             EnsureShaders();
 
-            Quaternion localRotation = applyWorldLabsDefaultRotation
-                ? Quaternion.Euler(-180f, 0f, 0f)
-                : Quaternion.identity;
+            SourceOrientation orientation = ResolveSourceOrientation(ResolveSourceKind(sourceKind), looseSplatMirrorAxis);
 
             // Analyze in the same local coordinate system the spawned object will use.
             floorAnalysis ??= new SplatFloorAnalysisOptions();
-            floorAnalysis.positionTransform = Matrix4x4.Rotate(localRotation);
-
-            SplatFloorEstimate floorEstimate = SplatFloorAnalyzer.AnalyzeSpzBytes(spzBytes, floorAnalysis);
+            floorAnalysis.positionTransform = orientation.Matrix;
 
             var (posFormat, scaleFormat, colorFormat, shFormat) = GetFormats(quality);
-            RuntimeSplatData data = RuntimeSplatProcessing.ProcessSPZBytes(
-                spzBytes,
-                posFormat,
-                scaleFormat,
-                colorFormat,
-                shFormat);
+            SplatFloorEstimate floorEstimate;
+            SplatSpawnMetadata spawnMetadata;
+            RuntimeSplatData data;
+            NativeArray<InputSplatData> inputSplats = default;
+            try
+            {
+                SPZFileReader.ReadFile(spzBytes, out inputSplats);
+                floorEstimate = SplatFloorAnalyzer.AnalyzeSplats(inputSplats, floorAnalysis);
+                spawnMetadata = ResolveSpawnMetadata(
+                    savedSpawnMetadata,
+                    inputSplats,
+                    orientation.Matrix,
+                    worldName,
+                    floorEstimate);
+                data = RuntimeSplatProcessing.Process(
+                    inputSplats,
+                    posFormat,
+                    scaleFormat,
+                    colorFormat,
+                    shFormat);
+            }
+            finally
+            {
+                if (inputSplats.IsCreated)
+                    inputSplats.Dispose();
+            }
 
             data.worldId = worldId;
             data.worldName = worldName;
@@ -109,10 +168,12 @@ namespace WorldLabs.Runtime.Tools
 
             var go = new GameObject(goName);
             go.transform.SetParent(worldParent, false);
-            go.transform.localRotation = localRotation;
+            go.transform.localRotation = orientation.rotation;
+            go.transform.localScale = orientation.scale;
             go.transform.localPosition = autoPlaceAtOrigin && floorEstimate != null && floorEstimate.success
                 ? floorEstimate.recommendedLocalPosition
                 : Vector3.zero;
+            AttachSpawnPose(go, floorEstimate, spawnMetadata);
 
             var renderer = go.AddComponent<GaussianSplatRenderer>();
             AssignShaders(renderer);
@@ -123,7 +184,8 @@ namespace WorldLabs.Runtime.Tools
                 gameObject = go,
                 renderer = renderer,
                 runtimeData = data,
-                floorEstimate = floorEstimate
+                floorEstimate = floorEstimate,
+                spawnMetadata = spawnMetadata
             };
         }
 
@@ -137,34 +199,50 @@ namespace WorldLabs.Runtime.Tools
             string worldId = null,
             string worldName = null,
             string thumbnailUrl = null,
-            string gameObjectName = null)
+            string gameObjectName = null,
+            SplatSourceKind? sourceKind = null,
+            SplatSpawnMetadata savedSpawnMetadata = null)
         {
             if (spzBytes == null || spzBytes.Length == 0)
                 throw new ArgumentException("SPZ bytes are null or empty.", nameof(spzBytes));
 
             EnsureShaders();
 
-            Quaternion localRotation = applyWorldLabsDefaultRotation
-                ? Quaternion.Euler(-180f, 0f, 0f)
-                : Quaternion.identity;
+            SourceOrientation orientation = ResolveSourceOrientation(ResolveSourceKind(sourceKind), looseSplatMirrorAxis);
 
             SplatFloorAnalysisOptions opts = floorAnalysis ?? new SplatFloorAnalysisOptions();
-            opts.positionTransform = Matrix4x4.Rotate(localRotation);
+            opts.positionTransform = orientation.Matrix;
 
             var (posFormat, scaleFormat, colorFormat, shFormat) = GetFormats(quality);
 
-            var (floorEstimate, data) = await Task.Run(() =>
+            var (floorEstimate, spawnMetadata, data) = await Task.Run(() =>
             {
-                SplatFloorEstimate floorEstimate = SplatFloorAnalyzer.AnalyzeSpzBytes(spzBytes, opts);
+                NativeArray<InputSplatData> inputSplats = default;
+                try
+                {
+                    SPZFileReader.ReadFile(spzBytes, out inputSplats);
+                    SplatFloorEstimate floorEstimate = SplatFloorAnalyzer.AnalyzeSplats(inputSplats, opts);
+                    SplatSpawnMetadata spawnMetadata = ResolveSpawnMetadata(
+                        savedSpawnMetadata,
+                        inputSplats,
+                        orientation.Matrix,
+                        worldName,
+                        floorEstimate);
 
-                RuntimeSplatData data = RuntimeSplatProcessing.ProcessSPZBytes(
-                    spzBytes, posFormat, scaleFormat, colorFormat, shFormat);
+                    RuntimeSplatData data = RuntimeSplatProcessing.Process(
+                        inputSplats, posFormat, scaleFormat, colorFormat, shFormat);
 
-                data.worldId      = worldId;
-                data.worldName    = worldName;
-                data.thumbnailUrl = thumbnailUrl;
+                    data.worldId      = worldId;
+                    data.worldName    = worldName;
+                    data.thumbnailUrl = thumbnailUrl;
 
-                return (floorEstimate, data);
+                    return (floorEstimate, spawnMetadata, data);
+                }
+                finally
+                {
+                    if (inputSplats.IsCreated)
+                        inputSplats.Dispose();
+                }
             });
 
             // Back on the main thread; all Unity API calls go here.
@@ -176,10 +254,12 @@ namespace WorldLabs.Runtime.Tools
 
             var go = new GameObject(goName);
             go.transform.SetParent(worldParent, false);
-            go.transform.localRotation = localRotation;
+            go.transform.localRotation = orientation.rotation;
+            go.transform.localScale = orientation.scale;
             go.transform.localPosition = autoPlaceAtOrigin && floorEstimate != null && floorEstimate.success
                 ? floorEstimate.recommendedLocalPosition
                 : Vector3.zero;
+            AttachSpawnPose(go, floorEstimate, spawnMetadata);
 
             var renderer = go.AddComponent<GaussianSplatRenderer>();
             AssignShaders(renderer);
@@ -192,6 +272,7 @@ namespace WorldLabs.Runtime.Tools
                 renderer      = renderer,
                 runtimeData   = data,
                 floorEstimate = floorEstimate,
+                spawnMetadata = spawnMetadata,
             };
         }
 
@@ -204,27 +285,33 @@ namespace WorldLabs.Runtime.Tools
             NativeArray<InputSplatData> inputSplats,
             string worldId = null,
             string worldName = null,
-            string gameObjectName = null)
+            string gameObjectName = null,
+            SplatSourceKind? sourceKind = null,
+            SplatSpawnMetadata savedSpawnMetadata = null)
         {
             if (!inputSplats.IsCreated || inputSplats.Length == 0)
                 throw new ArgumentException("inputSplats is empty or not created.", nameof(inputSplats));
 
             EnsureShaders();
 
-            Quaternion localRotation = applyWorldLabsDefaultRotation
-                ? Quaternion.Euler(-180f, 0f, 0f)
-                : Quaternion.identity;
+            SourceOrientation orientation = ResolveSourceOrientation(ResolveSourceKind(sourceKind), looseSplatMirrorAxis);
 
             SplatFloorAnalysisOptions opts = floorAnalysis ?? new SplatFloorAnalysisOptions();
-            opts.positionTransform = Matrix4x4.Rotate(localRotation);
+            opts.positionTransform = orientation.Matrix;
 
             var (posFormat, scaleFormat, colorFormat, shFormat) = GetFormats(quality);
 
-            var (floorEstimate, data) = await Task.Run(() =>
+            var (floorEstimate, spawnMetadata, data) = await Task.Run(() =>
             {
                 try
                 {
                     SplatFloorEstimate floorEstimate = SplatFloorAnalyzer.AnalyzeSplats(inputSplats, opts);
+                    SplatSpawnMetadata spawnMetadata = ResolveSpawnMetadata(
+                        savedSpawnMetadata,
+                        inputSplats,
+                        orientation.Matrix,
+                        worldName,
+                        floorEstimate);
 
                     RuntimeSplatData data = RuntimeSplatProcessing.Process(
                         inputSplats, posFormat, scaleFormat, colorFormat, shFormat);
@@ -232,7 +319,7 @@ namespace WorldLabs.Runtime.Tools
                     data.worldId   = worldId;
                     data.worldName = worldName;
 
-                    return (floorEstimate, data);
+                    return (floorEstimate, spawnMetadata, data);
                 }
                 finally
                 {
@@ -248,10 +335,12 @@ namespace WorldLabs.Runtime.Tools
 
             var go = new GameObject(goName);
             go.transform.SetParent(worldParent, false);
-            go.transform.localRotation = localRotation;
+            go.transform.localRotation = orientation.rotation;
+            go.transform.localScale = orientation.scale;
             go.transform.localPosition = autoPlaceAtOrigin && floorEstimate != null && floorEstimate.success
                 ? floorEstimate.recommendedLocalPosition
                 : Vector3.zero;
+            AttachSpawnPose(go, floorEstimate, spawnMetadata);
 
             var renderer = go.AddComponent<GaussianSplatRenderer>();
             AssignShaders(renderer);
@@ -264,6 +353,7 @@ namespace WorldLabs.Runtime.Tools
                 renderer      = renderer,
                 runtimeData   = data,
                 floorEstimate = floorEstimate,
+                spawnMetadata = spawnMetadata,
             };
         }
 
@@ -279,6 +369,96 @@ namespace WorldLabs.Runtime.Tools
                 throw new ArgumentNullException(nameof(estimate));
 
             target.localPosition = estimate.recommendedLocalPosition;
+        }
+
+        public static SourceOrientation ResolveSourceOrientation(SplatSourceKind sourceKind, MirrorAxis looseMirrorAxis)
+        {
+            if (sourceKind == SplatSourceKind.WorldLabs)
+            {
+                return new SourceOrientation
+                {
+                    rotation = Quaternion.Euler(-180f, 0f, 0f),
+                    scale = Vector3.one
+                };
+            }
+
+            return new SourceOrientation
+            {
+                rotation = Quaternion.Euler(90f, 0f, 0f),
+                scale = MirrorScale(looseMirrorAxis)
+            };
+        }
+
+        SplatSpawnMetadata ResolveSpawnMetadata(
+            SplatSpawnMetadata savedSpawnMetadata,
+            NativeArray<InputSplatData> inputSplats,
+            Matrix4x4 orientationMatrix,
+            string worldName,
+            SplatFloorEstimate floorEstimate)
+        {
+            if (savedSpawnMetadata != null && savedSpawnMetadata.hasPose)
+                return savedSpawnMetadata;
+
+            return SplatSpawnEstimator.EstimateFromSplats(
+                inputSplats,
+                orientationMatrix,
+                spawnEstimation,
+                worldName,
+                null,
+                floorEstimate);
+        }
+
+        SplatSourceKind ResolveSourceKind(SplatSourceKind? sourceKind)
+        {
+            if (sourceKind.HasValue)
+                return sourceKind.Value;
+
+            if (!applyWorldLabsDefaultRotation)
+                return SplatSourceKind.LooseSplat;
+
+            return defaultSourceKind;
+        }
+
+        static Vector3 MirrorScale(MirrorAxis axis)
+        {
+            return axis switch
+            {
+                MirrorAxis.X => new Vector3(-1f, 1f, 1f),
+                MirrorAxis.Y => new Vector3(1f, -1f, 1f),
+                MirrorAxis.Z => new Vector3(1f, 1f, -1f),
+                _ => Vector3.one
+            };
+        }
+
+        void AttachSpawnPose(GameObject worldObject, SplatFloorEstimate estimate, SplatSpawnMetadata spawnMetadata)
+        {
+            if (!attachEstimatedSpawnPose || worldObject == null)
+                return;
+
+            SplatSpawnPose pose = worldObject.GetComponent<SplatSpawnPose>() ?? worldObject.AddComponent<SplatSpawnPose>();
+            if (spawnMetadata != null && spawnMetadata.hasPose)
+            {
+                pose.SetWorldPose(worldObject.transform, spawnMetadata.spawn, spawnMetadata.rotation, spawnMetadata.lookAt);
+                pose.confidence = spawnMetadata.confidence;
+                pose.method = spawnMetadata.method;
+                return;
+            }
+
+            if (estimate == null || !estimate.success)
+                return;
+
+            Vector3 playerPosition = new Vector3(0f, Mathf.Max(0.1f, spawnEyeHeightMeters), 0f);
+
+            Vector3 placedBoundsCenter = estimate.analyzedBounds.center + estimate.recommendedLocalPosition;
+            Vector3 lookTarget = new Vector3(placedBoundsCenter.x, Mathf.Max(0.1f, spawnEyeHeightMeters * 0.9f), placedBoundsCenter.z);
+            Vector3 forward = Vector3.ProjectOnPlane(lookTarget - playerPosition, Vector3.up);
+            if (forward.sqrMagnitude < 0.0001f)
+                forward = Vector3.forward;
+
+            Vector3 lookAt = playerPosition + forward.normalized * Mathf.Max(0.25f, spawnLookDistanceMeters);
+            pose.SetWorldPose(worldObject.transform, playerPosition, Quaternion.LookRotation(forward.normalized, Vector3.up), lookAt);
+            pose.confidence = Mathf.Clamp01(estimate.supportCount > 0 ? 0.65f : 0.25f);
+            pose.method = "floor_bounds_center_v1";
         }
 
         void AssignShaders(GaussianSplatRenderer r)

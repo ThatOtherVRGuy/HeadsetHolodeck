@@ -42,6 +42,21 @@ namespace SpeechIntent
         CaptureWorldThumbnail = 32,  // capture the current rendered world view as this world's card thumbnail
         CaptureWorldPanorama = 33,  // capture a 360 panorama from the current view and store it in this world's folder
         SetTargetMaterial = 34,  // change material/color/finish on an existing object or object group
+        CreateLight = 35,  // create a runtime point/spot/directional light or adjust ambient scene light
+        ModifyLight = 36,  // change color/intensity/range/cone/sun role for one or more runtime lights
+        SetProxyVisibility = 37,  // show/hide visual proxies for runtime lights, audio, or all proxy-enabled entities
+        SelectCachedObject = 38,  // reply to a saved-vs-new cached object choice
+        CancelGeneration = 39,  // cancel a pending object/world generation job
+        ContinueGeneration = 40,  // acknowledge a long-running generation job and keep waiting
+        AttachBehavior = 41,  // attach a curated runtime behavior such as spin, orbit, throw, or follow hand
+        StopBehavior = 42,  // stop one named behavior, behaviors on a target, or all runtime behaviors
+        ModifyPhysics = 43,  // change Rigidbody/gravity/mass properties on an existing object
+        SaveSpawnPoint = 44,  // save the current Me/XR origin pose into this world's spawn point list
+        NextSpawnPoint = 45,  // move Me to the next saved spawn point for the current world
+        PreviousSpawnPoint = 46,  // move Me to the previous saved spawn point for the current world
+        RemoveSpawnPoint = 47,  // remove the current/last-used spawn point from this world's spawn point list
+        RemoveAllSpawnPoints = 48,  // remove every saved spawn point from this world's spawn point list
+        SuggestSpawnPoint = 49,  // move Me to the current world's estimated spawn pose without saving it
     }
 
     [Serializable]
@@ -54,7 +69,8 @@ namespace SpeechIntent
         HeadForward = 4,
         WorldOrigin = 5,
         RelativeToMe = 6,
-        BodyAnchor = 7
+        BodyAnchor = 7,
+        RelativeToTarget = 8
     }
 
     [Serializable]
@@ -182,6 +198,15 @@ namespace SpeechIntent
         [Header("Lighting / Sun")]
         public string target_entity = "";
         public string lighting_preset = "";
+        [Tooltip("point, spot, directional, ambient, or flashlight. Flashlight creates a tight-cone spot light.")]
+        public string light_type = "";
+        [Tooltip("Color phrase for light creation/modification, e.g. yellow, warm white, red.")]
+        public string light_color_prompt = "";
+        [Tooltip("brighter, dimmer, redder, greener, bluer, warmer, cooler, set_color, set_intensity, set_range, set_spot_angle, set_sun.")]
+        public string light_action = "";
+        public float light_intensity = 0f;
+        public float light_range = 0f;
+        public float light_spot_angle = 0f;
         public HandSelection target_hand = HandSelection.None;
         public SpatialReferenceMode spatial_reference = SpatialReferenceMode.None;
         [Tooltip("Named user body anchor for spatial_reference=BodyAnchor. Head uses Main Camera/head; hands use active hand/controller sources.")]
@@ -190,12 +215,20 @@ namespace SpeechIntent
         [Header("Placement")]
         public string object_name = "";
         public string placement_mode = "surface";
+        [Tooltip("Desired created-object width in meters. Zero means keep default/imported size.")]
+        public float object_width_meters = 0f;
+        [Tooltip("When true, created object should not fall under gravity.")]
+        public bool object_weightless = false;
+        [Tooltip("use_saved, create_new, or cancel for SelectCachedObject.")]
+        public string object_choice_action = "";
 
         [Header("Target Resolution")]
         public TargetReferenceMode target_reference = TargetReferenceMode.None;
         public string target_name = "";
         [Tooltip("Optional material/color/finish qualifier for target resolution, e.g. 'red' in 'the red cube'.")]
         public string target_material_prompt = "";
+        [Tooltip("Optional spatial ranking qualifier for target resolution. Supported values: topmost, bottommost.")]
+        public string target_spatial_qualifier = "";
 
         [Header("Transform Commands")]
         public float scale_multiplier = 1f;
@@ -210,6 +243,33 @@ namespace SpeechIntent
         [Header("Material Commands")]
         [Tooltip("New material/color/finish to apply, such as 'red', 'red metallic', or 'matte black'.")]
         public string material_prompt = "";
+
+        [Header("Physics Commands")]
+        [Tooltip("set_weightless, enable_gravity, disable_gravity, or set_mass.")]
+        public string physics_action = "";
+        [Tooltip("Optional mass value for set_mass. Zero means not specified.")]
+        public float physics_mass = 0f;
+
+        [Header("Runtime Proxies")]
+        [Tooltip("all, light, audio, or a future proxy category.")]
+        public string proxy_category = "";
+        public bool proxy_visible = false;
+
+        [Header("Runtime Behaviors")]
+        [Tooltip("Curated behavior name such as spin, orbit, throw, follow_hand, or attach_to_hand.")]
+        public string behavior_name = "";
+        [Tooltip("start, stop, toggle, or a behavior-specific action.")]
+        public string behavior_action = "";
+        [Tooltip("Optional secondary target for behaviors such as orbit or throw.")]
+        public string behavior_secondary_target_name = "";
+        [Tooltip("Speed parameter for behavior commands. Units depend on behavior: degrees/second for spin/orbit, meters/second for throw.")]
+        public float behavior_speed = 0f;
+        [Tooltip("Radius in meters for orbit-style behaviors.")]
+        public float behavior_radius = 0f;
+        [Tooltip("Axis hint such as x, y, z, up, right, forward, local_up, or world_up.")]
+        public string behavior_axis = "";
+        [Tooltip("When true, stop every runtime behavior in the scene.")]
+        public bool behavior_stop_all = false;
 
         [Header("World Generation Model")]
         [Tooltip("Target model tier for SetGenerationModel intent. Values: draft, fast, standard, high.")]

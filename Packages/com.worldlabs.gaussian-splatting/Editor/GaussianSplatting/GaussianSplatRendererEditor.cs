@@ -331,14 +331,17 @@ namespace GaussianSplatting.Editor
 
             DrawSeparator();
             bool wasToolActive = ToolManager.activeContextType == typeof(GaussianToolContext);
+            var asset = gs.asset;
+            bool hasAsset = asset != null;
             GUILayout.BeginHorizontal();
             bool isToolActive = GUILayout.Toggle(wasToolActive, "Edit", EditorStyles.miniButton);
             using (new EditorGUI.DisabledScope(!gs.editModified))
             {
                 if (GUILayout.Button("Reset", GUILayout.ExpandWidth(false)))
                 {
+                    string assetName = hasAsset ? asset.name : "runtime data";
                     if (EditorUtility.DisplayDialog("Reset Splat Modifications?",
-                            $"This will reset edits of {gs.name} to match the {gs.asset.name} asset. Continue?",
+                            $"This will reset edits of {gs.name} to match the {assetName}. Continue?",
                             "Yes, reset", "Cancel"))
                     {
                         gs.enabled = false;
@@ -360,7 +363,7 @@ namespace GaussianSplatting.Editor
                 ToolManager.SetActiveContext<GameObjectToolContext>();
             }
 
-            if (isToolActive && gs.asset.chunkDataSize > 0)
+            if (isToolActive && hasAsset && asset.chunkDataSize > 0)
             {
                 EditorGUILayout.HelpBox("Splat move/rotate/scale tools need Very High splat quality preset", MessageType.Warning);
             }
@@ -372,7 +375,9 @@ namespace GaussianSplatting.Editor
                 GaussianCutout cutout = ObjectFactory.CreateGameObject("GSCutout", typeof(GaussianCutout)).GetComponent<GaussianCutout>();
                 Transform cutoutTr = cutout.transform;
                 cutoutTr.SetParent(gs.transform, false);
-                cutoutTr.localScale = (gs.asset.boundsMax - gs.asset.boundsMin) * 0.25f;
+                cutoutTr.localScale = hasAsset
+                    ? (asset.boundsMax - asset.boundsMin) * 0.25f
+                    : Vector3.one;
                 gs.m_Cutouts ??= Array.Empty<GaussianCutout>();
                 ArrayUtility.Add(ref gs.m_Cutouts, cutout);
                 gs.UpdateEditCountsAndBounds();
@@ -398,25 +403,33 @@ namespace GaussianSplatting.Editor
             bool hasCutouts = gs.m_Cutouts != null && gs.m_Cutouts.Length != 0;
             bool modifiedOrHasCutouts = gs.editModified || hasCutouts;
 
-            var asset = gs.asset;
             EditorGUILayout.Space();
-            EditorGUI.BeginChangeCheck();
-            m_ExportBakeTransform = EditorGUILayout.Toggle("Export in world space", m_ExportBakeTransform);
-            if (EditorGUI.EndChangeCheck())
-            {
-                EditorPrefs.SetBool(kPrefExportBake, m_ExportBakeTransform);
-            }
-
-            if (GUILayout.Button("Export PLY"))
-                ExportPlyFile(gs, m_ExportBakeTransform);
-            if (asset.posFormat > GaussianSplatAsset.VectorFormat.Norm16 ||
-                asset.scaleFormat > GaussianSplatAsset.VectorFormat.Norm16 ||
-                asset.colorFormat > GaussianSplatAsset.ColorFormat.Float16x4 ||
-                asset.shFormat > GaussianSplatAsset.SHFormat.Float16)
+            if (!hasAsset)
             {
                 EditorGUILayout.HelpBox(
-                    "It is recommended to use High or VeryHigh quality preset for editing splats, lower levels are lossy",
-                    MessageType.Warning);
+                    "This renderer was loaded from runtime data and has no GaussianSplatAsset. Asset-only edit/export controls are unavailable.",
+                    MessageType.Info);
+            }
+            else
+            {
+                EditorGUI.BeginChangeCheck();
+                m_ExportBakeTransform = EditorGUILayout.Toggle("Export in world space", m_ExportBakeTransform);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    EditorPrefs.SetBool(kPrefExportBake, m_ExportBakeTransform);
+                }
+
+                if (GUILayout.Button("Export PLY"))
+                    ExportPlyFile(gs, m_ExportBakeTransform);
+                if (asset.posFormat > GaussianSplatAsset.VectorFormat.Norm16 ||
+                    asset.scaleFormat > GaussianSplatAsset.VectorFormat.Norm16 ||
+                    asset.colorFormat > GaussianSplatAsset.ColorFormat.Float16x4 ||
+                    asset.shFormat > GaussianSplatAsset.SHFormat.Float16)
+                {
+                    EditorGUILayout.HelpBox(
+                        "It is recommended to use High or VeryHigh quality preset for editing splats, lower levels are lossy",
+                        MessageType.Warning);
+                }
             }
 
             bool displayEditStats = isToolActive || modifiedOrHasCutouts;
@@ -455,6 +468,9 @@ namespace GaussianSplatting.Editor
             var gs = target as GaussianSplatRenderer;
             if (!gs || !gs.HasValidRenderSetup)
                 return new Bounds(Vector3.zero, Vector3.one);
+            if (gs.asset == null)
+                return new Bounds(gs.transform.position, Vector3.one);
+
             Bounds bounds = default;
             bounds.SetMinMax(gs.asset.boundsMin, gs.asset.boundsMax);
             if (gs.editSelectedSplats > 0)

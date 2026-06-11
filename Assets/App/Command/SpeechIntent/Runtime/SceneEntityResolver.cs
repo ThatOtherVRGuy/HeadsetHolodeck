@@ -74,8 +74,9 @@ namespace SpeechIntent
             bool all = command.target_reference == TargetReferenceMode.All || IsAllToken(command.target_name);
             string targetLabel = FirstNonEmpty(command.target_name, command.object_name, command.target_entity);
             string materialPrompt = command.target_material_prompt;
+            string spatialQualifier = NormalizeSpatialQualifier(command.target_spatial_qualifier);
             ExtractMaterialQualifierForCommand(ref targetLabel, ref materialPrompt);
-            string displayLabel = BuildDisplayLabel(materialPrompt, targetLabel);
+            string displayLabel = BuildDisplayLabel(materialPrompt, targetLabel, spatialQualifier);
 
             if (command.target_reference == TargetReferenceMode.PointedObject)
             {
@@ -89,6 +90,14 @@ namespace SpeechIntent
                     string mismatch = string.IsNullOrWhiteSpace(displayLabel)
                         ? "That object does not match."
                         : $"That is not a {displayLabel}.";
+                    return SceneTargetResolution.None(mismatch);
+                }
+
+                if (!MatchesSpatialQualifier(pointed, targetLabel, materialPrompt, spatialQualifier))
+                {
+                    string mismatch = string.IsNullOrWhiteSpace(displayLabel)
+                        ? "That object does not match."
+                        : $"That is not the {displayLabel}.";
                     return SceneTargetResolution.None(mismatch);
                 }
 
@@ -113,7 +122,16 @@ namespace SpeechIntent
             if (command.target_reference == TargetReferenceMode.CurrentSelection)
                 return FromDirectTarget(interactionMemory != null ? interactionMemory.currentSelection : null, displayLabel, materialPrompt);
 
-            List<GameObject> matches = FindMatchingTargets(targetLabel, materialPrompt);
+            List<GameObject> matches = FindMatchingTargets(targetLabel, materialPrompt, spatialQualifier);
+            if (!all && !string.IsNullOrWhiteSpace(spatialQualifier) && matches.Count > 1)
+            {
+                return new SceneTargetResolution
+                {
+                    status = SceneTargetResolutionStatus.Ambiguous,
+                    targets = matches,
+                    message = BuildUnclearSpatialQualifierMessage(materialPrompt, targetLabel, spatialQualifier)
+                };
+            }
             return SceneTargetResolution.FromTargets(matches, displayLabel, all);
         }
 
@@ -283,7 +301,7 @@ namespace SpeechIntent
             return null;
         }
 
-        private List<GameObject> FindMatchingTargets(string targetName, string materialPrompt)
+        private List<GameObject> FindMatchingTargets(string targetName, string materialPrompt, string spatialQualifier = "")
         {
             var targets = new List<GameObject>();
             var seen = new HashSet<int>();
@@ -302,7 +320,24 @@ namespace SpeechIntent
                     targets.Add(candidate);
             }
 
-            return targets;
+            Transform[] transforms = FindSearchTransforms();
+            foreach (Transform transform in transforms)
+            {
+                if (transform == null || transform.gameObject == null)
+                    continue;
+
+                GameObject candidate = NormalizeTrackableRoot(transform.gameObject);
+                if (candidate == null)
+                    continue;
+
+                if (!MatchesNameAndMaterial(candidate, targetName, materialPrompt))
+                    continue;
+
+                if (seen.Add(candidate.GetInstanceID()))
+                    targets.Add(candidate);
+            }
+
+            return ApplySpatialQualifier(targets, spatialQualifier);
         }
 
         private SceneTargetResolution FromDirectTarget(GameObject target, string label, string materialPrompt)
@@ -426,13 +461,185 @@ namespace SpeechIntent
             }
         }
 
-        private static string BuildDisplayLabel(string materialPrompt, string targetLabel)
+        private bool MatchesSpatialQualifier(GameObject candidate, string targetName, string materialPrompt, string spatialQualifier)
         {
+            if (string.IsNullOrWhiteSpace(spatialQualifier))
+                return true;
+
+            List<GameObject> matches = FindMatchingTargets(targetName, materialPrompt, "");
+            List<GameObject> filtered = ApplySpatialQualifier(matches, spatialQualifier);
+            foreach (GameObject target in filtered)
+            {
+                if (target == candidate)
+                    return true;
+            }
+            return false;
+        }
+
+        private static List<GameObject> ApplySpatialQualifier(List<GameObject> targets, string spatialQualifier)
+        {
+            if (targets == null || targets.Count <= 1 || string.IsNullOrWhiteSpace(spatialQualifier))
+                return targets ?? new List<GameObject>();
+
+            string qualifier = NormalizeSpatialQualifier(spatialQualifier);
+            if (qualifier != "topmost" && qualifier != "bottommost")
+                return targets;
+
+            var result = new List<GameObject>();
+            float best = qualifier == "topmost" ? float.NegativeInfinity : float.PositiveInfinity;
+            const float tolerance = 0.01f;
+
+            foreach (GameObject target in targets)
+            {
+                if (target == null)
+                    continue;
+
+                float value = GetBoundsCenterY(target);
+                if (qualifier == "topmost")
+                {
+                    if (value > best + tolerance)
+                    {
+                        result.Clear();
+                        result.Add(target);
+                        best = value;
+                    }
+                    else if (Mathf.Abs(value - best) <= tolerance)
+                    {
+                        result.Add(target);
+                    }
+                }
+                else
+                {
+                    if (value < best - tolerance)
+                    {
+                        result.Clear();
+                        result.Add(target);
+                        best = value;
+                    }
+                    else if (Mathf.Abs(value - best) <= tolerance)
+                    {
+                        result.Add(target);
+                    }
+                }
+            }
+
+            if (result.Count == 1 && !HasHorizontalOverlapWithAny(result[0], targets))
+                return targets;
+
+            return result;
+        }
+
+        private static bool HasHorizontalOverlapWithAny(GameObject target, List<GameObject> targets)
+        {
+            if (target == null || targets == null || !TryGetWorldBounds(target, out Bounds targetBounds))
+                return false;
+
+            foreach (GameObject other in targets)
+            {
+                if (other == null || other == target || !TryGetWorldBounds(other, out Bounds otherBounds))
+                    continue;
+
+                if (OverlapsHorizontal(targetBounds, otherBounds))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool OverlapsHorizontal(Bounds a, Bounds b)
+        {
+            return a.min.x <= b.max.x &&
+                   a.max.x >= b.min.x &&
+                   a.min.z <= b.max.z &&
+                   a.max.z >= b.min.z;
+        }
+
+        private static float GetBoundsCenterY(GameObject target)
+        {
+            if (target == null)
+                return 0f;
+
+            if (TryGetWorldBounds(target, out Bounds bounds))
+                return bounds.center.y;
+
+            return target.transform.position.y;
+        }
+
+        private static bool TryGetWorldBounds(GameObject target, out Bounds bounds)
+        {
+            bounds = default;
+            bool hasBounds = false;
+
+            Renderer[] renderers = target.GetComponentsInChildren<Renderer>(true);
+            foreach (Renderer renderer in renderers)
+            {
+                if (renderer == null)
+                    continue;
+
+                if (!hasBounds)
+                {
+                    bounds = renderer.bounds;
+                    hasBounds = true;
+                }
+                else
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+            }
+
+            Collider[] colliders = target.GetComponentsInChildren<Collider>(true);
+            foreach (Collider collider in colliders)
+            {
+                if (collider == null)
+                    continue;
+
+                if (!hasBounds)
+                {
+                    bounds = collider.bounds;
+                    hasBounds = true;
+                }
+                else
+                {
+                    bounds.Encapsulate(collider.bounds);
+                }
+            }
+
+            return hasBounds;
+        }
+
+        private static string NormalizeSpatialQualifier(string value)
+        {
+            string lower = (value ?? "").Trim().ToLowerInvariant();
+            if (lower == "top" || lower == "on top" || lower == "topmost" || lower == "upper" || lower == "uppermost" || lower == "highest")
+                return "topmost";
+            if (lower == "bottom" || lower == "on bottom" || lower == "bottommost" || lower == "lower" || lower == "lowermost" || lower == "lowest")
+                return "bottommost";
+            return lower;
+        }
+
+        private static string BuildUnclearSpatialQualifierMessage(string materialPrompt, string targetLabel, string spatialQualifier)
+        {
+            string label = BuildDisplayLabel(materialPrompt, targetLabel, "");
+            if (string.IsNullOrWhiteSpace(label))
+                label = "object";
+
+            string relation = NormalizeSpatialQualifier(spatialQualifier) == "topmost" ? "top" : "bottom";
+            return $"I can't tell which {label} is {relation}; can you be more specific?";
+        }
+
+        private static string BuildDisplayLabel(string materialPrompt, string targetLabel, string spatialQualifier = "")
+        {
+            string spatial = NormalizeSpatialQualifier(spatialQualifier);
+            if (!string.IsNullOrWhiteSpace(spatial))
+                spatial = spatial + " ";
+            else
+                spatial = "";
+
             if (string.IsNullOrWhiteSpace(materialPrompt))
-                return targetLabel;
+                return spatial + targetLabel;
             if (string.IsNullOrWhiteSpace(targetLabel))
-                return materialPrompt;
-            return materialPrompt + " " + targetLabel;
+                return spatial + materialPrompt;
+            return spatial + materialPrompt + " " + targetLabel;
         }
 
         private static string FirstNonEmpty(params string[] values)

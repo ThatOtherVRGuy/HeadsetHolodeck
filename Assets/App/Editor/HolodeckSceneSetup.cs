@@ -20,7 +20,7 @@ namespace Holodeck.Editor
     public static class HolodeckSceneSetup
     {
         private const string XrOriginPrefabPath =
-            "Assets/Samples/XR Interaction Toolkit/3.3.0/Starter Assets/Prefabs/XR Origin (XR Rig).prefab";
+            "Assets/Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Prefabs/XR Origin (XR Rig).prefab";
 
         private const string ShaderRoot =
             "Packages/com.worldlabs.gaussian-splatting/Shaders/";
