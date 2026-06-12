@@ -108,6 +108,7 @@ namespace WorldLabs.Runtime
         // ── Properties ────────────────────────────────────────────────────────
 
         public IReadOnlyList<World> CachedWorlds      => _cachedWorlds;
+        public bool IsApiConfigured                   => Client.IsConfigured;
         public bool IsWorldLoaded(string worldId)     => _loadedWorlds.ContainsKey(worldId);
         public bool IsWorldLoading(string worldId)    => _loadingWorlds.Contains(worldId);
         public IReadOnlyCollection<string> LoadedWorldIds => _loadedWorlds.Keys;
@@ -148,6 +149,9 @@ namespace WorldLabs.Runtime
             WorldStatus? status = WorldStatus.SUCCEEDED,
             bool? isPublic = null)
         {
+            if (!CanCallApi(nameof(ListWorldsAsync)))
+                return _cachedWorlds;
+
             try
             {
                 var response = await Client.ListWorldsAsync(
@@ -175,6 +179,9 @@ namespace WorldLabs.Runtime
         /// </summary>
         public async Task<World> GetWorldAsync(string worldId)
         {
+            if (!CanCallApi(nameof(GetWorldAsync)))
+                return null;
+
             try
             {
                 return await Client.GetWorldAsync(worldId);
@@ -459,6 +466,15 @@ namespace WorldLabs.Runtime
         {
             OnWorldLoadProgress?.Invoke(worldId, progress);
             onWorldLoadProgress?.Invoke(worldId, progress);
+        }
+
+        bool CanCallApi(string operation)
+        {
+            if (Client.IsConfigured)
+                return true;
+
+            Debug.LogWarning($"[WorldLabsWorldManager] {operation} skipped: WorldLabs API key missing. Set WORLDLABS_API_KEY in the project-root .env file before using WorldLabs API features.", this);
+            return false;
         }
 
         static async Task UnloadUnusedAssetsAsync()

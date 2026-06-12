@@ -44,7 +44,7 @@ namespace WorldLabs.API
         /// <summary>
         /// Whether the client has a valid API key configured.
         /// </summary>
-        public bool IsConfigured => !string.IsNullOrEmpty(ApiKey);
+        public bool IsConfigured => !string.IsNullOrWhiteSpace(ApiKey);
 
         #endregion
 
@@ -70,14 +70,14 @@ namespace WorldLabs.API
             {
                 // Try to load from .env file
                 ApiKey = EnvLoader.Get(API_KEY_ENV_VAR);
-                if (string.IsNullOrEmpty(ApiKey))
+                if (string.IsNullOrWhiteSpace(ApiKey))
                 {
                     Debug.LogWarning($"[WorldLabsClient] No API key found. Set {API_KEY_ENV_VAR} in .env file or pass it to the constructor.");
                 }
             }
             else
             {
-                ApiKey = apiKey;
+                ApiKey = apiKey.Trim();
             }
         }
 
@@ -591,6 +591,8 @@ namespace WorldLabs.API
 
         private async Task<T> GetAsync<T>(string endpoint)
         {
+            EnsureConfigured("GET");
+
             // Add unique cache-busting parameter to prevent client-side caching
             string cacheBuster = $"_nocache={Guid.NewGuid():N}";
             string separator = endpoint.Contains("?") ? "&" : "?";
@@ -616,6 +618,8 @@ namespace WorldLabs.API
 
         private async Task<T> PostAsync<T>(string endpoint, object body)
         {
+            EnsureConfigured("POST");
+
             string json = SerializeRequest(body);
 
             if (DEBUG_RAW_RESPONSES)
@@ -653,6 +657,8 @@ namespace WorldLabs.API
 
         private async Task<T> DeleteAsync<T>(string endpoint)
         {
+            EnsureConfigured("DELETE");
+
             string fullEndpoint = BaseUrl + endpoint;
 
             using (UnityWebRequest request = UnityWebRequest.Delete(fullEndpoint))
@@ -681,6 +687,9 @@ namespace WorldLabs.API
 
         private IEnumerator GetCoroutine<T>(string endpoint, Action<T> callback)
         {
+            if (!EnsureConfiguredForCoroutine("GET", callback))
+                yield break;
+
             // Add unique cache-busting parameter to prevent client-side caching
             string cacheBuster = $"_nocache={Guid.NewGuid():N}";
             string separator = endpoint.Contains("?") ? "&" : "?";
@@ -710,6 +719,9 @@ namespace WorldLabs.API
 
         private IEnumerator PostCoroutine<T>(string endpoint, object body, Action<T> callback)
         {
+            if (!EnsureConfiguredForCoroutine("POST", callback))
+                yield break;
+
             string json = SerializeRequest(body);
 
             // Add unique cache-busting parameter to prevent client-side caching
@@ -746,6 +758,9 @@ namespace WorldLabs.API
 
         private IEnumerator DeleteCoroutine<T>(string endpoint, Action<T> callback)
         {
+            if (!EnsureConfiguredForCoroutine("DELETE", callback))
+                yield break;
+
             string fullEndpoint = BaseUrl + endpoint;
 
             using (UnityWebRequest request = UnityWebRequest.Delete(fullEndpoint))
@@ -852,6 +867,31 @@ namespace WorldLabs.API
         {
             // Use custom serialization to handle polymorphic types properly
             return WorldLabsJsonSerializer.Serialize(obj);
+        }
+
+        private void EnsureConfigured(string operation)
+        {
+            if (IsConfigured)
+                return;
+
+            string message = MissingConfigurationMessage(operation);
+            Debug.LogWarning($"[WorldLabsClient] {message}");
+            throw new WorldLabsException(message);
+        }
+
+        private bool EnsureConfiguredForCoroutine<T>(string operation, Action<T> callback)
+        {
+            if (IsConfigured)
+                return true;
+
+            Debug.LogWarning($"[WorldLabsClient] {MissingConfigurationMessage(operation)}");
+            callback?.Invoke(default);
+            return false;
+        }
+
+        private static string MissingConfigurationMessage(string operation)
+        {
+            return $"{operation} skipped: WorldLabs API key missing. Set {API_KEY_ENV_VAR} in the project-root .env file before using WorldLabs API features.";
         }
 
         #endregion

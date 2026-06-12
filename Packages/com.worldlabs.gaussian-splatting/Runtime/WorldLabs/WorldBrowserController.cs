@@ -481,6 +481,18 @@ namespace WorldLabs.Runtime
             if (statusText != null) statusText.text = msg;
         }
 
+        bool CanCallWorldLabsApi(string operation)
+        {
+            _wlClient ??= new WorldLabsClient();
+            if (_wlClient.IsConfigured)
+                return true;
+
+            const string message = "WorldLabs API key missing. Set WORLDLABS_API_KEY in the project-root .env file.";
+            SetStatus(message);
+            Debug.LogWarning($"[WorldBrowserController] {operation} skipped: {message}", this);
+            return false;
+        }
+
         // ── World creation ────────────────────────────────────────────────────
 
         /// <summary>
@@ -582,6 +594,9 @@ namespace WorldLabs.Runtime
                 return;
             }
 
+            if (!CanCallWorldLabsApi("World creation"))
+                return;
+
             _isGenerating        = true;
             _generationCancelled = false;
             if (createWorldButton != null) createWorldButton.interactable = false;
@@ -590,7 +605,6 @@ namespace WorldLabs.Runtime
             worldManager.RestoreDefaultWorld();
             SetStatus("Starting generation…");
 
-            _wlClient ??= new WorldLabsClient();
             string modelStr = selectedModel switch
             {
                 MarbleModel.Draft    => "marble-1.0-draft",
@@ -709,6 +723,10 @@ namespace WorldLabs.Runtime
             string id   = _pendingDeleteWorld.world_id;
             string name = string.IsNullOrEmpty(_pendingDeleteWorld.display_name)
                 ? id : _pendingDeleteWorld.display_name;
+
+            if (!CanCallWorldLabsApi("Delete world"))
+                return;
+
             _pendingDeleteWorld = null;
 
             // Unload first if the world is currently active
@@ -716,7 +734,6 @@ namespace WorldLabs.Runtime
                 worldManager.UnloadWorld(id);
 
             SetStatus($"Deleting '{name}'…");
-            _wlClient ??= new WorldLabsClient();
 
             try
             {
