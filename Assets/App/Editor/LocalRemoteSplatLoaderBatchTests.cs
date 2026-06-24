@@ -13,6 +13,7 @@ namespace HeadsetHolodeck.EditorTests
             try
             {
                 TestLoadFailureReportsStatusEventAndSpeech();
+                TestRendererDiagnosticsDescribeRuntimeState();
                 Debug.Log("[LocalRemoteSplatLoaderBatchTests] Failure reporting tests passed.");
             }
             catch (Exception ex)
@@ -20,6 +21,37 @@ namespace HeadsetHolodeck.EditorTests
                 Debug.LogError("[LocalRemoteSplatLoaderBatchTests] Failure reporting tests failed: " + ex);
                 EditorApplication.Exit(1);
                 throw;
+            }
+        }
+
+        static void TestRendererDiagnosticsDescribeRuntimeState()
+        {
+            MethodInfo diagnostics = typeof(LocalRemoteSplatLoader).GetMethod(
+                "BuildRendererDiagnostics",
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            AssertTrue(diagnostics != null,
+                "LocalRemoteSplatLoader should provide a renderer diagnostic summary for device load tracing.");
+
+            GameObject loaderObject = new GameObject("LoaderDiagnostics_Test");
+            GameObject rendererObject = new GameObject("RendererDiagnostics_Test");
+            GameObject cameraObject = new GameObject("CameraDiagnostics_Test");
+            try
+            {
+                LocalRemoteSplatLoader loader = loaderObject.AddComponent<LocalRemoteSplatLoader>();
+                GaussianSplatting.Runtime.GaussianSplatRenderer renderer =
+                    rendererObject.AddComponent<GaussianSplatting.Runtime.GaussianSplatRenderer>();
+                Camera camera = cameraObject.AddComponent<Camera>();
+
+                string summary = (string)diagnostics.Invoke(null, new object[] { "test", renderer, camera });
+                AssertTrue(summary.Contains("phase=test"), "Diagnostic summary should include its phase.");
+                AssertTrue(summary.Contains("renderer=RendererDiagnostics_Test"), "Diagnostic summary should identify the renderer.");
+                AssertTrue(summary.Contains("camera=CameraDiagnostics_Test"), "Diagnostic summary should identify the camera.");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(loaderObject);
+                UnityEngine.Object.DestroyImmediate(rendererObject);
+                UnityEngine.Object.DestroyImmediate(cameraObject);
             }
         }
 

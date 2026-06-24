@@ -86,6 +86,14 @@ Recommended settings are already in the project, but verify:
 
 The Android manifest is included at `Assets/Plugins/Android/AndroidManifest.xml`.
 
+## Current Quest Runtime Behavior
+
+- Runtime `.spz` decoding uses managed packed-byte staging on Quest. This avoids IL2CPP/Burst int24 corruption that can flatten a splat or produce invalid spawn coordinates.
+- Saved spawn positions are checked against freshly decoded placed bounds. A stale out-of-bounds pose is ignored and a new splat-derived pose is used.
+- Large loose splats can be expensive even with fewer splats than a compact scene because spatial extent affects sorting and culling cost on Quest.
+- Voice activation falls back from Unity microphone capture to Android `AudioRecord` when Quest returns silence. The fallback tries `VOICE_RECOGNITION`, then `VOICE_COMMUNICATION`, then `MIC`.
+- `Delete all audio` removes saved audio records as well as runtime sources. Restoring a world with saved audio does not create an extra automatic ambience layer.
+
 ## Validation Helper
 
 Use `Headset Holodeck > Validate Install` inside Unity. It checks:
@@ -133,6 +141,8 @@ The validator does not print secret values.
 - If audio library results are weak or unavailable, add `FREESOUND_API_KEY` and/or `XENO_CANTO_API_KEY`.
 - If Quest builds fail around Android permissions, confirm `Assets/Plugins/Android/HeadsetCameraPermissions.androidlib/build.gradle` has a namespace and compile SDK.
 - If splats do not render on Quest, do not enable URP compatibility mode unless the Gaussian splatting package specifically supports it.
+- If a restored splat shows only skybox, check its saved spawn in `world.json`; the runtime logs when it rejects an out-of-bounds stale pose.
+- If a voice command is not recognized after a wake word, capture Quest logcat and look for `SherpaOnnxMic` source/fallback messages.
 
 ## Developer Notes
 

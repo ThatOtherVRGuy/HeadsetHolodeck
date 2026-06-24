@@ -152,7 +152,11 @@ namespace Holodeck.Save
                 {
                     RuntimeSplatFloorLoader.SplatSourceKind sourceKind = ResolveSplatSourceKindForWorldSource(src);
                     SplatSpawnMetadata savedSpawn = FirstSavedSpawnMetadata(config);
-                    bool loaded = await WaitForWorldLoadedAsync(() => splatLoader?.LoadAsync(absPath, src.display_name ?? config.display_name, sourceKind, savedSpawn));
+                    bool loaded = splatLoader != null && await splatLoader.LoadAndWaitAsync(
+                        absPath,
+                        src.display_name ?? config.display_name,
+                        sourceKind,
+                        savedSpawn);
                     if (loaded) return true;
                 }
             }
@@ -245,20 +249,30 @@ namespace Holodeck.Save
                 return false;
             }
 
-            bool received = false;
-            void OnLoaded(string worldId, GaussianSplatRenderer renderer) => received = true;
+            var completion = new TaskCompletionSource<bool>();
+            void OnLoaded(string worldId, GaussianSplatRenderer renderer)
+            {
+                Debug.Log($"[WorldConfigRestorer] Received OnWorldLoaded for '{worldId}' while restoring.");
+                completion.TrySetResult(true);
+            }
             worldManager.OnWorldLoaded += OnLoaded;
 
-            triggerLoad?.Invoke();
-
-            float startTime = Time.realtimeSinceStartup;
-            while (!received && (Time.realtimeSinceStartup - startTime) < RestoreTimeoutSeconds)
+            try
             {
-                await Task.Delay(100);
-            }
+                triggerLoad?.Invoke();
 
-            worldManager.OnWorldLoaded -= OnLoaded;
-            return received;
+                Task timeout = Task.Delay(TimeSpan.FromSeconds(RestoreTimeoutSeconds));
+                Task completed = await Task.WhenAny(completion.Task, timeout);
+                if (completed == completion.Task && completion.Task.Result)
+                    return true;
+
+                Debug.LogWarning($"[WorldConfigRestorer] Timed out after {RestoreTimeoutSeconds:0.#} seconds waiting for OnWorldLoaded.");
+                return false;
+            }
+            finally
+            {
+                worldManager.OnWorldLoaded -= OnLoaded;
+            }
         }
 
         async Task RestoreObjectAsync(SavedObject savedObj, RestorationContext ctx)

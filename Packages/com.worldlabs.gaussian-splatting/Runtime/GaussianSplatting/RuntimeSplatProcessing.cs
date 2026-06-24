@@ -79,14 +79,17 @@ namespace GaussianSplatting.Runtime
 
             progressCallback?.Invoke("Calculating bounds", 0.0f);
 
-            float3 boundsMin, boundsMax;
-            var boundsJob = new CalcBoundsJob
+            // Processing already runs on a background Task. Avoid Burst jobs here:
+            // Quest IL2CPP produces invalid position extrema when this NativeArray of
+            // InputSplatData is read by a scheduled job.
+            float3 boundsMin = float.PositiveInfinity;
+            float3 boundsMax = float.NegativeInfinity;
+            for (int i = 0; i < inputSplats.Length; ++i)
             {
-                m_BoundsMin  = &boundsMin,
-                m_BoundsMax  = &boundsMax,
-                m_SplatData  = inputSplats
-            };
-            boundsJob.Schedule().Complete();
+                float3 pos = inputSplats[i].pos;
+                boundsMin = math.min(boundsMin, pos);
+                boundsMax = math.max(boundsMax, pos);
+            }
 
             progressCallback?.Invoke("Morton reordering", 0.05f);
             ReorderMorton(inputSplats, boundsMin, boundsMax);
@@ -141,6 +144,7 @@ namespace GaussianSplatting.Runtime
             return result;
         }
 
+
         // ─────────────────────────────────────────────────────────────────────
         //  Encoding helpers for shared use by Editor pipeline
         // ─────────────────────────────────────────────────────────────────────
@@ -192,11 +196,10 @@ namespace GaussianSplatting.Runtime
         [BurstCompile]
         public struct CalcBoundsJob : IJob
         {
-            [NativeDisableUnsafePtrRestriction] public unsafe float3* m_BoundsMin;
-            [NativeDisableUnsafePtrRestriction] public unsafe float3* m_BoundsMax;
+            [WriteOnly] public NativeArray<float3> m_Bounds;
             [ReadOnly] public NativeArray<InputSplatData> m_SplatData;
 
-            public unsafe void Execute()
+            public void Execute()
             {
                 float3 bMin = float.PositiveInfinity;
                 float3 bMax = float.NegativeInfinity;
@@ -206,8 +209,8 @@ namespace GaussianSplatting.Runtime
                     bMin = math.min(bMin, pos);
                     bMax = math.max(bMax, pos);
                 }
-                *m_BoundsMin = bMin;
-                *m_BoundsMax = bMax;
+                m_Bounds[0] = bMin;
+                m_Bounds[1] = bMax;
             }
         }
 
@@ -250,12 +253,12 @@ namespace GaussianSplatting.Runtime
                 m_SplatData     = splatData,
                 m_BoundsMin     = boundsMin,
                 m_InvBoundsSize = 1.0f / (boundsMax - boundsMin),
-                m_Order         = new NativeArray<(ulong, int)>(splatData.Length, Allocator.TempJob)
+                m_Order         = new NativeArray<(ulong, int)>(splatData.Length, Allocator.Persistent)
             };
             order.Schedule(splatData.Length, 4096).Complete();
             order.m_Order.Sort(new OrderComparer());
 
-            NativeArray<InputSplatData> copy = new(order.m_SplatData, Allocator.TempJob);
+            NativeArray<InputSplatData> copy = new(order.m_SplatData, Allocator.Persistent);
             for (int i = 0; i < copy.Length; ++i)
                 order.m_SplatData[i] = copy[order.m_Order[i].Item2];
             copy.Dispose();
@@ -385,7 +388,7 @@ namespace GaussianSplatting.Runtime
             var job = new CalcChunkDataJob
             {
                 splatData = splatData,
-                chunks    = new NativeArray<GaussianSplatAsset.ChunkInfo>(chunkCount, Allocator.TempJob),
+                chunks    = new NativeArray<GaussianSplatAsset.ChunkInfo>(chunkCount, Allocator.Persistent),
             };
             job.Schedule(chunkCount, 8).Complete();
 
@@ -417,7 +420,7 @@ namespace GaussianSplatting.Runtime
         public static byte[] CreatePositionsData(NativeArray<InputSplatData> inputSplats, GaussianSplatAsset.VectorFormat formatPos)
         {
             int dataLen = NextMultipleOf(inputSplats.Length * GaussianSplatAsset.GetVectorSize(formatPos), 8);
-            var data    = new NativeArray<byte>(dataLen, Allocator.TempJob);
+            var data    = new NativeArray<byte>(dataLen, Allocator.Persistent);
             var job = new CreatePositionsDataJob
             {
                 m_Input      = inputSplats,
@@ -468,7 +471,7 @@ namespace GaussianSplatting.Runtime
             if (splatSHIndices.IsCreated)
                 formatSize += 2;
             int dataLen = NextMultipleOf(inputSplats.Length * formatSize, 8);
-            var data    = new NativeArray<byte>(dataLen, Allocator.TempJob);
+            var data    = new NativeArray<byte>(dataLen, Allocator.Persistent);
             var job = new CreateOtherDataJob
             {
                 m_Input         = inputSplats,
@@ -503,7 +506,7 @@ namespace GaussianSplatting.Runtime
 
         public static byte[] CreateColorData(NativeArray<InputSplatData> inputSplats)
         {
-            var data = new NativeArray<float4>(inputSplats.Length, Allocator.TempJob);
+            var data = new NativeArray<float4>(inputSplats.Length, Allocator.Persistent);
             var job  = new CreateSimpleColorDataJob { m_Input = inputSplats, m_Output = data };
             job.Schedule(inputSplats.Length, 8192).Complete();
             var bytes = new byte[inputSplats.Length * 16];
@@ -596,7 +599,7 @@ namespace GaussianSplatting.Runtime
             }
 
             int dataLen = (int)GaussianSplatAsset.CalcSHDataSize(inputSplats.Length, shFormat);
-            var data    = new NativeArray<byte>(dataLen, Allocator.TempJob);
+            var data    = new NativeArray<byte>(dataLen, Allocator.Persistent);
             var job     = new CreateSHDataJob { m_Input = inputSplats, m_Format = shFormat, m_Output = data };
             job.Schedule(inputSplats.Length, 8192).Complete();
             var result = new byte[dataLen];

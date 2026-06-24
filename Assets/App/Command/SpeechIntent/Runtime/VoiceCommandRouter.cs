@@ -113,6 +113,47 @@ namespace SpeechIntent
             StartCoroutine(ProcessTypedCommand(text, spatial, scene));
         }
 
+        public void SubmitAudioCommand(byte[] wavBytes, string fallbackText = "")
+        {
+            fallbackText = (fallbackText ?? string.Empty).Trim();
+            if (wavBytes == null || wavBytes.Length == 0)
+            {
+                if (!string.IsNullOrWhiteSpace(fallbackText))
+                {
+                    Debug.LogWarning("[VoiceCommandRouter] Audio command had no bytes; falling back to text.", this);
+                    SubmitTypedCommand(fallbackText);
+                    return;
+                }
+
+                EmitError("No command audio was captured.");
+                return;
+            }
+
+            SpatialSnapshot spatial = spatialContextProvider != null
+                ? spatialContextProvider.CaptureSnapshot()
+                : new SpatialSnapshot();
+
+            SceneSemanticSnapshot scene = sceneContextProvider != null
+                ? sceneContextProvider.CaptureSnapshot()
+                : new SceneSemanticSnapshot();
+
+            if (speechIntentService == null || !speechIntentService.IsConfigured)
+            {
+                if (!string.IsNullOrWhiteSpace(fallbackText))
+                {
+                    Debug.LogWarning("[VoiceCommandRouter] OpenAI audio command path is not configured; falling back to local text.", this);
+                    StartCoroutine(ProcessTypedCommand(fallbackText, spatial, scene));
+                    return;
+                }
+
+                EmitError("OpenAI speech intent is not configured, and no fallback command text is available.");
+                return;
+            }
+
+            Debug.Log($"[VoiceCommandRouter] SubmitAudioCommand bytes={wavBytes.Length}, fallback='{fallbackText}'", this);
+            StartCoroutine(ProcessUtterance(wavBytes, spatial, scene));
+        }
+
         private IEnumerator ProcessUtterance(byte[] wavBytes, SpatialSnapshot spatial, SceneSemanticSnapshot scene)
         {
             if (speechIntentService == null)

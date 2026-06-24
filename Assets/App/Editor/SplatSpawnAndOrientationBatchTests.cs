@@ -30,6 +30,7 @@ namespace HeadsetHolodeck.EditorTests
                 TestSplatSpawnEstimatorRefinesSpawnYFromLocalFloor();
                 TestSplatSpawnEstimatorHonorsMaxSamples();
                 TestSplatSpawnEstimatorCollectsNormalLineDebugData();
+                TestRuntimeSplatFloorLoaderRejectsSavedSpawnOutsidePlacedBounds();
                 TestRuntimeSplatFloorLoaderAttachesEstimatorSpawnPose();
                 TestDebugSceneControllerAppliesCameraSpawnPose();
                 TestDebugSceneControllerUpdatesMarkersAndMovesCamera();
@@ -107,6 +108,7 @@ namespace HeadsetHolodeck.EditorTests
             GameObject anchorGo = new GameObject("Teleport Anchor");
             GameObject rendererGo = new GameObject("Renderer_Test");
             GameObject controllerGo = new GameObject("PlayerOriginController_Test");
+            GameObject autoSaveGo = new GameObject("WorldConfigAutoSave_Test");
 
             try
             {
@@ -125,6 +127,14 @@ namespace HeadsetHolodeck.EditorTests
                 controller.playerRoot = playerGo.transform;
                 controller.resetAnchor = anchorGo.transform;
                 controller.matchAnchorRotation = true;
+                controller.worldConfigAutoSave = autoSaveGo.AddComponent<WorldConfigAutoSave>();
+                controller.worldConfigAutoSave.ActiveConfig = new WorldConfig
+                {
+                    spawn_points = new List<SpawnPointData>
+                    {
+                        new SpawnPointData { name = "Stale Spawn", position = new Vector3(-659f, -4094f, -875f), rotation = Quaternion.identity }
+                    }
+                };
 
                 MethodInfo onWorldLoaded = typeof(PlayerOriginController).GetMethod("OnWorldLoaded", BindingFlags.Instance | BindingFlags.NonPublic);
                 AssertTrue(onWorldLoaded != null, "PlayerOriginController should have OnWorldLoaded method.");
@@ -139,6 +149,7 @@ namespace HeadsetHolodeck.EditorTests
                 UnityEngine.Object.DestroyImmediate(rendererGo);
                 UnityEngine.Object.DestroyImmediate(anchorGo);
                 UnityEngine.Object.DestroyImmediate(playerGo);
+                UnityEngine.Object.DestroyImmediate(autoSaveGo);
             }
         }
 
@@ -690,6 +701,29 @@ namespace HeadsetHolodeck.EditorTests
             }
 
             return splats;
+        }
+
+        static void TestRuntimeSplatFloorLoaderRejectsSavedSpawnOutsidePlacedBounds()
+        {
+            MethodInfo method = typeof(RuntimeSplatFloorLoader).GetMethod(
+                "IsSavedSpawnWithinPlacedBounds",
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            AssertTrue(method != null, "RuntimeSplatFloorLoader should validate saved spawns against the newly decoded bounds.");
+
+            var staleSpawn = new SplatSpawnMetadata
+            {
+                hasPose = true,
+                spawn = new Vector3(-659.1018f, -4094.41138f, -874.761353f)
+            };
+            var estimate = new SplatFloorEstimate
+            {
+                success = true,
+                analyzedBounds = new Bounds(new Vector3(73.04f, 9.18f, 119.68f), new Vector3(2452.30f, 500.21f, 1985.95f)),
+                recommendedLocalPosition = new Vector3(-73.04f, -9.18f, -119.68f)
+            };
+
+            bool accepted = (bool)method.Invoke(null, new object[] { staleSpawn, estimate });
+            AssertTrue(!accepted, "A stale saved spawn far outside the newly decoded splat bounds must be rejected.");
         }
 
         static void TestRuntimeSplatFloorLoaderAttachesEstimatorSpawnPose()

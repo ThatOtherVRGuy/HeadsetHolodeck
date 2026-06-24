@@ -30,6 +30,7 @@ namespace GaussianSplatting.Runtime
         readonly Dictionary<GaussianSplatRenderer, MaterialPropertyBlock> m_Splats = new();
         readonly HashSet<Camera> m_CameraCommandBuffersDone = new();
         readonly List<(GaussianSplatRenderer, MaterialPropertyBlock)> m_ActiveSplats = new();
+        readonly HashSet<int> m_LoggedRuntimeSplatGather = new();
 
         CommandBuffer m_CommandBuffer;
 
@@ -49,6 +50,7 @@ namespace GaussianSplatting.Runtime
             if (!m_Splats.ContainsKey(r))
                 return;
             m_Splats.Remove(r);
+            m_LoggedRuntimeSplatGather.Remove(r.GetInstanceID());
             if (m_Splats.Count == 0)
             {
                 if (m_CameraCommandBuffersDone != null)
@@ -85,6 +87,7 @@ namespace GaussianSplatting.Runtime
             m_CameraCommandBuffersDone.Clear();
             m_ActiveSplats.Clear();
             m_Splats.Clear();
+            m_LoggedRuntimeSplatGather.Clear();
             m_CommandBuffer?.Dispose();
             m_CommandBuffer = null;
             Camera.onPreCull -= OnPreCullCamera;
@@ -111,6 +114,11 @@ namespace GaussianSplatting.Runtime
                 if (gs == null || !gs.isActiveAndEnabled || !gs.HasValidAsset || !gs.HasValidRenderSetup)
                     continue;
                 m_ActiveSplats.Add((kvp.Key, kvp.Value));
+                if (gs.HasValidRuntimeData && m_LoggedRuntimeSplatGather.Add(gs.GetInstanceID()))
+                {
+                    Debug.Log($"[GaussianSplatRenderSystem] Gathered runtime splat '{gs.name}' for camera '{cam.name}'; " +
+                              $"count={gs.splatCount}; pos={gs.transform.position}; rot={gs.transform.rotation.eulerAngles}; scale={gs.transform.lossyScale}.");
+                }
             }
             if (m_ActiveSplats.Count == 0)
                 return false;

@@ -113,6 +113,39 @@ namespace Holodeck.Save.Tests
         }
 
         [Test]
+        public async Task MigrateConfigToWritableCopy_PreservesDataAndHidesLegacyDuplicateOnNextScan()
+        {
+            WorldConfig config = _store.CreateConfig(
+                new WorldSourceData { type = "worldlabs", world_id = "world-123", display_name = "Cabin" },
+                "Cabin",
+                null);
+            string legacyId = config.config_id;
+            config.world_transform = new WorldTransformData
+            {
+                position = new UnityEngine.Vector3(2f, 3f, 4f),
+                rotation = UnityEngine.Quaternion.Euler(0f, 90f, 0f),
+                scale = new UnityEngine.Vector3(2f, 2f, 2f)
+            };
+            config.prompts.Add(new PromptEntry { transcript = "Move world 2 meters forward." });
+            _store.SaveConfig(config);
+
+            WorldConfig migrated = _store.MigrateConfigToWritableCopy(config);
+
+            Assert.AreSame(config, migrated, "Migration should preserve existing ActiveConfig references.");
+            Assert.AreNotEqual(legacyId, migrated.config_id);
+            Assert.AreEqual(legacyId, migrated.migrated_from_config_id);
+            Assert.IsTrue(File.Exists(Path.Combine(_tempRoot, migrated.config_id, "world.json")));
+            Assert.AreEqual(2f, migrated.world_transform.scale.x, 0.001f);
+            Assert.AreEqual(1, migrated.prompts.Count);
+
+            WorldConfigStore reloadedStore = WorldConfigStore.CreateForTesting(_tempRoot);
+            await reloadedStore.ScanAndMigrateAsync();
+            Assert.AreEqual(1, reloadedStore.ListConfigs().Count,
+                "The migrated config should suppress its read-only legacy duplicate on later scans.");
+            Assert.AreEqual(migrated.config_id, reloadedStore.ListConfigs()[0].config_id);
+        }
+
+        [Test]
         public async Task ScanAndMigrateAsync_WithMultipleStores_CreatesOneConfigPerLooseSplat()
         {
             string looseSplat = Path.Combine(_tempRoot, "ImportedRoom.spz");

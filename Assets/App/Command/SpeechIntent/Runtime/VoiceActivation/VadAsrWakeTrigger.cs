@@ -316,7 +316,10 @@ namespace SpeechIntent.VoiceActivation
                 AsrResult result = await _asr.RecognizeAsync(segment.Samples, sampleRate);
                 Log($"ASR result valid={result != null && result.IsValid}, text='{result?.Text ?? ""}'");
                 if (result != null && result.IsValid)
-                    _recognizedPhrases.Enqueue(new RecognizedPhrase(result.Text, segment.Duration));
+                {
+                    byte[] audioWavBytes = EncodeMono16BitWav(segment.Samples, sampleRate);
+                    _recognizedPhrases.Enqueue(new RecognizedPhrase(result.Text, segment.Duration, audioWavBytes));
+                }
             }
             catch (Exception ex)
             {
@@ -341,8 +344,17 @@ namespace SpeechIntent.VoiceActivation
 
             if (isListeningForCommand && _pendingCommand != null)
             {
+                VoiceActivationConfig commandConfig = GetConfig();
+                if (ShouldIgnoreCommandPhrase(transcript, phrase.DurationSeconds, commandConfig))
+                {
+                    Log(
+                        $"Ignoring post-wake command phrase. duration={phrase.DurationSeconds:0.00}s, " +
+                        $"transcript='{transcript}'");
+                    return;
+                }
+
                 Log("Treating recognized phrase as post-wake command.");
-                CompletePendingCommand(new VoiceCommandRecognitionResult(true, transcript));
+                CompletePendingCommand(new VoiceCommandRecognitionResult(true, transcript, "", phrase.AudioWavBytes));
                 return;
             }
 
@@ -607,6 +619,93 @@ namespace SpeechIntent.VoiceActivation
             return (text ?? string.Empty).Trim(' ', '\t', '\r', '\n', ',', '.', ':', ';', '-');
         }
 
+        public static bool ShouldIgnoreCommandPhraseForTests(string transcript, float durationSeconds, VoiceActivationConfig activeConfig)
+        {
+            return ShouldIgnoreCommandPhrase(transcript, durationSeconds, activeConfig);
+        }
+
+        static bool ShouldIgnoreCommandPhrase(string transcript, float durationSeconds, VoiceActivationConfig activeConfig)
+        {
+            string text = NormalizeIgnorableCommandText(transcript);
+            if (string.IsNullOrWhiteSpace(text))
+                return true;
+
+            float configuredMinDuration = activeConfig != null
+                ? activeConfig.minCommandPhraseDurationSeconds
+                : 0f;
+            float minDuration = configuredMinDuration > 0f
+                ? configuredMinDuration
+                : 0.35f;
+            if (minDuration > 0f && durationSeconds > 0f && durationSeconds < minDuration)
+                return true;
+
+            return text == "and" ||
+                   text == "uh" ||
+                   text == "um" ||
+                   text == "uhh" ||
+                   text == "umm" ||
+                   text == "ah" ||
+                   text == "hmm" ||
+                   text == "hm" ||
+                   text == "the" ||
+                   text == "a" ||
+                   text == "an";
+        }
+
+        static string NormalizeIgnorableCommandText(string transcript)
+        {
+            string text = (transcript ?? string.Empty).Trim().ToLowerInvariant();
+            text = Regex.Replace(text, @"[^\w\s]", " ");
+            text = Regex.Replace(text, @"\s+", " ").Trim();
+            return text;
+        }
+
+        public static byte[] EncodeMono16BitWavForTests(float[] samples, int sampleRate)
+        {
+            return EncodeMono16BitWav(samples, sampleRate);
+        }
+
+        static byte[] EncodeMono16BitWav(float[] samples, int sampleRate)
+        {
+            if (samples == null || samples.Length == 0 || sampleRate <= 0)
+                return null;
+
+            using MemoryStream stream = new MemoryStream();
+            using BinaryWriter writer = new BinaryWriter(stream);
+
+            const short channels = 1;
+            const short bitsPerSample = 16;
+            const int bytesPerSample = bitsPerSample / 8;
+            int subChunk2Size = samples.Length * bytesPerSample;
+            int byteRate = sampleRate * channels * bytesPerSample;
+            short blockAlign = (short)(channels * bytesPerSample);
+            int chunkSize = 36 + subChunk2Size;
+
+            writer.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));
+            writer.Write(chunkSize);
+            writer.Write(System.Text.Encoding.ASCII.GetBytes("WAVE"));
+            writer.Write(System.Text.Encoding.ASCII.GetBytes("fmt "));
+            writer.Write(16);
+            writer.Write((short)1);
+            writer.Write(channels);
+            writer.Write(sampleRate);
+            writer.Write(byteRate);
+            writer.Write(blockAlign);
+            writer.Write(bitsPerSample);
+            writer.Write(System.Text.Encoding.ASCII.GetBytes("data"));
+            writer.Write(subChunk2Size);
+
+            for (int i = 0; i < samples.Length; i++)
+            {
+                float clamped = Mathf.Clamp(samples[i], -1f, 1f);
+                short intSample = (short)Mathf.RoundToInt(clamped * short.MaxValue);
+                writer.Write(intSample);
+            }
+
+            writer.Flush();
+            return stream.ToArray();
+        }
+
         VoiceActivationConfig GetConfig()
         {
             if (config != null)
@@ -632,14 +731,16 @@ namespace SpeechIntent.VoiceActivation
 
         readonly struct RecognizedPhrase
         {
-            public RecognizedPhrase(string text, float durationSeconds)
+            public RecognizedPhrase(string text, float durationSeconds, byte[] audioWavBytes)
             {
                 Text = text;
                 DurationSeconds = durationSeconds;
+                AudioWavBytes = audioWavBytes;
             }
 
             public string Text { get; }
             public float DurationSeconds { get; }
+            public byte[] AudioWavBytes { get; }
         }
     }
 }

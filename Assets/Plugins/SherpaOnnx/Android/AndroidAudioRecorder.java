@@ -27,6 +27,16 @@ public class AndroidAudioRecorder
     private static final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
     private static final int ENCODING = AudioFormat.ENCODING_PCM_16BIT;
     private static final int CHUNK_SIZE = 1600; // 100 ms at 16 kHz
+    private static final int[] AUDIO_SOURCES = {
+        MediaRecorder.AudioSource.VOICE_RECOGNITION,
+        MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+        MediaRecorder.AudioSource.MIC
+    };
+    private static final String[] AUDIO_SOURCE_NAMES = {
+        "VOICE_RECOGNITION",
+        "VOICE_COMMUNICATION",
+        "MIC"
+    };
 
     private AudioRecord _recorder;
     private Thread _thread;
@@ -39,6 +49,7 @@ public class AndroidAudioRecorder
     private volatile float _lastChunkMaxAbs;
     private volatile int _lastChunkRead;
     private volatile int _totalChunksRead;
+    private int _sourceIndex;
 
     public boolean start()
     {
@@ -57,7 +68,7 @@ public class AndroidAudioRecorder
         try
         {
             _recorder = new AudioRecord(
-                MediaRecorder.AudioSource.MIC,
+                AUDIO_SOURCES[_sourceIndex],
                 SAMPLE_RATE, CHANNEL, ENCODING,
                 bufSize);
         }
@@ -89,7 +100,7 @@ public class AndroidAudioRecorder
 
         Log.i(TAG, "Started. sampleRate=" + SAMPLE_RATE
             + " bufSize=" + bufSize
-            + " encoding=PCM_16BIT source=MIC");
+            + " encoding=PCM_16BIT source=" + getCurrentSourceName());
         return true;
     }
 
@@ -145,6 +156,18 @@ public class AndroidAudioRecorder
     public float getLastChunkMaxAbs() { return _lastChunkMaxAbs; }
     public int getLastChunkRead() { return _lastChunkRead; }
     public int getTotalChunksRead() { return _totalChunksRead; }
+    public boolean hasNextSource() { return _sourceIndex + 1 < AUDIO_SOURCES.length; }
+    public String getCurrentSourceName() { return AUDIO_SOURCE_NAMES[_sourceIndex]; }
+
+    public boolean restartWithNextSource()
+    {
+        if (!hasNextSource())
+            return false;
+
+        stop();
+        _sourceIndex++;
+        return start();
+    }
 
     // ── Silence diagnostics ──
 

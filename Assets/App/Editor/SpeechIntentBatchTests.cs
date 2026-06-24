@@ -1,6 +1,7 @@
 using System;
 using SpeechIntent;
 using SpeechIntent.Behaviors;
+using SpeechIntent.VoiceActivation;
 using UnityEditor;
 using UnityEngine;
 
@@ -22,6 +23,9 @@ namespace HeadsetHolodeck.EditorTests
                 TestCreateObjectInFrontOfMeParsesAsRelativePlacement();
                 TestCreateObjectDefaultsOneMeterInFrontOfMe();
                 TestCreateObjectParsesCreationAttributes();
+                TestPostWakeAsrCreateCommandNormalization();
+                TestPostWakeCommandAudioEncoding();
+                TestPostWakeCommandFilterIgnoresFiller();
                 TestExistingObjectPhysicsCommandsParseLocally();
                 TestRouterOverridesOpenAiClarificationWithLocalPhysicsCommand();
                 TestDispatcherAppliesWeightlessToLastObject();
@@ -841,6 +845,66 @@ namespace HeadsetHolodeck.EditorTests
 
             VoiceIntentCommand pronounScale = LocalTypedIntentParser.Parse("make it bigger");
             AssertTrue(pronounScale.intent != VoiceIntentType.PlaceObject, "Expected generic object creation not to steal pronoun modification commands.");
+        }
+
+        static void TestPostWakeAsrCreateCommandNormalization()
+        {
+            AssertPostWakeCreateNormalization("READ A RED BALL", "create a red ball", "ball", "red");
+            AssertPostWakeCreateNormalization("HE ATE A RED BALL", "create a red ball", "ball", "red");
+            AssertPostWakeCreateNormalization("createa yellow sphere", "create a yellow sphere", "sphere", "yellow");
+            AssertPostWakeCreateNormalization("MADE A GREEN CUBE", "make a green cube", "cube", "green");
+        }
+
+        static void AssertPostWakeCreateNormalization(string heard, string expectedNormalized, string expectedObject, string expectedMaterial)
+        {
+            string normalized = HeadsetHolodeckCommandRouter.NormalizePostWakeAsrCommandForTests(heard);
+            AssertEqual(expectedNormalized, normalized, "Expected post-wake ASR normalization for: " + heard);
+
+            VoiceIntentCommand command = LocalTypedIntentParser.Parse(normalized);
+            AssertEqual(VoiceIntentType.PlaceObject, command.intent, "Expected normalized command to parse as PlaceObject for: " + heard);
+            AssertEqual(expectedObject, command.object_name, "Expected normalized object name for: " + heard);
+            AssertEqual(expectedMaterial, command.material_prompt, "Expected normalized material prompt for: " + heard);
+        }
+
+        static void TestPostWakeCommandAudioEncoding()
+        {
+            byte[] wav = VadAsrWakeTrigger.EncodeMono16BitWavForTests(
+                new[] { 0f, 0.25f, -0.25f, 1f, -1f },
+                16000);
+
+            AssertTrue(wav != null, "Expected WAV bytes.");
+            AssertEqual(44 + 10, wav.Length, "Expected 44-byte WAV header plus 5 mono 16-bit samples.");
+            AssertEqual("RIFF", System.Text.Encoding.ASCII.GetString(wav, 0, 4), "Expected RIFF header.");
+            AssertEqual("WAVE", System.Text.Encoding.ASCII.GetString(wav, 8, 4), "Expected WAVE header.");
+            AssertEqual(16000, BitConverter.ToInt32(wav, 24), "Expected sample rate in WAV header.");
+            AssertEqual("data", System.Text.Encoding.ASCII.GetString(wav, 36, 4), "Expected data chunk header.");
+            AssertEqual(10, BitConverter.ToInt32(wav, 40), "Expected data byte count.");
+        }
+
+        static void TestPostWakeCommandFilterIgnoresFiller()
+        {
+            VoiceActivationConfig config = ScriptableObject.CreateInstance<VoiceActivationConfig>();
+            try
+            {
+                config.minCommandPhraseDurationSeconds = 0.35f;
+
+                AssertTrue(
+                    VadAsrWakeTrigger.ShouldIgnoreCommandPhraseForTests("AND", 0.68f, config),
+                    "Expected filler transcript from silence/noise to be ignored.");
+                AssertTrue(
+                    VadAsrWakeTrigger.ShouldIgnoreCommandPhraseForTests("uh", 0.5f, config),
+                    "Expected filler hesitation to be ignored.");
+                AssertTrue(
+                    VadAsrWakeTrigger.ShouldIgnoreCommandPhraseForTests("create a red ball", 0.2f, config),
+                    "Expected very short command segment to be ignored.");
+                AssertTrue(
+                    !VadAsrWakeTrigger.ShouldIgnoreCommandPhraseForTests("create a red ball", 1.1f, config),
+                    "Expected real command phrase to be accepted.");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(config);
+            }
         }
 
         static void TestExistingObjectPhysicsCommandsParseLocally()

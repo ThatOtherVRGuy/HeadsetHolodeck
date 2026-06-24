@@ -22,6 +22,8 @@ namespace SpeechIntent.VoiceActivation
 
         [Header("Command Window")]
         public float commandListenTimeoutSeconds = 7f;
+        [Tooltip("Ignore post-wake VAD/ASR command snippets shorter than this duration. Helps avoid accepting tiny noise clips after the wake cue.")]
+        public float minCommandPhraseDurationSeconds = 0.35f;
         public float cooldownSeconds = 0.75f;
 
         [Header("Diagnostics")]

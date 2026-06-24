@@ -26,6 +26,8 @@ Quest / Android notes:
 - The app must request and have `android.permission.RECORD_AUDIO`.
 - Ponyu `MicrophoneSource` requests microphone permission when `requestMicrophonePermission` is enabled.
 - If Quest returns silence through Unity's microphone API, Ponyu's `MicrophoneSource` includes an Android AudioRecord fallback path.
+- The fallback tries `VOICE_RECOGNITION`, then `VOICE_COMMUNICATION`, then `MIC`. Quest logcat reports the selected source and measured sample amplitude under `SherpaOnnxMic`.
+- Wake recognition can use configured alternate spellings for common ASR variants, such as `pewter`, `peter`, and `impewter` for `computer`.
 
 Sherpa notes:
 

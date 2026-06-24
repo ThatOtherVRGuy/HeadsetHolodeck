@@ -13,6 +13,8 @@ namespace SpeechIntent.VoiceActivation
         public bool startOnEnable = true;
         [Tooltip("Quest can emit short pause/focus transitions during startup. Voice activation stops only if pause persists past this delay.")]
         [Min(0f)] public float pauseStopDelaySeconds = 2f;
+        [Tooltip("Wait briefly after Quest returns audio focus before recreating the microphone/VAD session.")]
+        [Min(0f)] public float resumeMicrophoneDelaySeconds = 0.35f;
 
         [Header("Implementations")]
         [Tooltip("Assign a MonoBehaviour that implements IWakeTrigger. If empty, the controller selects VadAsrWakeTrigger or KwsWakeTrigger from config.")]
@@ -44,6 +46,8 @@ namespace SpeechIntent.VoiceActivation
         CancellationTokenSource _pauseCts;
         bool _wasRunningBeforePause;
         bool _isStarting;
+        bool _isResuming;
+        bool _isApplicationPaused;
 
         public VoiceListeningState State => state;
 
@@ -69,6 +73,7 @@ namespace SpeechIntent.VoiceActivation
         async void OnApplicationPause(bool pause)
         {
             Log($"OnApplicationPause({pause}). state={state}");
+            _isApplicationPaused = pause;
             if (pause)
             {
                 _wasRunningBeforePause = state != VoiceListeningState.Disabled || _isStarting;
@@ -78,10 +83,20 @@ namespace SpeechIntent.VoiceActivation
 
             CancelPauseStop();
             if (_wasRunningBeforePause && isActiveAndEnabled)
+                await RestartVoiceActivationAfterResumeAsync("application pause");
+        }
+
+        void OnApplicationFocus(bool hasFocus)
+        {
+            Log($"OnApplicationFocus({hasFocus}). state={state}, isPaused={_isApplicationPaused}");
+            if (!hasFocus)
             {
-                _wasRunningBeforePause = false;
-                await StartVoiceActivationAsync();
+                _wasRunningBeforePause |= state != VoiceListeningState.Disabled || _isStarting;
+                return;
             }
+
+            if (_wasRunningBeforePause && isActiveAndEnabled && !_isApplicationPaused)
+                _ = RestartVoiceActivationAfterResumeAsync("application focus");
         }
 
         [ContextMenu("Start Voice Activation")]
@@ -184,6 +199,40 @@ namespace SpeechIntent.VoiceActivation
             SetState(VoiceListeningState.Disabled, "Voice activation disabled.");
         }
 
+        async Task RestartVoiceActivationAfterResumeAsync(string source)
+        {
+            if (_isResuming || !_wasRunningBeforePause || !isActiveAndEnabled)
+                return;
+
+            _isResuming = true;
+            _wasRunningBeforePause = false;
+            try
+            {
+                Log($"Restarting voice activation after {source}. state={state}");
+                await StopVoiceActivationAsync();
+
+                float delay = Mathf.Max(0f, resumeMicrophoneDelaySeconds);
+                if (delay > 0f)
+                    await Task.Delay(TimeSpan.FromSeconds(delay));
+
+                if (!isActiveAndEnabled || _isApplicationPaused)
+                {
+                    Log("Voice resume restart canceled because the application is no longer active.");
+                    return;
+                }
+
+                await StartVoiceActivationAsync();
+            }
+            catch (Exception ex)
+            {
+                SetError("Voice activation resume failed: " + ex.Message);
+            }
+            finally
+            {
+                _isResuming = false;
+            }
+        }
+
         async void HandleWakeDetected(WakeTriggerResult result)
         {
             Log(
@@ -229,13 +278,54 @@ namespace SpeechIntent.VoiceActivation
 
             if (commandResult == null || !commandResult.Success || string.IsNullOrWhiteSpace(commandResult.Transcript))
             {
+                if (IsNoCommandTimeout(commandResult))
+                {
+                    Log("No command heard after wake; returning to wake listener without error cue.");
+                    await EnterCooldownAsync();
+                    return;
+                }
+
                 SetError(commandResult != null ? commandResult.Error : "No command recognized.");
                 PlayCue(errorClip);
                 await EnterCooldownAsync();
                 return;
             }
 
-            await ProcessCommandAsync(commandResult.Transcript);
+            await ProcessCommandAsync(commandResult);
+        }
+
+        async Task ProcessCommandAsync(VoiceCommandRecognitionResult commandResult)
+        {
+            if (commandResult == null)
+            {
+                SetError("No command recognized.");
+                await EnterCooldownAsync();
+                return;
+            }
+
+            string commandText = (commandResult.Transcript ?? string.Empty).Trim();
+            Log(
+                $"ProcessCommandAsync(result). transcript='{commandText}', " +
+                $"hasAudio={commandResult.HasAudio}, audioBytes={commandResult.AudioWavBytes?.Length ?? 0}");
+
+            if (commandResult.HasAudio)
+            {
+                SetState(VoiceListeningState.ProcessingCommand, "Processing voice command.");
+                lastCommandText = commandText;
+                Log("Forwarding command audio to HeadsetHolodeckCommandRouter.");
+                commandRouter.HandleVoiceCommandAudio(commandResult.AudioWavBytes, commandText);
+                await EnterCooldownAsync();
+                return;
+            }
+
+            await ProcessCommandAsync(commandText);
+        }
+
+        static bool IsNoCommandTimeout(VoiceCommandRecognitionResult commandResult)
+        {
+            string error = commandResult != null ? commandResult.Error ?? string.Empty : string.Empty;
+            return error.IndexOf("No command heard", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   error.IndexOf("timeout", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         async Task ProcessCommandAsync(string commandText)

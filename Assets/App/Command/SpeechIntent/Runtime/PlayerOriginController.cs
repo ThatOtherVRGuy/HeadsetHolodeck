@@ -101,10 +101,13 @@ namespace SpeechIntent
         private void OnWorldLoaded(string worldId, GaussianSplatRenderer renderer)
         {
             _currentSpawnIndex = 0;
-            if (TryResetToSavedSpawnPoint())
+            // The renderer pose has just been validated or re-estimated from this exact
+            // decoded splat. Prefer it over persisted config data, which may predate a
+            // decoder/orientation repair and point far outside the current world.
+            if (TryResetToSpawnPose(renderer))
                 return;
 
-            if (TryResetToSpawnPose(renderer))
+            if (TryResetToSavedSpawnPoint())
                 return;
 
             ResetToOrigin();

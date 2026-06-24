@@ -92,20 +92,12 @@ namespace GaussianSplatting.Runtime
                 throw new IOException($"SPZ {label} read error, out of range fractional bits {fractBits}");
 
             int shCoeffs = SHCoeffsForLevel(shLevel);
-            NativeArray<byte> packedPos   = new(splatCount * 3 * 3, Allocator.Persistent);
-            NativeArray<byte> packedScale = new(splatCount * 3,     Allocator.Persistent);
-            NativeArray<byte> packedRot   = new(splatCount * 3,     Allocator.Persistent);
-            NativeArray<byte> packedAlpha = new(splatCount,          Allocator.Persistent);
-            NativeArray<byte> packedCol   = new(splatCount * 3,     Allocator.Persistent);
-            NativeArray<byte> packedSh    = new(splatCount * 3 * shCoeffs, Allocator.Persistent);
-
-            bool readOk = true;
-            readOk &= decompressedStream.Read(packedPos)   == packedPos.Length;
-            readOk &= decompressedStream.Read(packedAlpha) == packedAlpha.Length;
-            readOk &= decompressedStream.Read(packedCol)   == packedCol.Length;
-            readOk &= decompressedStream.Read(packedScale) == packedScale.Length;
-            readOk &= decompressedStream.Read(packedRot)   == packedRot.Length;
-            readOk &= decompressedStream.Read(packedSh)    == packedSh.Length;
+            byte[] packedPos   = ReadExactly(decompressedStream, splatCount * 3 * 3);
+            byte[] packedAlpha = ReadExactly(decompressedStream, splatCount);
+            byte[] packedCol   = ReadExactly(decompressedStream, splatCount * 3);
+            byte[] packedScale = ReadExactly(decompressedStream, splatCount * 3);
+            byte[] packedRot   = ReadExactly(decompressedStream, splatCount * 3);
+            byte[] packedSh    = ReadExactly(decompressedStream, splatCount * 3 * shCoeffs);
 
             splats = new NativeArray<InputSplatData>(splatCount, Allocator.Persistent);
             var job = new UnpackDataJob
@@ -120,31 +112,37 @@ namespace GaussianSplatting.Runtime
                 fractScale  = 1.0f / (1 << fractBits),
                 splats      = splats
             };
-            job.Schedule(splatCount, 4096).Complete();
+            // Runtime SPZ decoding already runs on a background Task. On Quest,
+            // scheduling this unpack job through Burst corrupts some int24 positions
+            // (observed as -4096 coordinate sentinels), so execute the same decoder
+            // deterministically on this worker thread instead.
+            for (int i = 0; i < splatCount; ++i)
+                job.Execute(i);
 
-            packedPos.Dispose();
-            packedScale.Dispose();
-            packedRot.Dispose();
-            packedAlpha.Dispose();
-            packedCol.Dispose();
-            packedSh.Dispose();
-
-            if (!readOk)
-            {
-                splats.Dispose();
-                throw new IOException($"SPZ {label} read error, file smaller than it should be");
-            }
         }
 
-        [BurstCompile]
-        struct UnpackDataJob : IJobParallelFor
+        static byte[] ReadExactly(Stream stream, int count)
         {
-            [NativeDisableParallelForRestriction] [ReadOnly] public NativeArray<byte> packedPos;
-            [NativeDisableParallelForRestriction] [ReadOnly] public NativeArray<byte> packedScale;
-            [NativeDisableParallelForRestriction] [ReadOnly] public NativeArray<byte> packedRot;
-            [NativeDisableParallelForRestriction] [ReadOnly] public NativeArray<byte> packedAlpha;
-            [NativeDisableParallelForRestriction] [ReadOnly] public NativeArray<byte> packedCol;
-            [NativeDisableParallelForRestriction] [ReadOnly] public NativeArray<byte> packedSh;
+            byte[] buffer = new byte[count];
+            int offset = 0;
+            while (offset < count)
+            {
+                int read = stream.Read(buffer, offset, count - offset);
+                if (read <= 0)
+                    throw new IOException($"SPZ stream ended at {offset} bytes; expected {count}.");
+                offset += read;
+            }
+            return buffer;
+        }
+
+        struct UnpackDataJob
+        {
+            public byte[] packedPos;
+            public byte[] packedScale;
+            public byte[] packedRot;
+            public byte[] packedAlpha;
+            public byte[] packedCol;
+            public byte[] packedSh;
             public float fractScale;
             public int shCoeffs;
             public NativeArray<InputSplatData> splats;

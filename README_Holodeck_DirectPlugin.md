@@ -91,3 +91,5 @@ See the plugin README, but the important ones are:
 ## Notes
 - This is intentionally not secure. The OpenAI key is hardcoded in the client.
 - The World Labs plugin still loads its key from `.env`.
+- Quest runtime splats are decoded through the vendored SPZ reader. Keep its managed packed-byte unpack path when building IL2CPP; it prevents corrupted int24 positions and invalid saved spawns on device.
+- For reliable Quest microphone capture, use the local Sherpa VAD/ASR setup described in `Assets/App/Command/SpeechIntent/Runtime/VoiceActivation/README_VoiceActivation.md`.

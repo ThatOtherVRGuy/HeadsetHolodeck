@@ -215,11 +215,17 @@ namespace WorldLabs.Runtime.Tools
 
             var (posFormat, scaleFormat, colorFormat, shFormat) = GetFormats(quality);
 
-            var (floorEstimate, spawnMetadata, data) = await Task.Run(() =>
+            // Unity.Collections used by the SPZ decoder and processor are not safe on
+            // Quest when allocated and accessed from Task.Run. Keep this work on the
+            // Unity thread; correctness is more important than a short load hitch.
+            var (floorEstimate, spawnMetadata, data) = ProcessOnUnityThread();
+
+            (SplatFloorEstimate floorEstimate, SplatSpawnMetadata spawnMetadata, RuntimeSplatData data) ProcessOnUnityThread()
             {
                 NativeArray<InputSplatData> inputSplats = default;
                 try
                 {
+                    Debug.Log($"[RuntimeSplatFloorLoader] SPZ source world='{worldName}'; {DescribeSourceBytes(spzBytes)}.");
                     SPZFileReader.ReadFile(spzBytes, out inputSplats);
                     SplatFloorEstimate floorEstimate = SplatFloorAnalyzer.AnalyzeSplats(inputSplats, opts);
                     SplatSpawnMetadata spawnMetadata = ResolveSpawnMetadata(
@@ -232,6 +238,8 @@ namespace WorldLabs.Runtime.Tools
                     RuntimeSplatData data = RuntimeSplatProcessing.Process(
                         inputSplats, posFormat, scaleFormat, colorFormat, shFormat);
 
+                    Debug.Log("[RuntimeSplatFloorLoader] " + BuildRuntimeDataSignature(worldName, data));
+
                     data.worldId      = worldId;
                     data.worldName    = worldName;
                     data.thumbnailUrl = thumbnailUrl;
@@ -243,7 +251,7 @@ namespace WorldLabs.Runtime.Tools
                     if (inputSplats.IsCreated)
                         inputSplats.Dispose();
                 }
-            });
+            }
 
             // Back on the main thread; all Unity API calls go here.
             await Task.Yield();
@@ -274,6 +282,30 @@ namespace WorldLabs.Runtime.Tools
                 floorEstimate = floorEstimate,
                 spawnMetadata = spawnMetadata,
             };
+        }
+
+        static string BuildRuntimeDataSignature(string worldName, RuntimeSplatData data)
+        {
+            if (data == null)
+                return "Runtime data signature: <null>.";
+
+            return $"Runtime data signature world='{worldName}'; count={data.splatCount}; " +
+                   $"boundsMin={data.boundsMin}; boundsMax={data.boundsMax}; " +
+                   $"formats=pos:{data.posFormat},scale:{data.scaleFormat},color:{data.colorFormat},sh:{data.shFormat}; " +
+                   $"bytes=pos:{data.posData?.Length ?? 0},other:{data.othData?.Length ?? 0},color:{data.colData?.Length ?? 0},sh:{data.shData?.Length ?? 0},chunks:{data.chkData?.Length ?? 0}.";
+        }
+
+        static string DescribeSourceBytes(byte[] bytes)
+        {
+            const ulong offsetBasis = 14695981039346656037UL;
+            const ulong prime = 1099511628211UL;
+            ulong hash = offsetBasis;
+            for (int i = 0; i < bytes.Length; ++i)
+            {
+                hash ^= bytes[i];
+                hash *= prime;
+            }
+            return $"bytes={bytes.Length}; fnv1a64={hash:X16}";
         }
 
         /// <summary>
@@ -397,7 +429,12 @@ namespace WorldLabs.Runtime.Tools
             SplatFloorEstimate floorEstimate)
         {
             if (savedSpawnMetadata != null && savedSpawnMetadata.hasPose)
-                return savedSpawnMetadata;
+            {
+                if (IsSavedSpawnWithinPlacedBounds(savedSpawnMetadata, floorEstimate))
+                    return savedSpawnMetadata;
+
+                Debug.LogWarning($"[RuntimeSplatFloorLoader] Ignoring saved spawn for '{worldName}' because it is outside the newly decoded splat bounds.");
+            }
 
             return SplatSpawnEstimator.EstimateFromSplats(
                 inputSplats,
@@ -406,6 +443,35 @@ namespace WorldLabs.Runtime.Tools
                 worldName,
                 null,
                 floorEstimate);
+        }
+
+        /// <summary>
+        /// Rejects stale saved poses made against an incorrectly decoded or differently transformed splat.
+        /// The saved pose is in the placed-world coordinate space, as is this expanded bounds check.
+        /// </summary>
+        public static bool IsSavedSpawnWithinPlacedBounds(SplatSpawnMetadata savedSpawn, SplatFloorEstimate floorEstimate)
+        {
+            if (savedSpawn == null || !savedSpawn.hasPose || !IsFinite(savedSpawn.spawn))
+                return false;
+
+            // If a floor could not be estimated, retain the saved pose rather than replacing it
+            // with an unrelated fallback solely because we have no reliable new bounds.
+            if (floorEstimate == null || !floorEstimate.success)
+                return true;
+
+            Bounds placedBounds = floorEstimate.analyzedBounds;
+            placedBounds.center += floorEstimate.recommendedLocalPosition;
+
+            // Allow a normal entry point just outside a small capture while still rejecting
+            // grossly stale positions such as the former SPZ int24 sentinel-derived spawn.
+            float margin = Mathf.Max(2f, placedBounds.size.magnitude * 0.05f);
+            placedBounds.Expand(margin * 2f);
+            return placedBounds.Contains(savedSpawn.spawn);
+        }
+
+        static bool IsFinite(Vector3 value)
+        {
+            return float.IsFinite(value.x) && float.IsFinite(value.y) && float.IsFinite(value.z);
         }
 
         SplatSourceKind ResolveSourceKind(SplatSourceKind? sourceKind)

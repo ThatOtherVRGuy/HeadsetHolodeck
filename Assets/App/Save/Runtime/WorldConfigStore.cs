@@ -80,14 +80,56 @@ namespace Holodeck.Save
         }
 
         /// <summary>Overwrites world.json for an existing config, updating modified_at.</summary>
-        public void SaveConfig(WorldConfig config)
+        public WorldConfig SaveConfig(WorldConfig config)
         {
             if (config == null) throw new ArgumentNullException(nameof(config));
             if (!_configs.Exists(c => c.config_id == config.config_id))
                 throw new InvalidOperationException($"[WorldConfigStore] Config '{config.config_id}' is not tracked. Use CreateConfig first.");
             config.modified_at = DateTime.UtcNow.ToString("yyyy-MM-ddTHHmmssZ");
-            WriteJson(config);
+            try
+            {
+                WriteJson(config);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Debug.LogWarning($"[WorldConfigStore] Config '{config.config_id}' is read-only for this install; creating a writable copy. {ex.Message}");
+                MigrateConfigToWritableCopy(config);
+            }
             OnConfigsChanged?.Invoke();
+            return config;
+        }
+
+        /// <summary>
+        /// Moves a config's logical identity to a new folder created by the current app install.
+        /// This repairs legacy Android external-storage folders owned by a previous app UID while
+        /// preserving existing references to <paramref name="config"/>.
+        /// </summary>
+        public WorldConfig MigrateConfigToWritableCopy(WorldConfig config)
+        {
+            if (config == null) throw new ArgumentNullException(nameof(config));
+            if (!_configs.Exists(c => ReferenceEquals(c, config) || c.config_id == config.config_id))
+                throw new InvalidOperationException($"[WorldConfigStore] Config '{config.config_id}' is not tracked.");
+
+            string legacyId = config.config_id;
+            string writableId = CreateUniqueFolderId(RootPath, config.display_name ?? "World");
+            config.config_id = writableId;
+            config.migrated_from_config_id = legacyId;
+            config.modified_at = DateTime.UtcNow.ToString("yyyy-MM-ddTHHmmssZ");
+
+            try
+            {
+                WriteJson(config);
+            }
+            catch
+            {
+                config.config_id = legacyId;
+                config.migrated_from_config_id = null;
+                throw;
+            }
+
+            Debug.LogWarning($"[WorldConfigStore] Migrated read-only config '{legacyId}' to writable config '{writableId}'.");
+            OnConfigsChanged?.Invoke();
+            return config;
         }
 
         /// <summary>Reads world.json for the given config_id from disk.</summary>
@@ -465,6 +507,16 @@ namespace Holodeck.Save
                     Debug.LogWarning($"[WorldConfigStore] Could not parse {jsonPath}: {ex.Message}");
                 }
             }
+
+            // A writable copy explicitly supersedes an inaccessible legacy folder. Retain the
+            // copy only so the world appears once in My Worlds after every restart.
+            var supersededIds = new HashSet<string>(StringComparer.Ordinal);
+            foreach (WorldConfig config in result)
+            {
+                if (!string.IsNullOrWhiteSpace(config.migrated_from_config_id))
+                    supersededIds.Add(config.migrated_from_config_id);
+            }
+            result.RemoveAll(config => !string.IsNullOrWhiteSpace(config.config_id) && supersededIds.Contains(config.config_id));
             return result;
         }
     }

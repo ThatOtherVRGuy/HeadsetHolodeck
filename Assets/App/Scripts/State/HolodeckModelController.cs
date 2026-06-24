@@ -58,6 +58,7 @@ namespace Holodeck.State
             if (worldId == DefaultWorldId) return;
             if (holodeckModel == null) return;
 
+            Debug.Log($"[HolodeckModelController] World load started ('{worldId}'); showing static holodeck.", this);
             holodeckModel.SetActive(true);
 
             if (audioSource != null && worldLoadingClip != null)
@@ -69,14 +70,17 @@ namespace Holodeck.State
             if (worldId == DefaultWorldId) return;
             if (holodeckModel == null) return;
 
+            Debug.Log($"[HolodeckModelController] World loaded ('{worldId}'); hiding static holodeck.", this);
             holodeckModel.SetActive(false);
         }
 
         private void HandleWorldLoadFailed(string worldId, string error)
         {
+            if (worldId == DefaultWorldId) return;
             if (holodeckModel == null) return;
 
-            holodeckModel.SetActive(false);
+            Debug.LogWarning($"[HolodeckModelController] World load failed ('{worldId}'): {error}. Keeping static holodeck visible.", this);
+            holodeckModel.SetActive(true);
         }
     }
 }

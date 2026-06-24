@@ -282,7 +282,7 @@ namespace SpeechIntent.Audio
                  command.target_reference != TargetReferenceMode.PointedObject &&
                  IsAudioCategoryTarget(command)))
             {
-                return StopAndDestroyAllWorldAudio();
+                return StopAndDestroyAllWorldAudio(removeSavedRecords: true);
             }
 
             GameObject target = ResolveAudioTarget(command);
@@ -292,7 +292,7 @@ namespace SpeechIntent.Audio
                 return 0;
             }
 
-            DestroyWorldAudioTarget(target);
+            DestroyWorldAudioTarget(target, removeSavedRecord: true);
             EmitStatus($"Deleted audio source '{target.name}'.");
             return 1;
         }
@@ -823,6 +823,7 @@ namespace SpeechIntent.Audio
             if (skipDefaultWorld && worldId == "__default__") return;
             if (string.IsNullOrWhiteSpace(worldId)) return;
             if (!_worldsWithAmbience.Add(worldId)) return;
+            if (!ShouldCreateAutomaticAmbience(worldConfigAutoSave?.ActiveConfig)) return;
 
             World world = worldManager != null ? worldManager.LastLoadedWorld : null;
             string worldText = world != null && !string.IsNullOrWhiteSpace(world.display_name)
@@ -861,6 +862,25 @@ namespace SpeechIntent.Audio
                 sound_max_duration_seconds = maxDurationSeconds,
                 spatial_reference = SpatialReferenceMode.HeadForward
             };
+        }
+
+        internal static bool ShouldCreateAutomaticAmbience(WorldConfig config)
+        {
+            if (config?.objects == null)
+                return true;
+
+            foreach (SavedObject savedObject in config.objects)
+            {
+                if (savedObject?.components == null)
+                    continue;
+                foreach (SavedComponent component in savedObject.components)
+                {
+                    if (component != null && string.Equals(component.type, "AudioSource", StringComparison.Ordinal))
+                        return false;
+                }
+            }
+
+            return true;
         }
 
         private GameObject ResolveAudioTarget(VoiceIntentCommand command)
@@ -1112,7 +1132,7 @@ namespace SpeechIntent.Audio
                    normalized == "everything";
         }
 
-        public int StopAndDestroyAllWorldAudio()
+        public int StopAndDestroyAllWorldAudio(bool removeSavedRecords = false)
         {
             _audioLifetimeVersion++;
 
@@ -1120,7 +1140,7 @@ namespace SpeechIntent.Audio
             List<GameObject> targets = GetWorldAudioTargets();
             foreach (GameObject target in targets)
             {
-                if (DestroyWorldAudioTarget(target))
+                if (DestroyWorldAudioTarget(target, removeSavedRecords))
                     destroyed++;
             }
 
@@ -1189,7 +1209,7 @@ namespace SpeechIntent.Audio
             return destroyed;
         }
 
-        private bool DestroyWorldAudioTarget(GameObject target)
+        private bool DestroyWorldAudioTarget(GameObject target, bool removeSavedRecord = false)
         {
             if (target == null || IsUxAudioObject(target))
                 return false;
@@ -1197,6 +1217,9 @@ namespace SpeechIntent.Audio
             AudioSource source = target.GetComponent<AudioSource>();
             if (source != null)
                 source.Stop();
+
+            if (removeSavedRecord)
+                worldConfigAutoSave?.RemoveSavedObject(target);
 
             for (int i = _spawnedAudio.Count - 1; i >= 0; i--)
             {

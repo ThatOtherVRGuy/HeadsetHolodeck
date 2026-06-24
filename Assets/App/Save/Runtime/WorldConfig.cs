@@ -14,6 +14,9 @@ namespace Holodeck.Save
         public string modified_at;  // ISO 8601 UTC
         public WorldSourceData world_source;
         public string generation_model;
+        // Set when a legacy external-storage config could be read but not written by the
+        // current Android install. The writable copy retains the old config's content.
+        public string migrated_from_config_id;
         public WorldTransformData world_transform;
         public List<PromptEntry> prompts = new List<PromptEntry>();
         public List<SpawnPointData> spawn_points = new List<SpawnPointData>();

@@ -74,6 +74,8 @@ To add a new trigger source, implement `IWakeTrigger` on a `MonoBehaviour` and a
 
 `OpenAITranscriptionClient` POSTs WAV bytes to the OpenAI `/v1/audio/transcriptions` endpoint using `UnityWebRequest` multipart form. Model is `gpt-4o-transcribe` (configurable via `HolodeckDirectSecrets`). It exposes a coroutine-friendly API: `TranscribeWav(wavBytes, onSuccess, onError)`.
 
+On Quest, local Sherpa VAD/ASR may fall back from Unity microphone capture to Android `AudioRecord` if Unity returns silence. The Java bridge tries Android voice sources in this order: `VOICE_RECOGNITION`, `VOICE_COMMUNICATION`, then `MIC`.
+
 ### Coordinator (`Holodeck.Direct`)
 
 `VoiceToWorldLabsPluginCoordinator` is the top-level orchestrator. It subscribes to `IWakeTrigger.WakeTriggered` and toggles recording on successive presses (first press = begin, second press = stop + generate). The generation coroutine (`RunVoiceToWorldFlow`) drives the state machine through its full arc and bridges into the official World Labs plugin:
@@ -113,3 +115,10 @@ Key packages from `Packages/manifest.json`:
 - `com.unity.xr.androidxr-openxr` 1.0.2 — Android XR/OpenXR support
 
 The World Labs plugin (`WorldLabs.API`, `WorldLabs.Runtime`) is a separate Unity plugin not tracked in this repo.
+
+## Quest Splat And Audio Persistence Notes
+
+- The vendored SPZ reader deliberately uses managed packed byte arrays for Quest-safe int24 unpacking. Do not restore the Burst/NativeArray unpack route without validating real-device bounds.
+- `RuntimeSplatFloorLoader` rejects saved spawns outside freshly decoded placed bounds, then estimates a fresh pose.
+- Audio deletion must remove the corresponding `WorldConfig` object before destroying the runtime source. Ordinary world unload and application shutdown are cleanup only and must not remove saved audio.
+- Automatic ambience is skipped for a restored world whose config already contains an `AudioSource` record.

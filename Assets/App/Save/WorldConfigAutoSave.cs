@@ -464,6 +464,25 @@ namespace Holodeck.Save
             OnObjectMutated(command, go);
         }
 
+        /// <summary>Removes a runtime object's persisted record before the object is destroyed.</summary>
+        public bool RemoveSavedObject(GameObject go)
+        {
+            if (go == null || ActiveConfig?.objects == null)
+                return false;
+
+            SpeechIntentTrackable trackable = go.GetComponent<SpeechIntentTrackable>();
+            if (trackable == null || string.IsNullOrWhiteSpace(trackable.configInstanceId))
+                return false;
+
+            int removed = ActiveConfig.objects.RemoveAll(item => item != null && item.instance_id == trackable.configInstanceId);
+            if (removed <= 0)
+                return false;
+
+            worldConfigStore?.SaveConfig(ActiveConfig);
+            Debug.Log($"[WorldConfigAutoSave] Removed saved object '{trackable.configInstanceId}'.");
+            return true;
+        }
+
         void OnObjectMutated(VoiceIntentCommand command, GameObject go)
         {
             if (worldConfigStore == null || ActiveConfig == null) return;
