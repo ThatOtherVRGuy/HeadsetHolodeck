@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using GLTFast;
 using Holodeck.Save;
@@ -558,12 +559,23 @@ namespace Holodeck.Direct
                 gltf = null;
                 handedOff = true;
                 ApplyCachedObjectReference(root, cachedRecord);
+                LogGeneratedObjectDiagnostics(root, "after-instantiate");
+                bool repairedTextures = GeneratedObjectGlbTextureRepair.RepairMissingBaseColorTextures(
+                    root,
+                    result.modelBytes,
+                    objectPlacement != null ? objectPlacement.defaultGeneratedColor : Color.white);
+                if (repairedTextures)
+                    Debug.Log("[ObjectGenerationDiagnostics] Applied embedded GLB base-color texture repair.", this);
+                LogGeneratedObjectDiagnostics(root, "after-texture-repair");
                 NormalizeSize(root);
+                LogGeneratedObjectDiagnostics(root, "after-normalize-size");
                 InteractableObjectWrapper.NormalizeRendering(
                     root,
                     objectPlacement != null ? objectPlacement.defaultGeneratedMaterial : null,
                     objectPlacement != null ? objectPlacement.defaultGeneratedColor : Color.gray);
+                LogGeneratedObjectDiagnostics(root, "after-normalize-rendering");
                 EnsureGeneratedObjectInteraction(root, request.objectName);
+                LogGeneratedObjectDiagnostics(root, "after-interaction-physics");
                 onComplete?.Invoke(root, null);
             }
             finally
@@ -659,7 +671,156 @@ namespace Holodeck.Direct
                 generatedObjectMass,
                 fallbackMaterial,
                 fallbackColor,
-                applyMaterialWhenMissing);
+                applyMaterialWhenMissing,
+                forceRootBoundingBoxCollider: true,
+                forceRootRigidbody: true);
+        }
+
+        void LogGeneratedObjectDiagnostics(GameObject root, string phase)
+        {
+            if (root == null)
+                return;
+
+            try
+            {
+                Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+                Collider[] colliders = root.GetComponentsInChildren<Collider>(true);
+                Rigidbody rootBody = root.GetComponent<Rigidbody>();
+                BoxCollider rootBox = root.GetComponent<BoxCollider>();
+                Bounds bounds;
+                bool hasBounds = TryCollectRendererBounds(root, renderers, out bounds);
+
+                var sb = new StringBuilder(2048);
+                sb.Append("[ObjectGenerationDiagnostics] phase=").Append(phase)
+                    .Append(" root='").Append(root.name).Append('\'')
+                    .Append(" renderers=").Append(renderers != null ? renderers.Length : 0)
+                    .Append(" colliders=").Append(colliders != null ? colliders.Length : 0)
+                    .Append(" rootRigidbody=").Append(rootBody != null);
+
+                if (rootBody != null)
+                {
+                    sb.Append(" rootRbGravity=").Append(rootBody.useGravity)
+                        .Append(" rootRbKinematic=").Append(rootBody.isKinematic)
+                        .Append(" rootRbDetectCollisions=").Append(rootBody.detectCollisions)
+                        .Append(" rootRbCollision=").Append(rootBody.collisionDetectionMode)
+                        .Append(" rootRbMass=").Append(rootBody.mass.ToString("0.###"));
+                }
+
+                sb.Append(" rootBox=").Append(rootBox != null);
+                if (rootBox != null)
+                {
+                    sb.Append(" rootBoxEnabled=").Append(rootBox.enabled)
+                        .Append(" rootBoxCenter=").Append(FormatVector(rootBox.center))
+                        .Append(" rootBoxSize=").Append(FormatVector(rootBox.size));
+                }
+
+                if (hasBounds)
+                {
+                    sb.Append(" rendererBoundsCenter=").Append(FormatVector(bounds.center))
+                        .Append(" rendererBoundsSize=").Append(FormatVector(bounds.size));
+                }
+
+                Debug.Log(sb.ToString(), this);
+
+                if (renderers == null)
+                    return;
+
+                int rendererLimit = Mathf.Min(renderers.Length, 8);
+                for (int r = 0; r < rendererLimit; r++)
+                {
+                    Renderer renderer = renderers[r];
+                    if (renderer == null)
+                        continue;
+
+                    Material[] materials = renderer.sharedMaterials;
+                    int materialCount = materials != null ? materials.Length : 0;
+                    Debug.Log($"[ObjectGenerationDiagnostics] phase={phase} renderer[{r}] name='{renderer.name}' type={renderer.GetType().Name} enabled={renderer.enabled} materialCount={materialCount}", this);
+
+                    int materialLimit = Mathf.Min(materialCount, 6);
+                    for (int m = 0; m < materialLimit; m++)
+                    {
+                        Material material = materials[m];
+                        if (material == null)
+                        {
+                            Debug.Log($"[ObjectGenerationDiagnostics] phase={phase} renderer[{r}].material[{m}] null", this);
+                            continue;
+                        }
+
+                        Debug.Log(
+                            $"[ObjectGenerationDiagnostics] phase={phase} renderer[{r}].material[{m}] " +
+                            $"name='{material.name}' shader='{(material.shader != null ? material.shader.name : "<null>")}' " +
+                            $"color={FormatColor(ReadMaterialColor(material))} " +
+                            $"baseMap={FormatTexture(material, "_BaseMap")} " +
+                            $"mainTex={FormatTexture(material, "_MainTex")} " +
+                            $"baseColorTexture={FormatTexture(material, "baseColorTexture")} " +
+                            $"normalMap={FormatTexture(material, "_BumpMap")} " +
+                            $"metallicGlossMap={FormatTexture(material, "_MetallicGlossMap")}",
+                            this);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[ObjectGenerationDiagnostics] phase={phase} failed: {ex.Message}", this);
+            }
+        }
+
+        static bool TryCollectRendererBounds(GameObject root, Renderer[] renderers, out Bounds bounds)
+        {
+            bounds = new Bounds(root != null ? root.transform.position : Vector3.zero, Vector3.zero);
+            bool hasBounds = false;
+            if (renderers == null)
+                return false;
+
+            foreach (Renderer renderer in renderers)
+            {
+                if (renderer == null)
+                    continue;
+                if (!hasBounds)
+                {
+                    bounds = renderer.bounds;
+                    hasBounds = true;
+                }
+                else
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+            }
+
+            return hasBounds;
+        }
+
+        static Color ReadMaterialColor(Material material)
+        {
+            if (material == null)
+                return Color.clear;
+            if (material.HasProperty("_BaseColor"))
+                return material.GetColor("_BaseColor");
+            if (material.HasProperty("_Color"))
+                return material.GetColor("_Color");
+            return Color.clear;
+        }
+
+        static string FormatTexture(Material material, string propertyName)
+        {
+            if (material == null || string.IsNullOrWhiteSpace(propertyName) || !material.HasProperty(propertyName))
+                return "<no-property>";
+
+            Texture texture = material.GetTexture(propertyName);
+            if (texture == null)
+                return "<null>";
+
+            return $"'{texture.name}' {texture.width}x{texture.height}";
+        }
+
+        static string FormatVector(Vector3 value)
+        {
+            return $"({value.x:0.###},{value.y:0.###},{value.z:0.###})";
+        }
+
+        static string FormatColor(Color value)
+        {
+            return $"({value.r:0.###},{value.g:0.###},{value.b:0.###},{value.a:0.###})";
         }
 
         void ResolveImportPose(VoiceIntentCommand placementCommand, SpatialSnapshot spatial, out Vector3 position, out Quaternion rotation)

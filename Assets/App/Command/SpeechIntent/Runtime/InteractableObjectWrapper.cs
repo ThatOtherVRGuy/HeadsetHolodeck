@@ -22,7 +22,9 @@ namespace SpeechIntent
             float mass,
             Material fallbackMaterial,
             Color fallbackColor,
-            bool applyMaterialWhenMissing)
+            bool applyMaterialWhenMissing,
+            bool forceRootBoundingBoxCollider = false,
+            bool forceRootRigidbody = false)
         {
             if (root == null)
                 return;
@@ -35,22 +37,32 @@ namespace SpeechIntent
             if (addTrackable)
                 EnsureTrackable(root, canonicalName);
 
-            if (addColliderIfMissing)
+            if (forceRootBoundingBoxCollider)
+                EnsureRootBoundingBoxCollider(root);
+            else if (addColliderIfMissing)
                 EnsureCollider(root);
 
             Rigidbody body = null;
             if (addRigidbody)
             {
-                body = root.GetComponent<Rigidbody>();
-                if (body == null)
-                    body = root.GetComponentInChildren<Rigidbody>(true);
-                if (body == null)
+                if (forceRootRigidbody)
                 {
-                    body = root.AddComponent<Rigidbody>();
+                    body = root.GetComponent<Rigidbody>();
+                    if (body == null)
+                        body = root.AddComponent<Rigidbody>();
+                }
+                else
+                {
+                    body = root.GetComponent<Rigidbody>();
+                    if (body == null)
+                        body = root.GetComponentInChildren<Rigidbody>(true);
+                    if (body == null)
+                        body = root.AddComponent<Rigidbody>();
                 }
 
                 body.useGravity = useGravity;
                 body.isKinematic = isKinematic;
+                body.detectCollisions = true;
                 body.mass = Mathf.Max(0.001f, mass);
                 body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
             }
@@ -266,23 +278,36 @@ namespace SpeechIntent
             if (colliders != null && colliders.Length > 0)
                 return;
 
+            EnsureRootBoundingBoxCollider(root);
+        }
+
+        public static BoxCollider EnsureRootBoundingBoxCollider(GameObject root)
+        {
+            if (root == null)
+                return null;
+
+            BoxCollider box = root.GetComponent<BoxCollider>();
+            if (box == null)
+                box = root.AddComponent<BoxCollider>();
+
             Bounds bounds;
             if (!TryGetRendererBounds(root, out bounds))
             {
-                BoxCollider defaultCollider = root.AddComponent<BoxCollider>();
-                defaultCollider.size = Vector3.one;
-                defaultCollider.center = Vector3.zero;
-                return;
+                box.size = Vector3.one;
+                box.center = Vector3.zero;
+                box.enabled = true;
+                return box;
             }
 
-            BoxCollider box = root.AddComponent<BoxCollider>();
             Vector3 localCenter = root.transform.InverseTransformPoint(bounds.center);
             Vector3 localSize = root.transform.InverseTransformVector(bounds.size);
             box.center = localCenter;
             box.size = new Vector3(
-                Mathf.Abs(localSize.x),
-                Mathf.Abs(localSize.y),
-                Mathf.Abs(localSize.z));
+                Mathf.Max(0.001f, Mathf.Abs(localSize.x)),
+                Mathf.Max(0.001f, Mathf.Abs(localSize.y)),
+                Mathf.Max(0.001f, Mathf.Abs(localSize.z)));
+            box.enabled = true;
+            return box;
         }
 
         static bool TryGetRendererBounds(GameObject root, out Bounds bounds)

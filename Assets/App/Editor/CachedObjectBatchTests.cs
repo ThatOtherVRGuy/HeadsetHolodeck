@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using Holodeck.Direct;
 using Holodeck.Save;
 using Newtonsoft.Json.Linq;
@@ -20,6 +21,7 @@ namespace HeadsetHolodeck.EditorTests
             try
             {
                 TestGeneratedObjectWrapperAddsPhysicalColliderAndGravity();
+                TestGeneratedObjectWrapperCanForceRootBoundingBoxPhysics();
                 TestGeneratedObjectWrapperReusesExistingComponents();
                 TestObjectPlacementDefaultsGravityForWrappedGeneratedGeometry();
                 Debug.Log("[CachedObjectBatchTests] Generated object physics tests passed.");
@@ -27,6 +29,21 @@ namespace HeadsetHolodeck.EditorTests
             catch (Exception ex)
             {
                 Debug.LogError("[CachedObjectBatchTests] Generated object physics tests failed: " + ex);
+                EditorApplication.Exit(1);
+                throw;
+            }
+        }
+
+        public static void RunGeneratedObjectTextureRepairTests()
+        {
+            try
+            {
+                TestGeneratedObjectGlbTextureRepairExtractsEmbeddedBaseColorTexture();
+                Debug.Log("[CachedObjectBatchTests] Generated object texture repair tests passed.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("[CachedObjectBatchTests] Generated object texture repair tests failed: " + ex);
                 EditorApplication.Exit(1);
                 throw;
             }
@@ -82,7 +99,9 @@ namespace HeadsetHolodeck.EditorTests
 
                 TestCachedObjectChoiceController();
                 TestPrimitiveRenderingNormalization();
+                TestGeneratedObjectGlbTextureRepairExtractsEmbeddedBaseColorTexture();
                 TestGeneratedObjectWrapperAddsPhysicalColliderAndGravity();
+                TestGeneratedObjectWrapperCanForceRootBoundingBoxPhysics();
                 TestGeneratedObjectWrapperReusesExistingComponents();
                 TestObjectGenerationSpinnerLifecycle();
                 TestThreeDAIStudioStatusUrlFallback();
@@ -369,6 +388,74 @@ namespace HeadsetHolodeck.EditorTests
             }
         }
 
+        static void TestGeneratedObjectWrapperCanForceRootBoundingBoxPhysics()
+        {
+            GameObject root = new GameObject("GeneratedObject_ForcedRootPhysics_Test");
+            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            try
+            {
+                Collider childCollider = visual.GetComponent<Collider>();
+                Rigidbody childBody = visual.AddComponent<Rigidbody>();
+                childBody.useGravity = false;
+                childBody.isKinematic = true;
+
+                visual.name = "GeneratedVisual";
+                visual.transform.SetParent(root.transform, false);
+                visual.transform.localPosition = new Vector3(0f, 0.75f, 0f);
+                visual.transform.localScale = new Vector3(0.25f, 1.5f, 0.4f);
+
+                InteractableObjectWrapper.Wrap(
+                    root,
+                    "forced physics object",
+                    addTrackable: true,
+                    addColliderIfMissing: true,
+                    addRigidbody: true,
+                    addGrabInteractable: false,
+                    useGravity: true,
+                    isKinematic: false,
+                    mass: 5f,
+                    fallbackMaterial: null,
+                    fallbackColor: Color.gray,
+                    applyMaterialWhenMissing: true,
+                    forceRootBoundingBoxCollider: true,
+                    forceRootRigidbody: true);
+
+                BoxCollider rootBox = root.GetComponent<BoxCollider>();
+                Rigidbody rootBody = root.GetComponent<Rigidbody>();
+
+                AssertTrue(childCollider != null && childCollider == visual.GetComponent<Collider>(), "Expected existing child Collider to be preserved.");
+                AssertTrue(childBody != null && childBody == visual.GetComponent<Rigidbody>(), "Expected existing child Rigidbody to be preserved.");
+                AssertTrue(rootBox != null, "Expected forced generated physics to add a root bounding-box collider.");
+                AssertTrue(rootBox.size.x > 0.2f && rootBox.size.y > 1f && rootBox.size.z > 0.3f, "Expected root bounding-box collider to cover child renderer bounds.");
+                AssertTrue(rootBody != null, "Expected forced generated physics to add a root Rigidbody.");
+                AssertTrue(rootBody.useGravity, "Expected forced root Rigidbody to use gravity.");
+                AssertTrue(!rootBody.isKinematic, "Expected forced root Rigidbody to be non-kinematic.");
+                AssertTrue(rootBody.detectCollisions, "Expected forced root Rigidbody collisions to be enabled.");
+                AssertTrue(Mathf.Abs(rootBody.mass - 5f) < 0.001f, "Expected forced root Rigidbody mass to be applied.");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(root);
+            }
+        }
+
+        static void TestGeneratedObjectGlbTextureRepairExtractsEmbeddedBaseColorTexture()
+        {
+            Texture2D texture = null;
+            try
+            {
+                byte[] glb = BuildMinimalTexturedGlb();
+                texture = GeneratedObjectGlbTextureRepair.ExtractFirstBaseColorTexture(glb);
+                AssertTrue(texture != null, "Expected embedded GLB base-color texture to be extracted.");
+                AssertTrue(texture.width == 1 && texture.height == 1, "Expected extracted test texture dimensions to match the embedded PNG.");
+            }
+            finally
+            {
+                if (texture != null)
+                    UnityEngine.Object.DestroyImmediate(texture);
+            }
+        }
+
         static void TestGeneratedObjectWrapperReusesExistingComponents()
         {
             GameObject root = new GameObject("GeneratedObject_ExistingComponents_Test");
@@ -492,6 +579,24 @@ namespace HeadsetHolodeck.EditorTests
             }";
             string signedUrl = (string)findUrl.Invoke(null, new object[] { signedJson, true });
             AssertEqual("https://storage.3daistudio.com/signed-download/abc123?token=secret", signedUrl, "Expected signed model URL without .glb extension.");
+
+            string texturedJson = @"{
+                ""status"": ""FINISHED"",
+                ""results"": [
+                    {
+                        ""asset"": ""https://storage.3daistudio.com/assets/geometry_only_model.glb"",
+                        ""asset_type"": ""3D_MODEL"",
+                        ""metadata"": { ""texture"": false }
+                    },
+                    {
+                        ""asset"": ""https://storage.3daistudio.com/assets/textured_pbr_model.glb"",
+                        ""asset_type"": ""TEXTURED_PBR_MODEL"",
+                        ""metadata"": { ""texture"": true, ""pbr"": true }
+                    }
+                ]
+            }";
+            string texturedUrl = (string)findUrl.Invoke(null, new object[] { texturedJson, true });
+            AssertEqual("https://storage.3daistudio.com/assets/textured_pbr_model.glb", texturedUrl, "Expected textured/PBR 3dAIStudio model URL to win over geometry-only model URL.");
         }
 
         static void TestGenerationControlParser()
@@ -818,6 +923,65 @@ namespace HeadsetHolodeck.EditorTests
             CachedObjectRecord loaded = store.Load(record.object_id);
             AssertEqual("thumb_000.png", loaded.thumbnail_path, "Expected saved thumbnail_path to round trip.");
             AssertEqual(1, loaded.thumbnail_frames.Count, "Expected saved thumbnail frame list to round trip.");
+        }
+
+        static byte[] BuildMinimalTexturedGlb()
+        {
+            Texture2D sourceTexture = new Texture2D(1, 1, TextureFormat.RGBA32, mipChain: false);
+            byte[] pngBytes;
+            try
+            {
+                sourceTexture.SetPixel(0, 0, Color.red);
+                sourceTexture.Apply();
+                pngBytes = sourceTexture.EncodeToPNG();
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(sourceTexture);
+            }
+
+            string json =
+                "{" +
+                "\"asset\":{\"version\":\"2.0\"}," +
+                "\"buffers\":[{\"byteLength\":" + pngBytes.Length + "}]," +
+                "\"bufferViews\":[{\"buffer\":0,\"byteOffset\":0,\"byteLength\":" + pngBytes.Length + "}]," +
+                "\"images\":[{\"name\":\"TinyBaseColor\",\"mimeType\":\"image/png\",\"bufferView\":0}]," +
+                "\"textures\":[{\"source\":0}]," +
+                "\"materials\":[{\"pbrMetallicRoughness\":{\"baseColorTexture\":{\"index\":0}}}]" +
+                "}";
+
+            byte[] jsonBytes = PadToFourBytes(Encoding.UTF8.GetBytes(json), (byte)' ');
+            byte[] binBytes = PadToFourBytes(pngBytes, 0);
+            int totalLength = 12 + 8 + jsonBytes.Length + 8 + binBytes.Length;
+
+            using (var stream = new MemoryStream(totalLength))
+            using (var writer = new BinaryWriter(stream))
+            {
+                writer.Write(0x46546C67u);
+                writer.Write(2u);
+                writer.Write((uint)totalLength);
+                writer.Write((uint)jsonBytes.Length);
+                writer.Write(0x4E4F534Au);
+                writer.Write(jsonBytes);
+                writer.Write((uint)binBytes.Length);
+                writer.Write(0x004E4942u);
+                writer.Write(binBytes);
+                return stream.ToArray();
+            }
+        }
+
+        static byte[] PadToFourBytes(byte[] source, byte padByte)
+        {
+            int length = source.Length;
+            int paddedLength = (length + 3) & ~3;
+            if (paddedLength == length)
+                return source;
+
+            byte[] result = new byte[paddedLength];
+            Buffer.BlockCopy(source, 0, result, 0, source.Length);
+            for (int i = source.Length; i < result.Length; i++)
+                result[i] = padByte;
+            return result;
         }
 
         static bool IsPathUnder(string rootPath, string candidatePath)
