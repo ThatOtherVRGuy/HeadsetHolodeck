@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: GaussianSplatting::GaussianSplatting.Runtime.GaussianSplatRenderer
   m_Asset: {fileID: 11400000, guid: d7b4ba744ba05f54ab4fb8e7be1d1ada, type: 2}
   m_SplatScale: 1
-  m_OpacityScale: 1
+  m_OpacityScale: 1.5
   m_SHOrder: 3
   m_SHOnly: 0
   m_SortNthFrame: 1

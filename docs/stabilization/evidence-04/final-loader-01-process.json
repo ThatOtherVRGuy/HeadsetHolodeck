@@ -1,0 +1,9 @@
+{
+  "check": "transitions",
+  "label": "final-loader-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-13T16:08:36.199419-07:00",
+  "ended": "2026-09-13T16:09:10.526614-07:00",
+  "log": "/private/tmp/holodeck-saves-04-verify/final-loader-01.log"
+}

@@ -1,0 +1,266 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using Holodeck.Save;
+using Newtonsoft.Json;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+
+/// <summary>
+/// Work order 04 risk reproduction. Every scenario runs in its own directory under the process temp
+/// path, so no real user save is read or written.
+///
+/// The "LEGACY-*" lines are a counterfactual: they write world.json with a bare direct overwrite
+/// (the pre-fix shape of the store) to show which failure modes that shape allowed. They do not
+/// touch product code. The "JOURNALED-*" lines drive the real store so the same interrupted on-disk
+/// state can be compared against the current writer.
+/// </summary>
+public static class StabilizationSaveRisk04
+{
+    static string Arg(string name)
+    {
+        string[] args = Environment.GetCommandLineArgs();
+        for (int i = 0; i < args.Length - 1; i++) if (args[i] == name) return args[i + 1];
+        throw new ArgumentException("Missing " + name);
+    }
+
+    static void Record(string message)
+    {
+        File.AppendAllText(Arg("-riskResult"), DateTime.UtcNow.ToString("o") + " " + message + "\n");
+        Debug.Log("[SaveRisk04] " + message);
+    }
+
+    public static void Run()
+    {
+        if (!Application.isBatchMode)
+            throw new InvalidOperationException("Only run in an isolated batch editor.");
+
+        EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+        Record("ENV unity=" + Application.unityVersion + " batch=" + Application.isBatchMode + " platform=" + Application.platform);
+        int code = 0;
+        try
+        {
+            string root = Path.Combine(Path.GetTempPath(), "HolodeckSaveRisk04_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+            Record("FIXTURE-ROOT " + root);
+            try
+            {
+                LegacyInterruptedWrite(root);
+                LegacyConcurrentWriters(root);
+                JournaledFirstAndRepeatedSaves(root);
+                JournaledInterruptedWriteRecovery(root);
+                JournaledMissingPrimaryWithValidBackup(root);
+                JournaledMissingFiles(root);
+                Record("RISK-PROBE COMPLETE");
+            }
+            finally
+            {
+                TryDelete(root);
+            }
+        }
+        catch (Exception error)
+        {
+            code = 1;
+            Record("FAIL " + error.GetBaseException());
+        }
+        EditorApplication.Exit(code);
+    }
+
+    /// <summary>Counterfactual: a direct overwrite has no second generation to fall back to.</summary>
+    static void LegacyInterruptedWrite(string root)
+    {
+        string dir = Path.Combine(root, "legacy-interrupted");
+        Directory.CreateDirectory(dir);
+        string path = Path.Combine(dir, "world.json");
+
+        string json = JsonConvert.SerializeObject(Sample("Legacy"), Formatting.Indented);
+        File.WriteAllText(path, json);
+        Record($"LEGACY-FIRST-SAVE bytes={Length(path)} backup-exists={File.Exists(path + ".bak")} lock-exists={File.Exists(Path.Combine(dir, ".world.json.lock"))} temp-files={CountTemps(dir)}");
+
+        // A process killed inside an in-place overwrite leaves whatever prefix reached the disk.
+        File.WriteAllText(path, json.Substring(0, Math.Max(1, json.Length / 2)));
+        string parse = "ok";
+        try { JsonConvert.DeserializeObject<WorldConfig>(File.ReadAllText(path)); }
+        catch (Exception ex) { parse = ex.GetType().Name; }
+        Record($"LEGACY-INTERRUPTED bytes={Length(path)} parse={parse} backup-exists={File.Exists(path + ".bak")} recoverable={File.Exists(path + ".bak")}");
+    }
+
+    /// <summary>Counterfactual: two direct overwrites of one file cannot interleave safely.</summary>
+    static void LegacyConcurrentWriters(string root)
+    {
+        string dir = Path.Combine(root, "legacy-concurrent");
+        Directory.CreateDirectory(dir);
+        string path = Path.Combine(dir, "world.json");
+
+        var errors = new List<string>();
+        var tasks = new List<Task>();
+        string seedJson = JsonConvert.SerializeObject(Sample("Seed"), Formatting.Indented);
+        File.WriteAllText(path, seedJson);
+        for (int w = 0; w < 4; w++)
+        {
+            int writerId = w;
+            tasks.Add(Task.Run(() =>
+            {
+                string mine = JsonConvert.SerializeObject(Sample("Writer" + writerId, 20000), Formatting.Indented);
+                for (int round = 0; round < 4; round++)
+                {
+                    try { File.WriteAllText(path, mine); }
+                    catch (Exception ex) { lock (errors) errors.Add(ex.GetType().Name + ": " + Flatten(ex.Message)); }
+                }
+            }));
+        }
+        try { Task.WaitAll(tasks.ToArray()); } catch (Exception ex) { errors.Add("task: " + Flatten(ex.Message)); }
+
+        Record($"LEGACY-CONCURRENT writers=4 rounds=4 write-errors={errors.Count} first-error={(errors.Count > 0 ? errors[0] : "<none>")} final-bytes={Length(path)} temp-files={CountTemps(dir)}");
+    }
+
+    static void JournaledFirstAndRepeatedSaves(string root)
+    {
+        WorldConfigStore store = WorldConfigStore.CreateForTesting(root);
+        try
+        {
+            WorldConfig config = store.CreateConfig(new WorldSourceData { type = "local_splat" }, "First", null);
+            string dir = Path.Combine(root, config.config_id);
+            string path = Path.Combine(dir, "world.json");
+            Record($"JOURNALED-FIRST-SAVE primary-name={NameOf(path)} backup-exists={File.Exists(path + ".bak")} lock-exists={File.Exists(Path.Combine(dir, ".world.json.lock"))} temp-files={CountTemps(dir)}");
+
+            config.display_name = "Second";
+            store.SaveConfig(config);
+            Record($"JOURNALED-REPEATED-SAVE primary-name={NameOf(path)} backup-name={NameOf(path + ".bak")} primary-bytes={Length(path)} backup-bytes={Length(path + ".bak")} temp-files={CountTemps(dir)}");
+
+            config.display_name = "Third";
+            store.SaveConfig(config);
+            Record($"JOURNALED-REPEATED-SAVE-2 primary-name={NameOf(path)} backup-name={NameOf(path + ".bak")} temp-files={CountTemps(dir)}");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(store.gameObject);
+        }
+    }
+
+    /// <summary>The same truncated primary the legacy fixture produced, against the real store.</summary>
+    static void JournaledInterruptedWriteRecovery(string root)
+    {
+        WorldConfigStore store = WorldConfigStore.CreateForTesting(root);
+        try
+        {
+            WorldConfig config = store.CreateConfig(new WorldSourceData { type = "local_splat" }, "Committed", null);
+            string dir = Path.Combine(root, config.config_id);
+            string path = Path.Combine(dir, "world.json");
+
+            config.display_name = "Committed2";
+            store.SaveConfig(config);
+
+            string json = File.ReadAllText(path);
+            File.WriteAllText(path, json.Substring(0, Math.Max(1, json.Length / 2)));
+            Record($"JOURNALED-INTERRUPTED-STATE primary-bytes={Length(path)} backup-exists={File.Exists(path + ".bak")} backup-name={NameOf(path + ".bak")} temp-files={CountTemps(dir)}");
+
+            try
+            {
+                WorldConfig recovered = store.LoadConfig(config.config_id);
+                Record($"JOURNALED-INTERRUPTION-RECOVERY recovered={recovered != null} display_name={recovered?.display_name ?? "<null>"}");
+            }
+            catch (Exception ex)
+            {
+                Record($"JOURNALED-INTERRUPTION-RECOVERY THREW {ex.GetType().Name}: {Flatten(ex.Message)}");
+            }
+
+            Record($"JOURNALED-INTERRUPTION-FILES-RETAINED primary={File.Exists(path)} backup={File.Exists(path + ".bak")} temp-files={CountTemps(dir)}");
+
+            config.display_name = "Repaired";
+            try
+            {
+                store.SaveConfig(config);
+                Record($"JOURNALED-INTERRUPTION-REPAIR primary-name={NameOf(path)} backup-name={NameOf(path + ".bak")} temp-files={CountTemps(dir)}");
+            }
+            catch (Exception ex)
+            {
+                Record($"JOURNALED-INTERRUPTION-REPAIR THREW {ex.GetType().Name}: {Flatten(ex.Message)}");
+            }
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(store.gameObject);
+        }
+    }
+
+    static void JournaledMissingPrimaryWithValidBackup(string root)
+    {
+        WorldConfigStore store = WorldConfigStore.CreateForTesting(root);
+        try
+        {
+            WorldConfig config = store.CreateConfig(new WorldSourceData { type = "local_splat" }, "BackupOnly1", null);
+            string path = Path.Combine(root, config.config_id, "world.json");
+            config.display_name = "BackupOnly2";
+            store.SaveConfig(config);
+
+            File.Delete(path);
+            Record($"JOURNALED-MISSING-PRIMARY primary-exists={File.Exists(path)} backup-name={NameOf(path + ".bak")}");
+            try
+            {
+                WorldConfig recovered = store.LoadConfig(config.config_id);
+                Record($"JOURNALED-MISSING-PRIMARY-RECOVERY recovered={recovered != null} display_name={recovered?.display_name ?? "<null>"}");
+            }
+            catch (Exception ex)
+            {
+                Record($"JOURNALED-MISSING-PRIMARY-RECOVERY THREW {ex.GetType().Name}: {Flatten(ex.Message)}");
+            }
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(store.gameObject);
+        }
+    }
+
+    static void JournaledMissingFiles(string root)
+    {
+        WorldConfigStore store = WorldConfigStore.CreateForTesting(root);
+        try
+        {
+            string folder = Path.Combine(root, "no-such-config");
+            WorldConfig loaded = store.LoadConfig("no-such-config");
+            Record($"JOURNALED-MISSING-FILES loaded={(loaded == null ? "<null>" : loaded.display_name)} folder-created={Directory.Exists(folder)}");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(store.gameObject);
+        }
+    }
+
+    static WorldConfig Sample(string name, int objects = 0)
+    {
+        var config = new WorldConfig { config_id = Guid.NewGuid().ToString("N"), display_name = name };
+        for (int i = 0; i < objects; i++)
+            config.objects.Add(new SavedObject { instance_id = "obj" + i, display_name = "Object " + i });
+        return config;
+    }
+
+    static int CountTemps(string dir)
+    {
+        try { return Directory.GetFiles(dir, "*.tmp", SearchOption.TopDirectoryOnly).Length; }
+        catch (Exception) { return -1; }
+    }
+
+    static string NameOf(string path)
+    {
+        if (!File.Exists(path)) return "<missing>";
+        try { return JsonConvert.DeserializeObject<WorldConfig>(File.ReadAllText(path))?.display_name ?? "<unnamed>"; }
+        catch (Exception ex) { return "UNPARSEABLE(" + ex.GetType().Name + ")"; }
+    }
+
+    static long Length(string path)
+    {
+        try { return File.Exists(path) ? new FileInfo(path).Length : -1; }
+        catch (Exception) { return -1; }
+    }
+
+    static string Flatten(string message) => message.Replace("\r", " ").Replace("\n", " ");
+
+    static void TryDelete(string dir)
+    {
+        try { if (Directory.Exists(dir)) Directory.Delete(dir, true); }
+        catch (Exception) { }
+    }
+}

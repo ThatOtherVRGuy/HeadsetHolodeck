@@ -1,0 +1,7 @@
+{
+  "label": "regressions-01",
+  "entry_points_passed": 19,
+  "failures": 0,
+  "complete": true,
+  "note": "Unity then stalled in shutdown because the offline sandbox blocks Unity's cloud-diagnostics endpoint; the results file had already reported all entries passed and the process was terminated."
+}

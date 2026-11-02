@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -241,9 +242,9 @@ namespace WorldLabs.API
         /// Gets the status of an operation by ID.
         /// </summary>
         /// <param name="operationId">The operation identifier.</param>
-        public async Task<GetOperationResponse> GetOperationAsync(string operationId)
+        public async Task<GetOperationResponse> GetOperationAsync(string operationId, CancellationToken cancellationToken = default)
         {
-            return await GetAsync<GetOperationResponse>($"/marble/v1/operations/{operationId}");
+            return await GetAsync<GetOperationResponse>($"/marble/v1/operations/{operationId}", cancellationToken);
         }
 
         /// <summary>
@@ -265,31 +266,32 @@ namespace WorldLabs.API
             string operationId,
             float pollIntervalSeconds = 5f,
             float timeoutSeconds = 300f,
-            Action<GetOperationResponse> onProgress = null)
+            Action<GetOperationResponse> onProgress = null,
+            CancellationToken cancellationToken = default)
         {
-            float elapsed = 0f;
-
-            while (elapsed < timeoutSeconds)
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(0.001f, timeoutSeconds)));
+            try
             {
-                var response = await GetOperationAsync(operationId);
-
-                onProgress?.Invoke(response);
-
-                if (response.done)
+                while (true)
                 {
-                    return response;
+                    timeout.Token.ThrowIfCancellationRequested();
+                    var response = await GetOperationAsync(operationId, timeout.Token);
+                    timeout.Token.ThrowIfCancellationRequested();
+                    if (response == null) throw new WorldLabsException("Operation returned no response", 0);
+                    onProgress?.Invoke(response);
+                    timeout.Token.ThrowIfCancellationRequested();
+                    if (response.error != null && (!string.IsNullOrEmpty(response.error.message) || (response.error.code ?? 0) != 0))
+                        throw new WorldLabsException($"Operation failed: {response.error.message}", response.error.code ?? 0);
+                    if (response.done) return response;
+                    await Task.Delay(TimeSpan.FromSeconds(Math.Max(0.01f, pollIntervalSeconds)), timeout.Token);
                 }
-
-                if (response.error != null && (!string.IsNullOrEmpty(response.error.message) || (response.error.code != null && response.error.code != 0)))
-                {
-                    throw new WorldLabsException($"Operation failed: {response.error.message}", response.error.code ?? 0);
-                }
-
-                await Task.Delay(TimeSpan.FromSeconds(pollIntervalSeconds));
-                elapsed += pollIntervalSeconds;
             }
-
-            throw new TimeoutException($"Operation timed out after {timeoutSeconds} seconds");
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                throw new TimeoutException($"Operation timed out after {clock.Elapsed.TotalSeconds:0.#} seconds");
+            }
         }
 
         /// <summary>
@@ -349,9 +351,9 @@ namespace WorldLabs.API
         /// Gets a world by ID.
         /// </summary>
         /// <param name="worldId">The world identifier.</param>
-        public async Task<World> GetWorldAsync(string worldId)
+        public async Task<World> GetWorldAsync(string worldId, CancellationToken cancellationToken = default)
         {
-            return await GetAsync<World>($"/marble/v1/worlds/{worldId}");
+            return await GetAsync<World>($"/marble/v1/worlds/{worldId}", cancellationToken);
         }
 
         /// <summary>
@@ -589,8 +591,9 @@ namespace WorldLabs.API
 
         #region HTTP Methods - Async
 
-        private async Task<T> GetAsync<T>(string endpoint)
+        private async Task<T> GetAsync<T>(string endpoint, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             EnsureConfigured("GET");
 
             // Add unique cache-busting parameter to prevent client-side caching
@@ -609,9 +612,12 @@ namespace WorldLabs.API
                 var operation = request.SendWebRequest();
                 while (!operation.isDone)
                 {
+                    if (cancellationToken.IsCancellationRequested) request.Abort();
+                    cancellationToken.ThrowIfCancellationRequested();
                     await Task.Yield();
                 }
 
+                cancellationToken.ThrowIfCancellationRequested();
                 return HandleResponse<T>(request);
             }
         }

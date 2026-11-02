@@ -1,0 +1,106 @@
+Headset Holodeck order 06 — docs claim audit
+date: 2026-09-14T06:50:44Z  host: Darwin/arm64  mode: claims
+
+== Unity version and build entry point ==
+PASS  ProjectVersion.txt pins 6000.2.10f1
+PASS  AGENTS.md states the same Unity version
+PASS  BuildApk entry point exists
+PASS  BuildApk accepts -outputPath
+PASS  BuildApk reads the credential-mode argument constant
+PASS  -credentialMode is the declared argument name
+PASS  private intent exists
+PASS  distribution intent exists
+PASS  device intent exists
+PASS  AGENTS.md documents the three intents
+PASS  README documents the device intent
+
+== .env resolution ==
+PASS  build embeds under Assets/Resources/WorldLabs
+PASS  embedded file is worldlabs_env.txt
+PASS  EnvLoader reads the device .env
+PASS  EnvLoader source order names the embedded copy
+PASS  RuntimeDotEnv loads before the first scene
+PASS  RuntimeDotEnv reads the persistent-data path
+PASS  BuildEnvCopier no longer touches StreamingAssets
+PASS  EnvLoader no longer reads StreamingAssets
+PASS  direct-plugin README is marked superseded
+PASS  AGENTS.md no longer claims a StreamingAssets copy
+PASS  README no longer claims a StreamingAssets copy
+PASS  USER_MANUAL no longer claims a StreamingAssets copy
+PASS  .env.example documents the device intent
+PASS  README documents the device .env push
+
+== Wake-word alias set ==
+PASS  VoiceActivationConfig.asset lists alias 'computer'
+PASS  VoiceActivationConfig.asset lists alias 'pewter'
+PASS  VoiceActivationConfig.asset lists alias 'pudor'
+PASS  VoiceActivationConfig.asset lists alias 'peter'
+PASS  VoiceActivationConfig.asset lists alias 'impewter'
+PASS  VoiceActivationConfig.asset lists alias 'pumpor'
+PASS  the alias list is exactly six deliberate aliases
+PASS  README.md reproduces the full deliberate alias set
+PASS  AGENTS.md reproduces the full deliberate alias set
+PASS  USER_MANUAL.md reproduces the full deliberate alias set
+
+== Vendored packages and versions ==
+PASS  World Labs package is vendored
+PASS  Sherpa package is vendored
+PASS  README names the vendored World Labs path
+PASS  README names the vendored Sherpa path
+PASS  AGENTS.md version for com.unity.xr.interaction.toolkit matches manifest (3.5.0)
+PASS  AGENTS.md version for com.unity.xr.openxr matches manifest (1.17.0-pre.2)
+PASS  AGENTS.md version for com.unity.xr.hands matches manifest (1.7.3)
+PASS  AGENTS.md version for com.unity.render-pipelines.universal matches manifest (17.2.0)
+PASS  AGENTS.md version for com.unity.inputsystem matches manifest (1.15.0)
+PASS  AGENTS.md version for com.unity.xr.androidxr-openxr matches manifest (1.0.2)
+
+== Save journal, object cache, providers ==
+PASS  save journal rotates a .bak generation
+PASS  save file is still world.json
+PASS  saves live under persistentDataPath/Worlds
+PASS  store exposes a cached-objects path
+PASS  object cache implementation exists
+PASS  HiTem object provider exists
+PASS  3dAIStudio object provider exists
+PASS  Freesound provider exists
+PASS  xeno-canto provider exists
+PASS  Openverse audio provider exists
+PASS  Pixabay image search exists
+PASS  no Meshy provider class (MESHY_API_KEY/TRIPO_API_KEY are reserved keys)
+PASS  USER_MANUAL marks the unused object keys reserved
+
+== Hand interaction ==
+PASS  hand-interaction file present: HandOnlyInputCoordinator.cs
+PASS  hand-interaction file present: XRHandsGestureSource.cs
+PASS  hand-interaction file present: WorldManipulationController.cs
+PASS  hand-interaction file present: SnapWhileGrabbed.cs
+PASS  USER_MANUAL describes two-hand world manipulation
+PASS  USER_MANUAL documents the grab-world voice command
+
+== Scene wiring ==
+PASS  scene hosts the VAD/ASR wake trigger
+PASS  scene hosts the hand-only input coordinator
+PASS  scene hosts the world config store
+PASS  scene hosts the cached object store
+PASS  scene hosts the World Labs world manager
+PASS  scene has GeneratedWorldRoot
+
+== Secret hygiene of the changed documents ==
+PASS  no secret value for WORLDLABS_API_KEY in the documentation set (counted, never printed)
+PASS  no secret value for OPENAI_API_KEY in the documentation set (counted, never printed)
+PASS  no secret value for FREESOUND_API_KEY in the documentation set (counted, never printed)
+PASS  no secret value for XENO_CANTO_API_KEY in the documentation set (counted, never printed)
+PASS  no secret value for PIXABAY_API_KEY in the documentation set (counted, never printed)
+PASS  no secret value for THREEDAISTUDIO_API_KEY in the documentation set (counted, never printed)
+PASS  no secret value for HITEM_ACCESS_KEY in the documentation set (counted, never printed)
+PASS  no secret value for HITEM_SECRET_KEY in the documentation set (counted, never printed)
+
+== Carried-forward status statements ==
+PASS  handoff 06 marks the performance targets unagreed
+PASS  handoff 06 carries the key-rotation recommendation
+PASS  handoff 06 carries the headset-off caveat
+PASS  STATUS points at handoff 06
+PASS  STATUS still lists order 07 separately
+PASS  plans directory disclaims unchecked boxes
+
+SUMMARY checks=84 failures=0

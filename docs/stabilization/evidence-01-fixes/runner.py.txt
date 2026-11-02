@@ -1,0 +1,15 @@
+from pathlib import Path
+import os, re, subprocess, json, sys, datetime
+run=Path(__file__).parent
+env={k:v for k,v in os.environ.items() if not re.search(r"KEY|TOKEN|SECRET|PASSWORD",k,re.I)}
+base=["/usr/bin/sandbox-exec","-f",str(run/"offline-tests.sb"),"/Applications/Unity/Hub/Editor/6000.2.10f1/Unity.app/Contents/MacOS/Unity","-batchmode","-nographics","-projectPath",str(run/"project")]
+cases=[("batch",["-quit","-executeMethod","StabilizationBaseline01.RunRegressions","-baselineResult",str(run/"batch-results.txt"),"-logFile",str(run/"batch.log")]),("save",["-runTests","-testPlatform","EditMode","-assemblyNames","Holodeck.Save.Tests","-testResults",str(run/"save-tests.xml"),"-logFile",str(run/"save-tests.log")])]
+results=[]
+for name,args in cases:
+    print("Starting "+name+" with external network and environment-file reads blocked.",flush=True)
+    started=datetime.datetime.now().astimezone().isoformat()
+    result=subprocess.run(base+args,env=env)
+    results.append({"check":name,"exit_code":result.returncode,"started":started,"ended":datetime.datetime.now().astimezone().isoformat()})
+    (run/"process-results.json").write_text(json.dumps(results,indent=2)+"\n")
+    print(name+" exit "+str(result.returncode),flush=True)
+    if result.returncode not in (0,1,2): break

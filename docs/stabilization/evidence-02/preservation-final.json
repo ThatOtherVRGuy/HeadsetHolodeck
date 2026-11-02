@@ -1,0 +1,24 @@
+{
+  "original_files": 4681,
+  "unchanged": 4668,
+  "changed": [
+    "docs/stabilization/STATUS.md",
+    "Assets/App/Command/SpeechIntent/Runtime/LocalRemotePanoLoader.cs",
+    "Assets/App/Command/SpeechIntent/Runtime/LocalRemoteSplatLoader.cs",
+    "Assets/App/Command/SpeechIntent/Runtime/UI/MyWorldsPanel.cs",
+    "Assets/App/Save/WorldConfigAutoSave.cs",
+    "Assets/App/Save/WorldConfigRestorer.cs",
+    "Assets/App/Scripts/Direct/RuntimeSplatFloorLoader.cs",
+    "Assets/App/Scripts/Direct/ThumbnailSkyboxController.cs",
+    "Assets/App/Scripts/Direct/VoiceToWorldLabsPluginCoordinator.cs",
+    "Packages/com.worldlabs.gaussian-splatting/Runtime/WorldLabs/WorldBrowserController.cs",
+    "Packages/com.worldlabs.gaussian-splatting/Runtime/WorldLabs/WorldLabsClient.cs",
+    "Packages/com.worldlabs.gaussian-splatting/Runtime/WorldLabs/WorldLabsClientExtensions.cs",
+    "Packages/com.worldlabs.gaussian-splatting/Runtime/WorldLabs/WorldLabsWorldManager.cs"
+  ],
+  "missing": [],
+  "unexpected_changes": [],
+  "head": "05a09dd46710d82ac4bf1c91c1488d249872ae3d",
+  "staged_files": [],
+  "baseline_test_fixes_unchanged": true
+}

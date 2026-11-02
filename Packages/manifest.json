@@ -7,19 +7,36 @@
         "com.ponyudev.sherpa-onnx",
         "com.cysharp.unitask"
       ]
+    },
+    {
+      "name": "package.openupm.com",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.ivanmurzak",
+        "extensions.unity"
+      ]
     }
   ],
   "dependencies": {
+    "com.bytedance.pico.mcp-extensions": "https://github.com/Pico-Developer/Unity-MCP-Extensions.git",
+    "com.bytedance.pico.spatialadapter": "https://github.com/Pico-Developer/PICO-Unity-SDK.git?path=/SpatialAdapter#main",
+    "com.bytedance.pico.xr": "https://github.com/Pico-Developer/PICO-Unity-SDK.git?path=/XR#main",
+    "com.ivanmurzak.unity.mcp": "1.6.0",
+    "com.ivanmurzak.unity.mcp.particlesystem": "2.0.2",
+    "com.plattar.unitygltf": "https://github.com/Pico-Developer/gltf-exporter.git?path=package/com.plattar.unitygltf#master",
     "com.ponyudev.sherpa-onnx": "file:com.ponyudev.sherpa-onnx",
     "com.unity.2d.sprite": "1.0.0",
+    "com.unity.ai.assistant": "2.17.0-pre.1",
     "com.unity.cloud.gltfast": "6.9.0",
     "com.unity.feature.development": "1.0.2",
+    "com.unity.formats.usd": "https://github.com/Pico-Developer/usd-unity-sdk.git?path=package/com.unity.formats.usd#dev",
     "com.unity.ide.rider": "3.0.38",
-    "com.unity.inputsystem": "1.15.0",
+    "com.unity.inputsystem": "1.18.0",
     "com.unity.learn.iet-framework": "5.0.2",
     "com.unity.mobile.android-logcat": "1.4.7",
     "com.unity.multiplayer.center": "1.0.0",
     "com.unity.nuget.newtonsoft-json": "3.2.1",
+    "com.unity.pipeline": "0.9.1-exp.1",
     "com.unity.render-pipelines.universal": "17.2.0",
     "com.unity.timeline": "1.8.9",
     "com.unity.xr.androidxr-openxr": "1.0.2",

@@ -1,5 +1,14 @@
 # Headset Holodeck
 
+Shared code is organized under `Assets/App/Shared`, with headset-specific work under
+`Assets/App/Platforms/Meta` and `Assets/App/Platforms/Pico`. See the
+[Meta/Pico architecture and delivery plan](docs/xr/PLAN.md).
+
+**Current target: PICO Swan (PICO OS 6).** The Meta Quest path is maintained in the same tree and selected
+through the build-profile target switch, but the Pico build is the one being verified. For the state of each
+capability, what is verified versus not, how to build and run, and the known issues, start with
+[docs/xr/pico/SHARE-SNAPSHOT.md](docs/xr/pico/SHARE-SNAPSHOT.md).
+
 Headset Holodeck is a Unity XR project for creating and revisiting immersive worlds in a headset using voice, hands, gaze, image prompts, cached worlds, and spatial audio. The current public build focuses on World Labs world creation, OpenAI-backed command interpretation, Sherpa-ONNX local voice activation/TTS, local or remote splat loading, camera/image prompts, and interactable primitive object creation.
 
 ## Quick Start
@@ -15,8 +24,14 @@ Headset Holodeck is a Unity XR project for creating and revisiting immersive wor
 4. Let Unity import the project. The first import can take several minutes.
 5. Copy `.env.example` to `.env` in the project root and add your own keys.
 6. Open `Assets/Scenes/Holodeck.unity`.
-7. Run `Headset Holodeck > Validate Install` from the Unity menu.
-8. Press Play in the Editor, or build to Quest from `File > Build Profiles`.
+7. Run `Headset Holodeck > Validate Install` from the Unity menu. It reports which keys are present
+   and never prints a value.
+8. Press Play in the Editor, or build for the headset with the **device** credential intent
+   (`Headset Holodeck > Build Credentials > Device`, then `File > Build Profiles`) and follow
+   [Headset Run Flow](#headset-run-flow) below.
+
+That is the whole setup path. A tester who only wants the headset demo needs steps 1–5, one device
+declaration, and the `adb` commands in the headset section.
 
 ## API Keys
 
@@ -40,9 +55,132 @@ Optional but useful:
 - `PIXABAY_API_KEY`: image search prompts.
 - `FREESOUND_API_KEY`: Freesound audio search.
 - `XENO_CANTO_API_KEY`: bird/wildlife audio search.
-- `MESHY_API_KEY`, `TRIPO_API_KEY`, `HITEM_API_KEY`: reserved for object-generation experiments.
+- `THREEDAISTUDIO_API_KEY` (+ optional `THREEDAISTUDIO_BASE_URL`): 3dAIStudio Tripo object
+  generation — the implemented image-to-3D and text-to-3D provider, with a credit preflight.
+- `HITEM_ACCESS_KEY` + `HITEM_SECRET_KEY` (+ optional `HITEM_BASE_URL`): HiTem image-to-3D object
+  generation, the second implemented provider.
+- `FREESOUND_SEARCH_URL`, `XENO_CANTO_SEARCH_URL`, `OPENVERSE_AUDIO_SEARCH_URL`: endpoint
+  overrides. These are non-secret configuration and are the only entries a distribution build
+  embeds.
+- `MESHY_API_KEY`, `TRIPO_API_KEY`: **reserved**. They only satisfy the "an object provider is
+  configured" check and the install validator; there is no Meshy or standalone Tripo provider class,
+  so setting them alone enables nothing.
+
+Openverse audio search needs no key. Xeno-canto, Freesound, Pixabay, and 3dAIStudio are optional
+provider upgrades: the app runs without them, with the corresponding UI disabled or degraded.
 
 Never commit `.env`. The repo ignores it.
+
+### Build Credential Boundary
+
+A build can embed a copy of `.env` so the app can read keys on platforms without a project folder. Because a build you hand to someone else would otherwise carry your own keys, every build must declare what it is for.
+
+| Intent | What is embedded | How to choose |
+|---|---|---|
+| **Device** | Nothing. The app reads keys from the `.env` that lives on the device itself, at `Application.persistentDataPath/.env` — on Android `/sdcard/Android/data/<package>/files/.env` | `Headset Holodeck > Build Credentials > Device`, `-credentialMode device`, or `HOLODECK_CREDENTIAL_MODE=device` |
+| **Private** | Every `.env` entry, exactly as it is on your machine | `Headset Holodeck > Build Credentials > Private`, `-credentialMode private`, or `HOLODECK_CREDENTIAL_MODE=private` |
+| **Distribution** | Only non-secret configuration (`*_BASE_URL` and `*_SEARCH_URL` entries). Credentials and unrelated entries are dropped, and their key names are listed in the build log | `Headset Holodeck > Build Credentials > Distribution`, `-credentialMode distribution`, or `HOLODECK_CREDENTIAL_MODE=distribution` |
+| **Not declared** | Nothing — the build **stops** and tells you how to choose | The default until you pick one of the above |
+
+Device builds are the intended way to run on a Quest. Put the file on the headset once per device, then rebuild or reinstall freely — the artifact itself never carries a key:
+
+```bash
+adb push .env /sdcard/Android/data/com.QLC.HeadsetHolodeck/files/.env
+```
+
+`RuntimeDotEnv` loads that file before the first scene, and the World Labs plugin reads the same file through `EnvLoader` (the device `.env` is consulted first, and a copy baked by a private build is only a last resort, so it can never shadow the device's own file).
+
+Rules the boundary enforces:
+
+- A key whose name looks like a credential (`*_API_KEY`, `*_ACCESS_KEY`, `*_SECRET_KEY`, `*_TOKEN`, ...) is never embedded in a distribution build, even if someone adds it to the allowlist.
+- Distribution builds drop every entry that is not explicitly allowlisted, so unrelated things you keep in `.env` do not travel with the artifact.
+- The embedded copy is written atomically, deleted after the build, deleted if the editor quits, and deleted at editor startup in case a build crashed before cleanup ran.
+- Key names may appear in logs; key values never do.
+
+`Headset Holodeck > Build Credentials > Show Build Credential Status` prints the intent in force and where it came from. The saved choice is per machine and per project (stored in editor preferences, not in the repository).
+
+A distribution build ships without provider keys by design; whoever receives it supplies their own `.env` or environment variables, or uses flows that do not need a key.
+
+## Building For The Headset
+
+Menu build: set `Headset Holodeck > Build Credentials > Device`, then `File > Build Profiles` →
+Android → Build (or Build & Run).
+
+Unattended build, using the project's only command-line entry point:
+
+```bash
+Unity -batchmode -quit \
+  -projectPath <repo> \
+  -executeMethod Holodeck.Editor.CommandLineAndroidBuild.BuildApk \
+  -outputPath Builds/Holodeck-device.apk \
+  -credentialMode device \
+  -logFile /tmp/holodeck-device-build.log
+```
+
+`-outputPath` defaults to `Builds/Holodeck.apk`. `-credentialMode` accepts `device`, `private`, or
+`distribution`; an unknown value stops the build before anything is produced, and a build with no
+declared intent refuses to embed credentials. Expect roughly 15–35 minutes and several GB of disk
+per build on a laptop-class machine.
+
+## Headset Run Flow
+
+1. **Install.** `adb install -r Builds/Holodeck-device.apk`. Installing over an existing copy keeps
+   saved worlds.
+2. **Give the headset its keys once.** The device build contains none:
+
+   ```bash
+   adb push .env /sdcard/Android/data/com.QLC.HeadsetHolodeck/files/.env
+   ```
+
+   The app reads that file at startup; the log confirms it with
+   `[RuntimeDotEnv] Loaded <n> variable(s) from …` and `[EnvLoader] Loaded <n> variables from …`.
+3. **Launch and wake it.** Say "Computer, …" — the accepted wake list is the deliberate alias set
+   `computer, pewter, pudor, peter, impewter, pumpor`, because the VAD/ASR front end often hears only
+   the tail of the word. Push-to-talk (Space / right controller secondary button) still works.
+4. **Load cached content.** "Computer, load `<saved world name>`" restores a saved world and its
+   cached splat, world transform, objects, audio, and spawn point.
+5. **Save.** "Computer, save this world" (or the Ops panel) writes the config. The next save rotates
+   the previous one into `world.json.bak`.
+6. **Restart and restore.** Force-stop and relaunch:
+
+   ```bash
+   adb shell am force-stop com.QLC.HeadsetHolodeck
+   adb shell am start -n com.QLC.HeadsetHolodeck/com.unity3d.player.UnityPlayerGameActivity
+   ```
+
+   (Or simply open HeadsetHolodeck from the headset's app launcher.)
+
+   Loading the same world again should restore the saved transform, spawn point, objects, and audio.
+   If the primary save was interrupted, the startup scan logs
+   `recovered the previous generation from '…/world.json.bak'`.
+
+Saves live at
+`/sdcard/Android/data/com.QLC.HeadsetHolodeck/files/Worlds/<config_id>/world.json`, always beside
+`world.json.bak` (the previous committed generation) and `.world.json.lock` (the writer lock).
+Cached splats/panoramas are in `<Worlds>/CachedWorlds` and cached generated objects in
+`<Worlds>/CachedObjects`.
+
+### Reading the logs
+
+```bash
+adb logcat -v time -s Unity          # app behaviour: [WorldConfigStore], [WorldConfigRestorer],
+                                     # [WorldConfigAutoSave], [RuntimeDotEnv], [EnvLoader], speech
+adb logcat -v time -s Unity VrApi    # adds the compositor's own 1 Hz frame-timing summary
+adb shell dumpsys meminfo com.QLC.HeadsetHolodeck   # PSS memory samples
+```
+
+## Current Verified State
+
+Verified on hardware (Quest 3, 2026-09-13): device-intent install, keys read from the headset's own
+`.env`, wake word, cached world load, manipulation, audio, journaled save, on-device backup recovery,
+and restart-restore. Load stalls were 0.84–1.0 s for 6.3–11 MB splats, and idle PSS was ~2.35 GB.
+
+Not yet verified, and not to be claimed: worn-headset frame timing (the order-05 numbers were taken
+with the headset on a desk), kill-mid-write on hardware, read-only legacy-folder migration on
+hardware, offline/network-failure behaviour, tracking loss, and the posted performance targets.
+See [docs/stabilization/STATUS.md](docs/stabilization/STATUS.md) and
+[docs/stabilization/handoff-06.md](docs/stabilization/handoff-06.md) for the full
+verified-versus-planned table, the four device findings, and what is deliberately deferred.
 
 ## What Is Included
 
@@ -59,6 +197,17 @@ The repo also includes the currently configured Sherpa-ONNX runtime files and sm
 - Android and macOS Sherpa native libraries under `Assets/Plugins/SherpaOnnx`
 
 This means a tester should not need to install separate package forks or pull pending package PRs.
+
+Feature areas present in the current scene: text/image world generation, cached world and loose-splat
+loading, panorama view, floor/spawn estimation, saved worlds with a journaled save format, spatial
+voice commands through OpenAI plus a local parser, generated primitive objects with materials and
+physics, runtime-generated 3D objects from 3dAIStudio Tripo or HiTem with a local object cache,
+spatial audio from Freesound/xeno-canto/Openverse, lighting and view-mode control, LCARS UI with a
+virtual keyboard, hand-only input via XR Hands, and one-/two-hand world manipulation with snapping.
+
+Voice commands become structured intents before anything executes. The command fields, the full
+intent catalog with example utterances, worked examples, and the add-an-intent checklist are in
+[docs/intent.md](docs/intent.md).
 
 ## Large Files And Optional Downloads
 
@@ -85,14 +234,6 @@ Recommended settings are already in the project, but verify:
 - Camera/headset-camera permissions present if testing real-world image capture
 
 The Android manifest is included at `Assets/Plugins/Android/AndroidManifest.xml`.
-
-## Current Quest Runtime Behavior
-
-- Runtime `.spz` decoding uses managed packed-byte staging on Quest. This avoids IL2CPP/Burst int24 corruption that can flatten a splat or produce invalid spawn coordinates.
-- Saved spawn positions are checked against freshly decoded placed bounds. A stale out-of-bounds pose is ignored and a new splat-derived pose is used.
-- Large loose splats can be expensive even with fewer splats than a compact scene because spatial extent affects sorting and culling cost on Quest.
-- Voice activation falls back from Unity microphone capture to Android `AudioRecord` when Quest returns silence. The fallback tries `VOICE_RECOGNITION`, then `VOICE_COMMUNICATION`, then `MIC`.
-- `Delete all audio` removes saved audio records as well as runtime sources. Restoring a world with saved audio does not create an extra automatic ambience layer.
 
 ## Validation Helper
 
@@ -141,12 +282,10 @@ The validator does not print secret values.
 - If audio library results are weak or unavailable, add `FREESOUND_API_KEY` and/or `XENO_CANTO_API_KEY`.
 - If Quest builds fail around Android permissions, confirm `Assets/Plugins/Android/HeadsetCameraPermissions.androidlib/build.gradle` has a namespace and compile SDK.
 - If splats do not render on Quest, do not enable URP compatibility mode unless the Gaussian splatting package specifically supports it.
-- If a restored splat shows only skybox, check its saved spawn in `world.json`; the runtime logs when it rejects an out-of-bounds stale pose.
-- If a voice command is not recognized after a wake word, capture Quest logcat and look for `SherpaOnnxMic` source/fallback messages.
 
 ## Developer Notes
 
-Most scripts under `Assets/App/Editor` are setup and repair utilities used while building the scene. A tester should normally only need:
+Most scripts under `Assets/App/Shared/Editor` are setup and repair utilities used while building the scene. A tester should normally only need:
 
 - `Headset Holodeck > Validate Install`
 - optional scene setup utilities if a scene is accidentally damaged

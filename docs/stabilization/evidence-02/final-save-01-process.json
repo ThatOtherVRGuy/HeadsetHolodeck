@@ -1,0 +1,9 @@
+{
+  "check": "save",
+  "label": "final-save-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-10T18:29:27.005744-07:00",
+  "ended": "2026-09-10T18:31:24.491885-07:00",
+  "log": "/private/tmp/holodeck-transitions-02-final-sg5r74ko/final-save-01.log"
+}

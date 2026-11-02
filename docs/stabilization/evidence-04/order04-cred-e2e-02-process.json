@@ -1,0 +1,9 @@
+{
+  "check": "credentials",
+  "label": "order04-cred-e2e-02",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-13T16:02:09.245325-07:00",
+  "ended": "2026-09-13T16:02:55.163249-07:00",
+  "log": "/private/tmp/holodeck-saves-04-verify/order04-cred-e2e-02.log"
+}

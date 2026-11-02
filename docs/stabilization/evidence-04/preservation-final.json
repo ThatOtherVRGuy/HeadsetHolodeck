@@ -1,0 +1,24 @@
+{
+  "time": "2026-09-13T16:12:37.425566-07:00",
+  "baseline_snapshot": "source-hashes-before.json",
+  "baseline_files": 4427,
+  "changed": [
+    "Assets/App/Editor/CommandLineAndroidBuild.cs",
+    "Packages/com.worldlabs.gaussian-splatting/Editor/WorldLabs/BuildEnvCopier.cs"
+  ],
+  "removed": [],
+  "added": [
+    "Assets/App/Editor/BuildCredentialModeMenu.cs",
+    "Assets/App/Editor/BuildCredentialModeMenu.cs.meta",
+    "Assets/App/Editor/Tests.meta",
+    "Assets/App/Editor/Tests/BuildEnvCredentialsTests.asmdef",
+    "Assets/App/Editor/Tests/BuildEnvCredentialsTests.asmdef.meta",
+    "Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs",
+    "Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs.meta",
+    "Packages/com.worldlabs.gaussian-splatting/Editor/WorldLabs/BuildCredentialSettings.cs",
+    "Packages/com.worldlabs.gaussian-splatting/Editor/WorldLabs/BuildCredentialSettings.cs.meta",
+    "Packages/com.worldlabs.gaussian-splatting/Editor/WorldLabs/BuildEnvCredentials.cs",
+    "Packages/com.worldlabs.gaussian-splatting/Editor/WorldLabs/BuildEnvCredentials.cs.meta"
+  ],
+  "untouched": 4425
+}

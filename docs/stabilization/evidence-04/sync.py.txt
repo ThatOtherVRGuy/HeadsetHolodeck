@@ -1,0 +1,76 @@
+from pathlib import Path
+import argparse, datetime, hashlib, json, shutil, subprocess
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--probes", action="store_true", help="also install the batch/probe adapters")
+parser.add_argument("--clean", action="store_true", help="remove installed probe adapters")
+args = parser.parse_args()
+
+run = Path(__file__).parent
+source = Path("/Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev")
+project = run / "project"
+if (project / "Temp/UnityLockfile").exists():
+    raise SystemExit("Temporary Unity lock present; ensure the prior batch process finished before sync")
+
+files = subprocess.check_output(
+    ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"], cwd=source
+).decode().split("\0")
+
+changed = []
+for name in files:
+    if not name or not name.startswith(("Assets/", "Packages/", "ProjectSettings/")):
+        continue
+    src, dst = source / name, project / name
+    if not src.is_file() or src.name in (".env", "worldlabs_env.txt"):
+        continue
+    content = src.read_bytes()
+    if not dst.exists() or hashlib.sha256(content).digest() != hashlib.sha256(dst.read_bytes()).digest():
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+        changed.append(name)
+
+# A credential file must never live inside an isolated copy: the developer's .env is excluded from
+# this sync on purpose, and a copy left by an earlier isolation step would be readable by a test run
+# (it is not covered by the profile's /Users-scoped read deny). Contents are never read here.
+removed_stray_env = False
+for stray_name in (".env", "worldlabs_env.txt"):
+    stray = project / stray_name
+    if stray.exists():
+        stray.unlink()
+        removed_stray_env = True
+for stray in (project / "Assets/Resources/WorldLabs/worldlabs_env.txt",
+              project / "Assets/Resources/WorldLabs/worldlabs_env.txt.meta"):
+    if stray.exists():
+        stray.unlink()
+        removed_stray_env = True
+
+adapters = {
+    "StabilizationBaseline01.cs": "Assets/App/Editor/StabilizationBaseline01.cs",
+    "StabilizationCredentials04.cs": "Assets/App/Editor/StabilizationCredentials04.cs",
+    "StabilizationSaveRisk03.cs": "Assets/App/Editor/StabilizationSaveRisk03.cs",
+    "StabilizationSaveRisk04.cs": "Assets/App/Editor/StabilizationSaveRisk04.cs",
+    "StabilizationTransitions02.cs": "Assets/App/Editor/StabilizationTransitions02.cs",
+}
+installed = []
+for fixture, target in adapters.items():
+    dst = project / target
+    if args.clean:
+        for suffix in ("", ".meta"):
+            candidate = Path(str(dst) + suffix)
+            if candidate.exists():
+                candidate.unlink()
+        continue
+    if not args.probes:
+        continue
+    shutil.copy2(run / "fixtures" / fixture, dst)
+    installed.append(target)
+
+record = {
+    "time": datetime.datetime.now().astimezone().isoformat(),
+    "copied": changed,
+    "removed_stray_credential_files": removed_stray_env,
+    "installed_adapters": installed,
+    "cleaned": args.clean,
+}
+(run / "latest-sync.json").write_text(json.dumps(record, indent=2) + "\n")
+print(json.dumps(record, indent=2))

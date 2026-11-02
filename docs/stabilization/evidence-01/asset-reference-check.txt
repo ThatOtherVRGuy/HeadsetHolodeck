@@ -1,0 +1,4 @@
+Assets/Scenes/Holodeck.unity: 750 script references; 0 missing/null GUID references: []
+Assets/App/Prefabs/GSplatRenderer.prefab: 1 script references; 0 missing/null GUID references: []
+Assets/Scenes/ChakraTest.unity: 24 script references; 0 missing/null GUID references: []
+Static GUID resolution against Assets, vendored Packages, and current Library/PackageCache; this does not instantiate scenes or validate runtime wiring.

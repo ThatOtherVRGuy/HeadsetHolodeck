@@ -1,0 +1,9 @@
+{
+  "check": "transitions",
+  "label": "final-restore-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-13T16:07:26.784720-07:00",
+  "ended": "2026-09-13T16:07:59.663943-07:00",
+  "log": "/private/tmp/holodeck-saves-04-verify/final-restore-01.log"
+}

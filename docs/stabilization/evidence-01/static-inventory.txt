@@ -1,0 +1,45 @@
+PASS Assets/App/Editor/HeadsetHolodeckInstallValidator.cs
+PASS Assets/App/Editor/InteractableObjectSetup.cs
+PASS Assets/App/Editor/SpeechIntentSceneSetup.cs
+PASS Assets/App/Editor/VoiceActivationSceneSetup.cs
+PASS Assets/Plugins/Android/AndroidManifest.xml
+PASS Assets/Plugins/Android/HeadsetCameraPermissions.androidlib/build.gradle
+PASS Assets/Plugins/SherpaOnnx/Android/arm64-v8a/libonnxruntime.so
+PASS Assets/Plugins/SherpaOnnx/Android/arm64-v8a/libsherpa-onnx-c-api.so
+PASS Assets/Plugins/SherpaOnnx/Android/arm64-v8a/libsherpa-onnx-jni.so
+PASS Assets/Plugins/SherpaOnnx/osx-arm64/libonnxruntime.dylib
+PASS Assets/Plugins/SherpaOnnx/osx-arm64/libsherpa-onnx-c-api.dylib
+PASS Assets/Scenes/Holodeck.unity
+PASS Assets/StreamingAssets/SherpaOnnx/asr-models/sherpa-onnx-zipformer-small-en-2023-06-26/decoder-epoch-99-avg-1.int8.onnx
+PASS Assets/StreamingAssets/SherpaOnnx/asr-models/sherpa-onnx-zipformer-small-en-2023-06-26/encoder-epoch-99-avg-1.int8.onnx
+PASS Assets/StreamingAssets/SherpaOnnx/asr-models/sherpa-onnx-zipformer-small-en-2023-06-26/joiner-epoch-99-avg-1.int8.onnx
+PASS Assets/StreamingAssets/SherpaOnnx/asr-models/sherpa-onnx-zipformer-small-en-2023-06-26/tokens.txt
+PASS Assets/StreamingAssets/SherpaOnnx/asr-settings.json
+PASS Assets/StreamingAssets/SherpaOnnx/online-asr-settings.json
+PASS Assets/StreamingAssets/SherpaOnnx/streaming-assets-manifest.json
+PASS Assets/StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/en_US-kristin-medium.onnx
+PASS Assets/StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/en_US-kristin-medium.onnx.json
+PASS Assets/StreamingAssets/SherpaOnnx/tts-settings.json
+PASS Assets/StreamingAssets/SherpaOnnx/vad-models/silero_vad/silero_vad.onnx
+PASS Assets/StreamingAssets/SherpaOnnx/vad-settings.json
+PASS Packages/com.ponyudev.sherpa-onnx/package.json
+PASS Packages/com.worldlabs.gaussian-splatting/package.json
+PASS Packages/manifest.json
+Required-path check: existence/non-LFS only; no model load or credential authentication.
+PRESENT .env
+PRESENT .env.example
+PRESENT Assets/App/Prefabs/GSplatRenderer.prefab
+PRESENT Assets/Scenes/ChakraTest.unity
+ABSENT Assets/Resources/WorldLabs/worldlabs_env.txt
+ABSENT Assets/StreamingAssets/.env
+VENDORED com.ponyudev.sherpa-onnx 0.1.0
+VENDORED com.worldlabs.gaussian-splatting 1.1.0
+Manifest/lock direct-version mismatches: []
+Android quality index 1 / Graphics pipeline: Assets/Settings/Project Configuration/Performance URP Config.asset
+Default renderer index 0: Assets/Settings/Project Configuration/Android Preset.asset
+Renderer has GaussianSplatURPFeature: True; subasset 7857143964907549898 is referenced in m_RendererFeatures and has m_Active: 1.
+Android: ARM64 (2); IL2CPP (1); Vulkan (m_APIs 15000000); minimum SDK 32; target SDK automatic (0); Input System (1).
+OpenXR Android m_renderMode: 0 = MultiPass, verified in Library/PackageCache/com.unity.xr.openxr@22defdbf51c4/Runtime/Settings/OpenXRRenderSettings.cs:16-26.
+Editor process check: no running Unity editor; Temp/UnityLockfile absent before launch. CLI unity-mcp-cli unavailable; no interactive MCP state query run.
+Unity 6000.2.10f1 executable and sibling PlaybackEngines/AndroidPlayer SDK, NDK, OpenJDK directories present.
+Initial free disk: approximately 18 GiB. Source Assets 499 MiB, Packages 54 MiB, Library 16 GiB; APFS copy-on-write isolation used.

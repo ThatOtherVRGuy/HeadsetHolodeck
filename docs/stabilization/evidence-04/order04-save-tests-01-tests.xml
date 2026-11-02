@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="32" result="Passed" total="32" passed="32" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-09-13 22:57:15Z" end-time="2026-09-13 22:57:23Z" duration="7.5155042">
+  <test-suite type="TestSuite" id="1000" name="HeadsetHolodeck" fullname="HeadsetHolodeck" runstate="Runnable" testcasecount="263" result="Passed" start-time="2026-09-13 22:57:15Z" end-time="2026-09-13 22:57:23Z" duration="7.515504" total="32" passed="32" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1064" name="Holodeck.Save.Tests.dll" fullname="/private/tmp/holodeck-saves-03-zusaQa/project/Library/ScriptAssemblies/Holodeck.Save.Tests.dll" runstate="Runnable" testcasecount="32" result="Passed" start-time="2026-09-13 22:57:15Z" end-time="2026-09-13 22:57:23Z" duration="7.506613" total="32" passed="32" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="47224" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1065" name="Holodeck" fullname="Holodeck" runstate="Runnable" testcasecount="32" result="Passed" start-time="2026-09-13 22:57:15Z" end-time="2026-09-13 22:57:23Z" duration="7.501260" total="32" passed="32" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1066" name="Save" fullname="Holodeck.Save" runstate="Runnable" testcasecount="32" result="Passed" start-time="2026-09-13 22:57:15Z" end-time="2026-09-13 22:57:23Z" duration="7.497596" total="32" passed="32" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1067" name="Tests" fullname="Holodeck.Save.Tests" runstate="Runnable" testcasecount="32" result="Passed" start-time="2026-09-13 22:57:15Z" end-time="2026-09-13 22:57:23Z" duration="7.493357" total="32" passed="32" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1029" name="WorldConfigRegistryTests" fullname="Holodeck.Save.Tests.WorldConfigRegistryTests" classname="Holodeck.Save.Tests.WorldConfigRegistryTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-09-13 22:57:15Z" end-time="2026-09-13 22:57:15Z" duration="0.038769" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1030" name="Register_AddsSerializer" fullname="Holodeck.Save.Tests.WorldConfigRegistryTests.Register_AddsSerializer" methodname="Register_AddsSerializer" classname="Holodeck.Save.Tests.WorldConfigRegistryTests" runstate="Runnable" seed="563168927" result="Passed" start-time="2026-09-13 22:57:15Z" end-time="2026-09-13 22:57:15Z" duration="0.009311" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1031" name="Register_NullSerializer_ThrowsArgumentNullException" fullname="Holodeck.Save.Tests.WorldConfigRegistryTests.Register_NullSerializer_ThrowsArgumentNullException" methodname="Register_NullSerializer_ThrowsArgumentNullException" classname="Holodeck.Save.Tests.WorldConfigRegistryTests" runstate="Runnable" seed="1854728940" result="Passed" start-time="2026-09-13 22:57:15Z" end-time="2026-09-13 22:57:15Z" duration="0.003190" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1033" name="RestoreAll_CallsRestoreOnMatchingSerializer" fullname="Holodeck.Save.Tests.WorldConfigRegistryTests.RestoreAll_CallsRestoreOnMatchingSerializer" methodname="RestoreAll_CallsRestoreOnMatchingSerializer" classname="Holodeck.Save.Tests.WorldConfigRegistryTests" runstate="Runnable" seed="2131587130" result="Passed" start-time="2026-09-13 22:57:15Z" end-time="2026-09-13 22:57:15Z" duration="0.005377" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1034" name="RestoreAll_UnknownType_LogsWarningAndDoesNotThrow" fullname="Holodeck.Save.Tests.WorldConfigRegistryTests.RestoreAll_UnknownType_LogsWarningAndDoesNotThrow" methodname="RestoreAll_UnknownType_LogsWarningAndDoesNotThrow" classname="Holodeck.Save.Tests.WorldConfigRegistryTests" runstate="Runnable" seed="2117083719" result="Passed" start-time="2026-09-13 22:57:15Z" end-time="2026-09-13 22:57:15Z" duration="0.002678" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[WorldConfigComponentRegistry] No serializer registered for type 'DoesNotExist'
+[WorldConfigComponentRegistry] No serializer registered for type 'DoesNotExist'
+]]></output>
+              </test-case>
+              <test-case id="1032" name="SaveAll_CallsSaveOnRegisteredSerializer" fullname="Holodeck.Save.Tests.WorldConfigRegistryTests.SaveAll_CallsSaveOnRegisteredSerializer" methodname="SaveAll_CallsSaveOnRegisteredSerializer" classname="Holodeck.Save.Tests.WorldConfigRegistryTests" runstate="Runnable" seed="24622624" result="Passed" start-time="2026-09-13 22:57:15Z" end-time="2026-09-13 22:57:15Z" duration="0.003649" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1035" name="WorldConfigSerializationTests" fullname="Holodeck.Save.Tests.WorldConfigSerializationTests" classname="Holodeck.Save.Tests.WorldConfigSerializationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-09-13 22:57:15Z" end-time="2026-09-13 22:57:16Z" duration="0.108328" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1036" name="WorldConfig_JsonRoundTrip_PreservesAllFields" fullname="Holodeck.Save.Tests.WorldConfigSerializationTests.WorldConfig_JsonRoundTrip_PreservesAllFields" methodname="WorldConfig_JsonRoundTrip_PreservesAllFields" classname="Holodeck.Save.Tests.WorldConfigSerializationTests" runstate="Runnable" seed="1464324233" result="Passed" start-time="2026-09-13 22:57:15Z" end-time="2026-09-13 22:57:16Z" duration="0.094682" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1037" name="WorldConfig_NullOptionalFields_SerializesCleanly" fullname="Holodeck.Save.Tests.WorldConfigSerializationTests.WorldConfig_NullOptionalFields_SerializesCleanly" methodname="WorldConfig_NullOptionalFields_SerializesCleanly" classname="Holodeck.Save.Tests.WorldConfigSerializationTests" runstate="Runnable" seed="51799340" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.000384" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1038" name="WorldConfigStoreTests" fullname="Holodeck.Save.Tests.WorldConfigStoreTests" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" testcasecount="25" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:23Z" duration="7.338611" total="25" passed="25" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1039" name="CreateConfig_WritesJsonToDisk" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.CreateConfig_WritesJsonToDisk" methodname="CreateConfig_WritesJsonToDisk" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="890296720" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.015936" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1041" name="DeleteConfig_RemovesFolderAndInMemory" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.DeleteConfig_RemovesFolderAndInMemory" methodname="DeleteConfig_RemovesFolderAndInMemory" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="1181267526" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.002687" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1047" name="FirstSave_WritesPrimaryWithoutBackupAndRetainsWriterLock" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.FirstSave_WritesPrimaryWithoutBackupAndRetainsWriterLock" methodname="FirstSave_WritesPrimaryWithoutBackupAndRetainsWriterLock" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="1852979914" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.003093" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1044" name="ForkConfig_CreatesSeparateFolderWithSameObjects" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.ForkConfig_CreatesSeparateFolderWithSameObjects" methodname="ForkConfig_CreatesSeparateFolderWithSameObjects" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="1217878970" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.005693" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1043" name="HasConfigForWorldId_ReturnsTrueWhenExists" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.HasConfigForWorldId_ReturnsTrueWhenExists" methodname="HasConfigForWorldId_ReturnsTrueWhenExists" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="501712956" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.001588" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1042" name="ListConfigs_ReturnsAllCreated" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.ListConfigs_ReturnsAllCreated" methodname="ListConfigs_ReturnsAllCreated" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="1360133896" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.002589" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1052" name="LoadConfig_IgnoresAbandonedTemporaryFiles" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.LoadConfig_IgnoresAbandonedTemporaryFiles" methodname="LoadConfig_IgnoresAbandonedTemporaryFiles" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="1766680171" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.001800" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1051" name="LoadConfig_WhenNoSaveFileExists_ReturnsNull" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.LoadConfig_WhenNoSaveFileExists_ReturnsNull" methodname="LoadConfig_WhenNoSaveFileExists_ReturnsNull" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="322292852" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.000772" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1053" name="LoadConfig_WhenPrimaryAndBackupAreBothCorrupt_ThrowsAndRetainsFiles" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.LoadConfig_WhenPrimaryAndBackupAreBothCorrupt_ThrowsAndRetainsFiles" methodname="LoadConfig_WhenPrimaryAndBackupAreBothCorrupt_ThrowsAndRetainsFiles" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="1283838959" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.008452" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1050" name="LoadConfig_WhenPrimaryIsMissing_RecoversFromBackup" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.LoadConfig_WhenPrimaryIsMissing_RecoversFromBackup" methodname="LoadConfig_WhenPrimaryIsMissing_RecoversFromBackup" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="935841705" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.009468" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[WorldConfigStore] Primary save '/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveTests_ca177e8c/Original_2026-09-13T225716Z_3d1b27/world.json' is missing, unreadable, or corrupt; recovered the previous generation from '/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveTests_ca177e8c/Original_2026-09-13T225716Z_3d1b27/world.json.bak'. Both files are retained and the next successful save repairs the primary.
+[WorldConfigStore] Primary save '/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveTests_ca177e8c/Original_2026-09-13T225716Z_3d1b27/world.json' is missing, unreadable, or corrupt; recovered the previous generation from '/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveTests_ca177e8c/Original_2026-09-13T225716Z_3d1b27/world.json.bak'. Both files are retained and the next successful save repairs the primary.
+]]></output>
+              </test-case>
+              <test-case id="1045" name="MigrateConfigToWritableCopy_PreservesDataAndHidesLegacyDuplicateOnNextScan" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.MigrateConfigToWritableCopy_PreservesDataAndHidesLegacyDuplicateOnNextScan" methodname="MigrateConfigToWritableCopy_PreservesDataAndHidesLegacyDuplicateOnNextScan" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="1089281146" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.054864" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[WorldConfigStore] Migrated read-only config 'Cabin_2026-09-13T225716Z_a7b218' to writable config 'Cabin_2026-09-13T225716Z_49a793'.
+[WorldConfigStore] Migrated read-only config 'Cabin_2026-09-13T225716Z_a7b218' to writable config 'Cabin_2026-09-13T225716Z_49a793'.
+]]></output>
+              </test-case>
+              <test-case id="1048" name="RepeatedSave_KeepsPreviousGenerationAsBackup" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.RepeatedSave_KeepsPreviousGenerationAsBackup" methodname="RepeatedSave_KeepsPreviousGenerationAsBackup" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="81906087" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.006383" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1058" name="SaveConfig_ClearsTemporariesAbandonedByAPreviousProcess" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.SaveConfig_ClearsTemporariesAbandonedByAPreviousProcess" methodname="SaveConfig_ClearsTemporariesAbandonedByAPreviousProcess" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="1629549931" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.004025" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1059" name="SaveConfig_ConcurrentWriters_CommitWholeDocuments" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.SaveConfig_ConcurrentWriters_CommitWholeDocuments" methodname="SaveConfig_ConcurrentWriters_CommitWholeDocuments" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="1893919664" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.580719" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1063" name="SaveConfig_FileProtocolPreservesEverySchemaField" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.SaveConfig_FileProtocolPreservesEverySchemaField" methodname="SaveConfig_FileProtocolPreservesEverySchemaField" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="921593570" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.007547" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1062" name="SaveConfig_LegacyConfigWithoutBackupLoadsScansAndSavesInPlace" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.SaveConfig_LegacyConfigWithoutBackupLoadsScansAndSavesInPlace" methodname="SaveConfig_LegacyConfigWithoutBackupLoadsScansAndSavesInPlace" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="1417741607" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:16Z" duration="0.094420" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1040" name="SaveConfig_UpdatesModifiedAt" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.SaveConfig_UpdatesModifiedAt" methodname="SaveConfig_UpdatesModifiedAt" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="981174673" result="Passed" start-time="2026-09-13 22:57:16Z" end-time="2026-09-13 22:57:17Z" duration="1.109079" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1060" name="SaveConfig_WhenAnotherWriterHoldsTheLock_ReportsTimeoutAndKeepsCommittedData" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.SaveConfig_WhenAnotherWriterHoldsTheLock_ReportsTimeoutAndKeepsCommittedData" methodname="SaveConfig_WhenAnotherWriterHoldsTheLock_ReportsTimeoutAndKeepsCommittedData" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="251911388" result="Passed" start-time="2026-09-13 22:57:17Z" end-time="2026-09-13 22:57:23Z" duration="5.077614" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1056" name="SaveConfig_WhenBackupWriteIsInterrupted_KeepsPrimaryAndBackupIntact" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.SaveConfig_WhenBackupWriteIsInterrupted_KeepsPrimaryAndBackupIntact" methodname="SaveConfig_WhenBackupWriteIsInterrupted_KeepsPrimaryAndBackupIntact" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="297969710" result="Passed" start-time="2026-09-13 22:57:23Z" end-time="2026-09-13 22:57:23Z" duration="0.028531" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1061" name="SaveConfig_WhenFolderIsNotWritable_MigratesToWritableCopyAndKeepsOriginalFiles" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.SaveConfig_WhenFolderIsNotWritable_MigratesToWritableCopyAndKeepsOriginalFiles" methodname="SaveConfig_WhenFolderIsNotWritable_MigratesToWritableCopyAndKeepsOriginalFiles" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="1591098521" result="Passed" start-time="2026-09-13 22:57:23Z" end-time="2026-09-13 22:57:23Z" duration="0.045849" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[WorldConfigStore] Config 'ReadOnly_2026-09-13T225723Z_add157' is read-only for this install; creating a writable copy. [WorldConfigStore] Save failed during write temporary config for '/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveTests_8429c7ca/ReadOnly_2026-09-13T225723Z_add157/world.json' (UnauthorizedAccessException: Access to the path "/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveTests_8429c7ca/ReadOnly_2026-09-13T225723Z_add157/world.json.651ab491bad24885b936984dadc462a9.tmp" is denied.). Existing committed data was not deleted; recovery backup: '/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveTests_8429c7ca/ReadOnly_2026-09-13T225723Z_add157/world.json.bak'.
+[WorldConfigStore] Config 'ReadOnly_2026-09-13T225723Z_add157' is read-only for this install; creating a writable copy. [WorldConfigStore] Save failed during write temporary config for '/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveTests_8429c7ca/ReadOnly_2026-09-13T225723Z_add157/world.json' (UnauthorizedAccessException: Access to the path "/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveTests_8429c7ca/ReadOnly_2026-09-13T225723Z_add157/world.json.651ab491bad24885b936984dadc462a9.tmp" is denied.). Existing committed data was not deleted; recovery backup: '/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveTests_8429c7ca/ReadOnly_2026-09-13T225723Z_add157/world.json.bak'.
+[WorldConfigStore] Migrated read-only config 'ReadOnly_2026-09-13T225723Z_add157' to writable config 'Repaired_2026-09-13T225723Z_d8b391'.
+[WorldConfigStore] Migrated read-only config 'ReadOnly_2026-09-13T225723Z_add157' to writable config 'Repaired_2026-09-13T225723Z_d8b391'.
+]]></output>
+              </test-case>
+              <test-case id="1055" name="SaveConfig_WhenPrimaryCommitFails_KeepsLastValidSave" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.SaveConfig_WhenPrimaryCommitFails_KeepsLastValidSave" methodname="SaveConfig_WhenPrimaryCommitFails_KeepsLastValidSave" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="1149761811" result="Passed" start-time="2026-09-13 22:57:23Z" end-time="2026-09-13 22:57:23Z" duration="0.024715" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1049" name="SaveConfig_WhenPrimaryIsCorrupt_RecoversPreviousGenerationAndRepairsOnNextSave" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.SaveConfig_WhenPrimaryIsCorrupt_RecoversPreviousGenerationAndRepairsOnNextSave" methodname="SaveConfig_WhenPrimaryIsCorrupt_RecoversPreviousGenerationAndRepairsOnNextSave" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="1035056547" result="Passed" start-time="2026-09-13 22:57:23Z" end-time="2026-09-13 22:57:23Z" duration="0.034071" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[WorldConfigStore] Primary save '/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveTests_8b854e4a/Original_2026-09-13T225723Z_cf9645/world.json' is missing, unreadable, or corrupt; recovered the previous generation from '/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveTests_8b854e4a/Original_2026-09-13T225723Z_cf9645/world.json.bak'. Both files are retained and the next successful save repairs the primary.
+[WorldConfigStore] Primary save '/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveTests_8b854e4a/Original_2026-09-13T225723Z_cf9645/world.json' is missing, unreadable, or corrupt; recovered the previous generation from '/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveTests_8b854e4a/Original_2026-09-13T225723Z_cf9645/world.json.bak'. Both files are retained and the next successful save repairs the primary.
+]]></output>
+              </test-case>
+              <test-case id="1057" name="SaveConfig_WhenTemporaryWriteIsInterrupted_KeepsCommittedFilesIntact" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.SaveConfig_WhenTemporaryWriteIsInterrupted_KeepsCommittedFilesIntact" methodname="SaveConfig_WhenTemporaryWriteIsInterrupted_KeepsCommittedFilesIntact" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="1932631449" result="Passed" start-time="2026-09-13 22:57:23Z" end-time="2026-09-13 22:57:23Z" duration="0.013316" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1054" name="ScanAndMigrateAsync_RecoversConfigFromBackupWhenPrimaryIsCorrupt" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.ScanAndMigrateAsync_RecoversConfigFromBackupWhenPrimaryIsCorrupt" methodname="ScanAndMigrateAsync_RecoversConfigFromBackupWhenPrimaryIsCorrupt" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="1992560162" result="Passed" start-time="2026-09-13 22:57:23Z" end-time="2026-09-13 22:57:23Z" duration="0.070927" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1046" name="ScanAndMigrateAsync_WithMultipleStores_CreatesOneConfigPerLooseSplat" fullname="Holodeck.Save.Tests.WorldConfigStoreTests.ScanAndMigrateAsync_WithMultipleStores_CreatesOneConfigPerLooseSplat" methodname="ScanAndMigrateAsync_WithMultipleStores_CreatesOneConfigPerLooseSplat" classname="Holodeck.Save.Tests.WorldConfigStoreTests" runstate="Runnable" seed="514128882" result="Passed" start-time="2026-09-13 22:57:23Z" end-time="2026-09-13 22:57:23Z" duration="0.108543" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[<color=#ff6b6b>fail:</color> [15:57:23:4216] <color=#B4FF32>[AI]</color> <color=#58D68D><b>TestResultCollector</b></color> Test run finished, but the pending MCP request id was missing. The test results cannot be delivered to the client.
+<color=#ff6b6b>fail:</color> [15:57:23:4216] <color=#B4FF32>[AI]</color> <color=#58D68D><b>TestResultCollector</b></color> Test run finished, but the pending MCP request id was missing. The test results cannot be delivered to the client.
+Saving results to: /Users/davidarendash/Library/Application Support/QLC/HeadsetHolodeck/TestResults.xml
+Saving results to: /Users/davidarendash/Library/Application Support/QLC/HeadsetHolodeck/TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

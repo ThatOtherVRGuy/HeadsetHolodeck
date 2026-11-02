@@ -1,0 +1,44 @@
+from pathlib import Path
+import os, re, subprocess, json, sys, datetime, argparse, shutil, signal
+parser=argparse.ArgumentParser()
+parser.add_argument("case",choices=["risk","batch","save","transitions"])
+parser.add_argument("--method",default="HeadsetHolodeck.EditorTests.WorldTransitionBatchTests.RunAsync")
+parser.add_argument("--label",default=None)
+args=parser.parse_args()
+run=Path(__file__).parent
+label=args.label or args.case
+if not re.fullmatch(r"[A-Za-z0-9_-]+",label):raise SystemExit("Unsafe label")
+env={k:v for k,v in os.environ.items() if not re.search(r"KEY|TOKEN|SECRET|PASSWORD",k,re.I)}
+base=["/usr/bin/sandbox-exec","-f",str(run/"offline-tests.sb"),"/Applications/Unity/Hub/Editor/6000.2.10f1/Unity.app/Contents/MacOS/Unity","-batchmode","-nographics","-projectPath",str(run/"project")]
+cases={"risk":["-executeMethod","StabilizationTransitionRisk02.Run","-riskResult",str(run/(label+"-results.txt"))],"batch":["-quit","-executeMethod","StabilizationBaseline01.RunRegressions","-baselineResult",str(run/(label+"-results.txt"))],"save":["-runTests","-testPlatform","EditMode","-assemblyNames","Holodeck.Save.Tests","-testResults",str(run/(label+"-tests.xml"))],"transitions":["-executeMethod","StabilizationTransitions02.Run","-transitionMethod",args.method,"-transitionResult",str(run/(label+"-results.txt"))]}
+command=base+cases[args.case]+["-logFile",str(run/(label+".log"))]
+started=datetime.datetime.now().astimezone().isoformat()
+(run/(label+"-command.json")).write_text(json.dumps(command,indent=2)+"\n")
+print("Starting "+label+" in isolated batch editor; provider network and credential-file reads blocked.",flush=True)
+process=subprocess.Popen(command,env=env,start_new_session=True)
+timed_out=False
+try:
+    process.wait(timeout=600)
+except subprocess.TimeoutExpired:
+    timed_out=True
+    os.killpg(process.pid,signal.SIGTERM)
+    try: process.wait(timeout=15)
+    except subprocess.TimeoutExpired:
+        os.killpg(process.pid,signal.SIGKILL)
+        process.wait()
+    print("Isolated Unity process exceeded 600-second hard timeout.",flush=True)
+result={"check":args.case,"label":label,"exit_code":124 if timed_out else process.returncode,"timed_out":timed_out,"started":started,"ended":datetime.datetime.now().astimezone().isoformat(),"log":str(run/(label+".log"))}
+(run/(label+"-process.json")).write_text(json.dumps(result,indent=2)+"\n")
+evidence=Path("/Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev/docs/stabilization/evidence-02")
+for suffix in ("-command.json", "-process.json", "-results.txt", "-tests.xml"):
+    artifact=run/(label+suffix)
+    if artifact.exists(): shutil.copy2(artifact,evidence/artifact.name)
+log=run/(label+".log")
+if log.exists():
+    content=log.read_text(errors="replace")
+    content=re.sub(r"sk-[A-Za-z0-9_-]{12,}","[REDACTED_API_KEY]",content)
+    content=re.sub(r"(?i)(Bearer +)[A-Za-z0-9._-]{12,}",r"\1[REDACTED]",content)
+    content=re.sub(r"(?m)^([ \t]*(?:Machine Id|Serial):).*",r"\1 [REDACTED]",content)
+    (evidence/(label+".log.txt")).write_text(content)
+print(json.dumps(result),flush=True)
+sys.exit(124 if timed_out else process.returncode)

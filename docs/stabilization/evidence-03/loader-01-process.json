@@ -1,0 +1,9 @@
+{
+  "check": "transitions",
+  "label": "loader-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-13T14:55:10.660010-07:00",
+  "ended": "2026-09-13T14:56:16.284538-07:00",
+  "log": "/private/tmp/holodeck-saves-03-zusaQa/loader-01.log"
+}

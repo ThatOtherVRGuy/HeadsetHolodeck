@@ -9,6 +9,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Holodeck.unity
     guid: 2d01f3713ded2496ab416f6c079957de
   m_configObjects:
+    ByteDance.PICO.XR.Settings: {fileID: 11400000, guid: 2fd3f9cbb1a592d41b70f015bbcf3567, type: 2}
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: bfa1182bd221b4ca89619141f66f1260, type: 2}
     Unity.XR.WindowsMR.Settings: {fileID: 11400000, guid: dc5a169419fa04987b057f65238cf3ba, type: 2}
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 9bec1ce6a03ccba4b9a8215241b32e63, type: 2}

@@ -1,0 +1,97 @@
+{
+  "date": "2026-09-10",
+  "unity": "6000.2.10f1",
+  "transition_tests": {
+    "passed": 32,
+    "failed": 0,
+    "manager": 14,
+    "loader": 9,
+    "restore_and_panorama": 9
+  },
+  "existing_batch_entry_points": {
+    "passed": 19,
+    "failed": 0
+  },
+  "save_editmode": {
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0
+  },
+  "processes": [
+    {
+      "check": "transitions",
+      "label": "final-manager-03",
+      "exit_code": 0,
+      "timed_out": false,
+      "started": "2026-09-10T11:34:53.782048-07:00",
+      "ended": "2026-09-10T11:35:40.476029-07:00",
+      "log": "/private/tmp/holodeck-transitions-02-final-sg5r74ko/final-manager-03.log"
+    },
+    {
+      "check": "transitions",
+      "label": "final-loader-01",
+      "exit_code": 0,
+      "timed_out": false,
+      "started": "2026-09-10T11:36:02.786572-07:00",
+      "ended": "2026-09-10T11:36:33.648210-07:00",
+      "log": "/private/tmp/holodeck-transitions-02-final-sg5r74ko/final-loader-01.log"
+    },
+    {
+      "check": "transitions",
+      "label": "final-restore-02",
+      "exit_code": 0,
+      "timed_out": false,
+      "started": "2026-09-10T18:24:41.517938-07:00",
+      "ended": "2026-09-10T18:26:51.683673-07:00",
+      "log": "/private/tmp/holodeck-transitions-02-final-sg5r74ko/final-restore-02.log"
+    },
+    {
+      "check": "batch",
+      "label": "final-regressions-01",
+      "exit_code": 0,
+      "timed_out": false,
+      "started": "2026-09-10T18:27:30.767449-07:00",
+      "ended": "2026-09-10T18:29:26.781061-07:00",
+      "log": "/private/tmp/holodeck-transitions-02-final-sg5r74ko/final-regressions-01.log"
+    },
+    {
+      "check": "save",
+      "label": "final-save-01",
+      "exit_code": 0,
+      "timed_out": false,
+      "started": "2026-09-10T18:29:27.005744-07:00",
+      "ended": "2026-09-10T18:31:24.491885-07:00",
+      "log": "/private/tmp/holodeck-transitions-02-final-sg5r74ko/final-save-01.log"
+    }
+  ],
+  "retained_logs": {
+    "final-manager-03": "/Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev/docs/stabilization/evidence-02/final-manager-03.log.txt",
+    "final-loader-01": "/Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev/docs/stabilization/evidence-02/final-loader-01.log.txt",
+    "final-restore-02": "/Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev/docs/stabilization/evidence-02/final-restore-02.log.txt",
+    "final-regressions-01": "/Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev/docs/stabilization/evidence-02/final-regressions-01.log.txt",
+    "final-save-01": "/Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev/docs/stabilization/evidence-02/final-save-01.log.txt"
+  },
+  "compiler_errors": {
+    "final-manager-03": false,
+    "final-loader-01": false,
+    "final-restore-02": false,
+    "final-regressions-01": false,
+    "final-save-01": false
+  },
+  "provider_isolation": "All Unity processes ran under offline-tests.sb; external outbound denied, local IPC/loopback allowed, .env and worldlabs_env.txt reads denied; inherited key/token/secret/password variables stripped. No paid generation run.",
+  "fixture_limits": "Batch EditMode; bounded main-thread continuation pump; Editor-only ExecuteAlways fixture subclasses deliver lifecycle messages. Controlled I/O and disabled GPU rendering except existing regressions. No PlayMode/headset acceptance claim.",
+  "iterations": [
+    {
+      "label": "final-manager-01",
+      "outcome": "Async adapter did not drain continuations, hung after BEGIN; exact isolated process terminated (-15). No verdict."
+    },
+    {
+      "label": "final-manager-02",
+      "outcome": "4 cases passed, then EditMode fixture lacked OnDisable delivery; corrected Editor-only fixture lifecycle."
+    },
+    {
+      "label": "final-restore-01",
+      "outcome": "9/9 assertions passed; Unity shutdown exited -4. Unchanged-source rerun final-restore-02 passed with exit 0; shutdown issue not reproduced."
+    }
+  ]
+}

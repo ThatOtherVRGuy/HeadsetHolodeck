@@ -1,0 +1,110 @@
+{
+  "task": "Order 03 — Protect saves",
+  "date": "2026-09-13",
+  "unity": "6000.2.10f1 (OSXEditor)",
+  "isolated_project_copy": "/private/tmp/holodeck-saves-03-zusaQa/project",
+  "run_directory": "/private/tmp/holodeck-saves-03-zusaQa",
+  "isolation": {
+    "profile": "offline-tests.sb",
+    "policy": "allow default; deny network-outbound (loopback allowed for local Unity services); deny reads of .env / worldlabs_env.txt",
+    "credential_environment": "variables matching KEY|TOKEN|SECRET|PASSWORD removed from the Unity process environment",
+    "fixture_locations": "every fixture uses a fresh directory under the process temp path; no real user save was read or written",
+    "paid_generation": "never invoked; no generation start markers appear in any log",
+    "failure_exiting_tests_in_interactive_editor": "none; the user's editor was closed (no Temp/UnityLockfile) and every run was an isolated batch editor"
+  },
+  "retained_pre_fix_runs": [
+    {
+      "label": "risk-before (probe revision 3, the retained script)",
+      "results": "risk-before-results.txt",
+      "process": "risk-before-process.json",
+      "log": "risk-before.log.txt",
+      "highlights": "lock-exists=False; backup-name=<missing> after repeated saves; INTERRUPTION-RECOVERY THREW JsonReaderException; TORN-WRITE-WINDOW observations=9018 min-bytes=0 zero-length=3; CONCURRENT-SAME-FILE save-errors=2"
+    },
+    {
+      "label": "risk-before-v2 (probe revision 2, superseded sampling)",
+      "results": "risk-before-v2-results.txt",
+      "highlights": "backup-name=<missing>; INTERRUPTION-RECOVERY THREW JsonReaderException; CONCURRENT-SAME-FILE save-errors=9"
+    },
+    {
+      "label": "probe revision 1 (raw output not retained)",
+      "highlights": "the sampling reader itself caused the pre-fix save to fail with a sharing violation and leave a 0-byte primary (final-bytes=0); raw output was overwritten when the probe revision changed and is not claimed as evidence"
+    },
+    {
+      "note": "Pre-fix reproduction ran before the store was wired to the new file protocol; see docs/stabilization/handoff-03.md for the exact sequence."
+    }
+  ],
+  "final_runs": [
+    {
+      "check": "save EditMode assembly (Holodeck.Save.Tests)",
+      "label": "final-save-01",
+      "command": ["-runTests", "-testPlatform", "EditMode", "-assemblyNames", "Holodeck.Save.Tests"],
+      "exit_code": 0,
+      "result": "32/32 passed, 0 failed, 0 skipped, 0 inconclusive",
+      "evidence": ["final-save-01-tests.xml", "final-save-01.log.txt", "final-save-01-command.json", "final-save-01-process.json"]
+    },
+    {
+      "check": "existing batch regression entry points",
+      "label": "final-regressions-01",
+      "command": ["-quit", "-executeMethod", "StabilizationBaseline01.RunRegressions"],
+      "exit_code": 0,
+      "result": "19/19 entries passed, including WorldConfigStoreBatchTests.RunMigrationTests and WorldConfigMigrationBatchTests.RunReadOnlyConfigMigrationTest",
+      "evidence": ["final-regressions-01-results.txt", "final-regressions-01.log.txt"]
+    },
+    {
+      "check": "order 02 manager transition suite",
+      "label": "final-manager-01",
+      "command": ["-executeMethod", "StabilizationTransitions02.Run", "-transitionMethod", "HeadsetHolodeck.EditorTests.WorldTransitionBatchTests.RunAsync"],
+      "exit_code": 0,
+      "result": "14/14 manager transition cases passed",
+      "evidence": ["final-manager-01-results.txt", "final-manager-01.log.txt"]
+    },
+    {
+      "check": "order 02 local/floor loader transition suite",
+      "label": "final-loader-01",
+      "command": ["-executeMethod", "StabilizationTransitions02.Run", "-transitionMethod", "HeadsetHolodeck.EditorTests.WorldLoaderTransitionBatchTests.RunAllAsync"],
+      "exit_code": 0,
+      "result": "9/9 transition fixtures passed",
+      "evidence": ["final-loader-01-results.txt", "final-loader-01.log.txt"]
+    },
+    {
+      "check": "order 02 restore/autosave transition suite",
+      "label": "final-restore-01",
+      "command": ["-executeMethod", "StabilizationTransitions02.Run", "-transitionMethod", "HeadsetHolodeck.EditorTests.WorldRestoreTransitionBatchTests.RunAllAsync"],
+      "exit_code": 0,
+      "result": "all 9 restore/autosave fixtures passed",
+      "evidence": ["final-restore-01-results.txt", "final-restore-01.log.txt"]
+    },
+    {
+      "check": "post-fix risk probe (same script used pre-fix)",
+      "label": "final-risk-01",
+      "command": ["-executeMethod", "StabilizationSaveRisk03.Run"],
+      "exit_code": 0,
+      "result": "lock-exists=True; backup-name=First after repeated saves; INTERRUPTION-RECOVERY recovered=True display_name=First; TORN-WRITE-WINDOW observations=42234 min-bytes=542 zero-length=0 foreign-length=0 parse-failures=0; CONCURRENT-SAME-FILE save-errors=0 with a complete 20000-object primary and a valid backup",
+      "evidence": ["final-risk-01-results.txt", "final-risk-01.log.txt", "risk-after-results.txt"]
+    }
+  ],
+  "iteration_history": [
+    {"label": "risk-before", "note": "pre-fix reproduction, exit 0"},
+    {"label": "save-fix-01", "note": "31/31 save tests passed, exit 0 (before the writer-lock timeout fixture existed)"},
+    {"label": "risk-after", "note": "post-fix probe, exit 0"},
+    {"label": "regressions-01", "note": "19/19 batch entries, exit 0"},
+    {"label": "manager-01 / loader-01 / restore-01", "note": "14/14, 9/9, 9/9, exit 0"},
+    {"label": "save-fix-02", "note": "31/32 — the new writer-lock timeout fixture asserted on the outer message before the underlying cause was inlined; runtime change made, assertion kept"},
+    {"label": "save-fix-03", "note": "32/32, exit 0"},
+    {"note": "final-* labels are the frozen-source runs; source and copy hashes match (final-source-comparison.json)"}
+  ],
+  "harness": [
+    "runner.py.txt — isolated batch runner (offline profile, redacted log copies, artifact copy into this directory)",
+    "sync.py.txt — one-way source to copy sync plus probe adapter install/clean",
+    "verify.py.txt — source/copy hash comparison and preservation check",
+    "baseline-adapter.cs.txt — existing 19 regression entry points",
+    "async-transition-adapter.cs.txt — order 02 transition suite adapter",
+    "pre-fix-risk-probe.cs.txt — StabilizationSaveRisk03 probe used before and after the fix"
+  ],
+  "checks": {
+    "source_copy_comparison": "final-source-comparison.json",
+    "source_hashes": "verification-source-hashes.json",
+    "preservation": "preservation-final.json",
+    "baseline_before_snapshot": "source-hashes-before.json (2026-09-10T18:37:52-07:00)"
+  }
+}

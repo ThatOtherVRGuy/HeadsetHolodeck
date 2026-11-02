@@ -17,6 +17,26 @@ namespace GaussianSplatting.Runtime
     [BurstCompile]
     public static class SPZFileReader
     {
+        public readonly struct HeaderInfo
+        {
+            public readonly int version;
+            public readonly int vertexCount;
+            public readonly int shLevel;
+            public readonly int fractBits;
+            public readonly int flags;
+            public readonly int reserved;
+
+            public HeaderInfo(int version, int vertexCount, int shLevel, int fractBits, int flags, int reserved)
+            {
+                this.version = version;
+                this.vertexCount = vertexCount;
+                this.shLevel = shLevel;
+                this.fractBits = fractBits;
+                this.flags = flags;
+                this.reserved = reserved;
+            }
+        }
+
         public static void ReadFileHeader(string filePath, out int vertexCount)
         {
             vertexCount = 0;
@@ -27,7 +47,28 @@ namespace GaussianSplatting.Runtime
             ReadHeaderImpl(filePath, gz, out vertexCount, out _, out _, out _);
         }
 
+        public static HeaderInfo ReadHeaderInfo(byte[] compressedBytes)
+        {
+            using var ms = new MemoryStream(compressedBytes);
+            using var gz = new GZipStream(ms, CompressionMode.Decompress);
+            ReadHeaderImpl("<in-memory>", gz, out int vertexCount, out int shLevel, out int fractBits, out int flags, out int version, out int reserved);
+            return new HeaderInfo(version, vertexCount, shLevel, fractBits, flags, reserved);
+        }
+
+        public static HeaderInfo ReadHeaderInfo(string filePath)
+        {
+            using var fs = File.OpenRead(filePath);
+            using var gz = new GZipStream(fs, CompressionMode.Decompress);
+            ReadHeaderImpl(filePath, gz, out int vertexCount, out int shLevel, out int fractBits, out int flags, out int version, out int reserved);
+            return new HeaderInfo(version, vertexCount, shLevel, fractBits, flags, reserved);
+        }
+
         static void ReadHeaderImpl(string label, Stream stream, out int vertexCount, out int shLevel, out int fractBits, out int flags)
+        {
+            ReadHeaderImpl(label, stream, out vertexCount, out shLevel, out fractBits, out flags, out _, out _);
+        }
+
+        static void ReadHeaderImpl(string label, Stream stream, out int vertexCount, out int shLevel, out int fractBits, out int flags, out int version, out int reserved)
         {
             // Use a plain managed byte[] — Allocator.Temp is forbidden on threadpool threads
             // (e.g. when called from Task.Run), so we avoid NativeArray for this tiny read.
@@ -36,13 +77,14 @@ namespace GaussianSplatting.Runtime
             if (readBytes != 16)
                 throw new IOException($"SPZ {label} read error, failed to read header");
 
-            uint magic     = BitConverter.ToUInt32(buf, 0);
-            uint version   = BitConverter.ToUInt32(buf, 4);
-            uint numPoints = BitConverter.ToUInt32(buf, 8);
-            uint shFlags   = BitConverter.ToUInt32(buf, 12);
+            uint magic      = BitConverter.ToUInt32(buf, 0);
+            uint rawVersion = BitConverter.ToUInt32(buf, 4);
+            uint numPoints  = BitConverter.ToUInt32(buf, 8);
+            uint shFlags    = BitConverter.ToUInt32(buf, 12);
 
             if (magic != 0x5053474e)
                 throw new IOException($"SPZ {label} read error, header magic unexpected {magic}");
+            version = (int)rawVersion;
             if (version != 2)
                 throw new IOException($"SPZ {label} read error, header version unexpected {version}");
 
@@ -50,6 +92,7 @@ namespace GaussianSplatting.Runtime
             shLevel     = (int)(shFlags & 0xFF);
             fractBits   = (int)((shFlags >> 8) & 0xFF);
             flags       = (int)((shFlags >> 16) & 0xFF);
+            reserved    = (int)((shFlags >> 24) & 0xFF);
         }
 
         static int SHCoeffsForLevel(int level)

@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "config_id": "STAB05_Loose_Mermaid",
+  "display_name": "Yoyo Loose Splat Test",
+  "created_at": "2026-09-13T000000Z",
+  "modified_at": "2026-09-14T004400Z",
+  "world_source": {
+    "type": "local_splat",
+    "world_id": null,
+    "display_name": "Yoyo Loose Splat Test",
+    "url": null,
+    "cached_splat": "../CachedWorlds/32_Mermaid_11M.spz",
+    "cached_pano": null,
+    "cached_thumbnail": null
+  },
+  "generation_model": null,
+  "migrated_from_config_id": null,
+  "world_transform": null,
+  "prompts": [
+    {
+      "timestamp": "2026-09-14T003211Z",
+      "type": "voice_command",
+      "intent": "CreateAudioSource",
+      "transcript": "automatic ambience for local_32_Mermaid_11M_639249427224590650"
+    }
+  ],
+  "spawn_points": [
+    {
+      "id": "e0f99b5bf6ea4be28ef75fe87392e7b6",
+      "name": "Estimated Spawn 1",
+      "source": "estimated",
+      "method": "normal_line_consensus_candidate_v1+normal_consensus_spawn_v1+local_floor_y_v1",
+      "created_at": "2026-09-14T003203Z",
+      "position": {
+        "x": 0.00166265876,
+        "y": 1.600328,
+        "z": -4.366863E-05
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.6054193,
+        "z": 0.0,
+        "w": 0.7959067
+      },
+      "look_at": {
+        "x": 0.456721485,
+        "y": 1.40032792,
+        "z": 0.12600106
+      },
+      "confidence": 0.82
+    }
+  ],
+  "objects": [
+    {
+      "instance_id": "Audio_Altenthann_Isolate",
+      "prefab_name": "ambient soundscape local_32_Mermaid_11M_639249427224590650",
+      "display_name": "Audio_Altenthann_Isolated_Bavarian_Church_",
+      "components": [
+        {
+          "type": "AudioAttributionMetadata",
+          "data": {
+            "provider": "freesound",
+            "provider_sound_id": "846302",
+            "title": "Altenthann – Isolated Bavarian Church Bell at Distance (300 m, Open Window, Post‑Rain Ambience) - 260224_002",
+            "creator": "TSP-Talk",
+            "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+            "license_url": "",
+            "landing_url": "https://freesound.org/people/TSP-Talk/sounds/846302/",
+            "audio_url": "https://cdn.freesound.org/previews/846/846302_14079354-hq.mp3",
+            "preview_url": "https://cdn.freesound.org/previews/846/846302_14079354-hq.mp3",
+            "prompt": "ambient soundscape local_32_Mermaid_11M_639249427224590650",
+            "category": "ambience",
+            "duration_seconds": 25.5075,
+            "downloaded_bytes": 587424,
+            "cached_file_name": "Altenthann_Isolated_Bavarian_Church__freesound_846302.mp3",
+            "cached_absolute_path": "/storage/emulated/0/Android/data/com.QLC.HeadsetHolodeck/files/Worlds/CachedWorlds/Altenthann_Isolated_Bavarian_Church__freesound_846302.mp3",
+            "tags": [
+              "300m",
+              "32bit",
+              "48khz",
+              "altenthann",
+              "ambience",
+              "bavaria",
+              "bell",
+              "campanology",
+              "church-bell",
+              "distance",
+              "earthside",
+              "environment",
+              "germany",
+              "harmonic",
+              "jecklin-disc",
+              "natural",
+              "omni",
+              "open-window",
+              "outdoor",
+              "post-rain",
+              "quiet",
+              "regensburg",
+              "religious",
+              "residential",
+              "resonance",
+              "rural",
+              "soundscape",
+              "village",
+              "winter",
+              "zoom-f3"
+            ],
+            "captured_at_utc": "2026-09-14T00:32:11Z"
+          }
+        },
+        {
+          "type": "AudioPlaybackController",
+          "data": {
+            "mode": "Loop",
+            "interval_seconds": 0.0,
+            "interval_variance_seconds": 0.0,
+            "play_on_enable": false
+          }
+        },
+        {
+          "type": "AudioSource",
+          "data": {
+            "clip_path": "../CachedWorlds/Altenthann_Isolated_Bavarian_Church__freesound_846302.mp3",
+            "volume": 0.55,
+            "mute": false,
+            "loop": true,
+            "spatial_blend": 1.0,
+            "min_distance": 1.0,
+            "max_distance": 30.0
+          }
+        },
+        {
+          "type": "Transform",
+          "data": {
+            "position": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 2.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0,
+              "z": 1.0
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "lighting": null
+}

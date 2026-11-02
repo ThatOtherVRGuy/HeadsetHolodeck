@@ -1410,8 +1410,8 @@ namespace WorldLabs.Editor
                     }
                     else
                     {
-                        op.Progress = response.metadata?.progress ?? 0f;
-                        op.Status = "Processing...";
+                        op.Progress = response.metadata?.progress?.Value ?? 0f;
+                        op.Status = string.IsNullOrEmpty(response.metadata?.progress?.description) ? "Processing..." : response.metadata.progress.description;
                     }
                 }
                 catch (Exception ex)

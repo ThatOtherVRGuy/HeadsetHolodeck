@@ -1,0 +1,9 @@
+{
+  "check": "transitions",
+  "label": "final-manager-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-13T16:07:59.789557-07:00",
+  "ended": "2026-09-13T16:08:36.067757-07:00",
+  "log": "/private/tmp/holodeck-saves-04-verify/final-manager-01.log"
+}

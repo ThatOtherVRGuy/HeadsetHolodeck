@@ -1,0 +1,24 @@
+Initial inventory: 47 tracked modifications; 282 untracked files; no staged files.
+Tracked diff: 9,384 additions; 1,241 deletions against HEAD; no commit created.
+Untracked application C# implementation and editor helpers:
+  Assets/App/Command/SpeechIntent/Runtime/SceneFocusContext.cs
+  Assets/App/Command/SpeechIntent/Runtime/SnapWhileGrabbed.cs
+  Assets/App/Command/SpeechIntent/Runtime/TargetSelectionUtility.cs
+  Assets/App/Command/SpeechIntent/Runtime/Testing/HolodeckRigTestHarness.cs
+  Assets/App/Command/SpeechIntent/Runtime/Testing/TestRigScenario.cs
+  Assets/App/Command/SpeechIntent/Runtime/WorldManipulationController.cs
+  Assets/App/Editor/HolodeckRigTestHarnessSetup.cs
+  Assets/App/Editor/OptionsPanelUiSetup.cs
+  Assets/App/Scripts/Direct/ObjectGeneration/GeneratedObjectGlbTextureRepair.cs
+NuGet DLL count: 42
+Untracked non-application groups:
+  .agents/: 79 files
+  .claude/: 79 files
+  .codex/: 1 files
+  .superpowers/: 6 files
+  Assets/Plugins/NuGet/: 85 files
+  Assets/Scenes/: 2 files
+  Assets/XR/Temp/: 4 files
+  ProjectSettings/Packages/: 1 files
+  docs/stabilization/: 2 files
+Full filename inventory is git-status-before.txt. No secret values captured.

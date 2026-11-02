@@ -1,0 +1,4 @@
+2026-09-14T00:53:32.9519120Z ENV unity=6000.2.10f1 platform=OSXEditor mode=write
+2026-09-14T00:53:33.0577460Z WRITE-START fixture=/private/tmp/holodeck-quest-05/fixtures/trial-02 config_id=KillFixture_2026-09-14T005332Z_ada4d7 objects-per-save=20000 budget-ms=60000
+2026-09-14T00:53:33.2386610Z SAVE-START n=1
+2026-09-14T00:53:35.3167230Z SAVE-DONE n=1 ms=2071.3 primary-bytes=5706573 backup-bytes=563

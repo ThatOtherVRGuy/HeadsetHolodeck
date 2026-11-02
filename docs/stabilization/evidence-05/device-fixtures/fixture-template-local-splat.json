@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "config_id": "STAB05_Loose_Mermaid",
+  "display_name": "Yoyo Loose Splat Test",
+  "created_at": "2026-09-13T000000Z",
+  "modified_at": "2026-09-13T000000Z",
+  "world_source": {
+    "type": "local_splat",
+    "world_id": null,
+    "display_name": "Yoyo Loose Splat Test",
+    "url": null,
+    "cached_splat": "../CachedWorlds/32_Mermaid_11M.spz",
+    "cached_pano": null,
+    "cached_thumbnail": null
+  },
+  "generation_model": null,
+  "migrated_from_config_id": null,
+  "world_transform": null,
+  "prompts": [],
+  "spawn_points": [],
+  "objects": [],
+  "lighting": null
+}

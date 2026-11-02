@@ -1,0 +1,12 @@
+{
+  "label": "cred-tests-01",
+  "assembly": "Holodeck.BuildCredentials.Tests",
+  "exit_code": 2,
+  "started": "2026-09-13T18:10:37.846330-07:00",
+  "ended": "2026-09-13T18:11:45.887873-07:00",
+  "total": 28,
+  "passed": 27,
+  "failed": 1,
+  "compiler_errors": 0,
+  "test_failures_in_log": 3
+}

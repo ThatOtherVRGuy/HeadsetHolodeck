@@ -1,0 +1,42 @@
+
+Device, build and content context — work order 05 (2026-09-13, America/Los_Angeles)
+
+Unity
+  editor:  6000.2.10f1 (built from 6000.2/staging, d3d30d158480)
+  device log reports: 'Built from 6000.2/staging branch, Version 6000.2.10f1 (d3d30d158480), Build type Release, Scripting Backend il2cpp, CPU arm64-v8a, Stripping Enabled'
+  app version reported on device: 9.2.1
+
+Build
+  command:
+    /Applications/Unity/Hub/Editor/6000.2.10f1/Unity.app/Contents/MacOS/Unity -batchmode -quit \
+      -projectPath /Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev \
+      -executeMethod Holodeck.Editor.CommandLineAndroidBuild.BuildApk \
+      -outputPath Builds/stabilization-05-20260913/Holodeck-order05-private.apk \
+      -credentialMode private \
+      -logFile /private/tmp/holodeck-quest-05/build-order05.log
+  result: Succeeded, exit 0, build time 00:34:28.09, report size 2,254,611,447 bytes
+  artifact: Builds/stabilization-05-20260913/Holodeck-order05-private.apk
+  artifact bytes: 313,579,135
+  artifact sha256: e2ddc68da3475c9cf77835954b87f236b89af529761258abee22e61466c8df1d
+  credential decision stated in the build log:
+    [CommandLineAndroidBuild] Build credential intent: Private build (embeds .env; do not share the artifact) (from -credentialMode)
+    [BuildEnvCopier] Embedded 15 .env entries -> Assets/Resources/WorldLabs/worldlabs_env.txt. private build: every .env entry embedded.
+    [BuildEnvCopier] This is a PRIVATE build: it contains your live API keys. Do not share this artifact.
+  embedded copy removed afterwards: Assets/Resources/WorldLabs/ absent after the build (verified)
+  THIS APK CONTAINS YOUR PROVIDER KEYS - PRIVATE ARTEFACT
+
+Headset
+  model: Quest 3 (product 'eureka'), serial 2G0YC1ZF8H0SL0
+  OS: Android 14 (API 34), build UP1A.231005.007.A1
+  firmware branch: releases-oculus-14.0-v207, security patch 2026-06-03
+  storage free at start: 50 GB of 103 GB on /storage/emulated
+  installed package: com.QLC.HeadsetHolodeck, versionName 9.2.1, versionCode 1, lastUpdateTime 2026-09-13 17:19:37 (update in place, saved worlds preserved: 64 folders remained)
+
+Content loaded (all local/cached, no paid generation)
+  fixture A 'Zebra World Labs Test'   = saved config STAB05_WL_NorthPole, world_source.type=worldlabs,
+        cached_splat ../CachedWorlds/ChristmasattheNorthP_6b2edbcc-5829-43a3-a73f-58eebe5e6f91.spz (6,305,825 bytes)
+  fixture B 'Yoyo Loose Splat Test'   = saved config STAB05_Loose_Mermaid, world_source.type=local_splat,
+        cached_splat ../CachedWorlds/32_Mermaid_11M.spz (11,033,489 bytes)
+  loose file fixture                   = files/WorldContent/stab05_loose.spz and files/WorldContent/yoyo.spz
+        (both 11,033,489-byte copies of 32_Mermaid_11M.spz)
+  pre-existing device content preserved and not written to: 64 world folders, Worlds 739 MB, CachedWorlds 499 MB, CachedObjects 229 MB

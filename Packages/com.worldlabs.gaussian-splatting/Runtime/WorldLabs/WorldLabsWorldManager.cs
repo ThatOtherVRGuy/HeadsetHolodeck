@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using GaussianSplatting.Runtime;
 using UnityEngine;
@@ -86,6 +87,12 @@ namespace WorldLabs.Runtime
         public event Action<List<World>>                 OnWorldsListed;
         public event Action<string>                      OnWorldLoadStarted;
         public event Action<string, float>               OnWorldLoadProgress;
+        /// <summary>
+        /// Fired after the incoming renderer GameObject is created but before its runtime
+        /// data is loaded or the public world-loaded events are dispatched. Subscribers can
+        /// apply saved transforms and other activation-critical state without a raw frame.
+        /// </summary>
+        public event Action<string, GaussianSplatRenderer> OnWorldBeforeActivated;
         public event Action<string, GaussianSplatRenderer> OnWorldLoaded;
         public event Action<string, string>              OnWorldLoadFailed;
         public event Action<string>                      OnWorldUnloaded;
@@ -101,7 +108,10 @@ namespace WorldLabs.Runtime
         WorldLabsClient Client => _client ??= new WorldLabsClient();
 
         readonly Dictionary<string, GaussianSplatRenderer> _loadedWorlds = new();
-        readonly HashSet<string> _loadingWorlds = new();
+        readonly Dictionary<string, WorldTransitionOperation> _loadingWorlds = new();
+        public WorldTransitionOperation CurrentTransition { get; private set; }
+        public event Action<WorldTransitionOperation> OnTransitionStarted;
+        public event Action<WorldTransitionOperation> OnTransitionCancelled;
         List<World> _cachedWorlds = new();
         int _cleanupVersion;
 
@@ -110,11 +120,11 @@ namespace WorldLabs.Runtime
         public IReadOnlyList<World> CachedWorlds      => _cachedWorlds;
         public bool IsApiConfigured                   => Client.IsConfigured;
         public bool IsWorldLoaded(string worldId)     => _loadedWorlds.ContainsKey(worldId);
-        public bool IsWorldLoading(string worldId)    => _loadingWorlds.Contains(worldId);
+        public bool IsWorldLoading(string worldId)    => _loadingWorlds.TryGetValue(worldId, out var owner) && owner.IsCurrent;
         public IReadOnlyCollection<string> LoadedWorldIds => _loadedWorlds.Keys;
         /// <summary>The next-page token from the most recent <see cref="ListWorldsAsync"/> call. Null when no more pages.</summary>
         public string LastNextPageToken { get; private set; }
-        /// <summary>The most recently started world load. Set at the start of LoadWorldAsync and RegisterExternalWorld.</summary>
+        /// <summary>The world belonging to the current successfully registered renderer.</summary>
         public World LastLoadedWorld { get; private set; }
 
         // ── Lifecycle ─────────────────────────────────────────────────────────
@@ -130,6 +140,11 @@ namespace WorldLabs.Runtime
         {
             if (defaultAsset != null)
                 LoadDefaultAsset();
+        }
+
+        void OnDisable()
+        {
+            UnloadAllWorlds();
         }
 
         void OnDestroy()
@@ -177,15 +192,16 @@ namespace WorldLabs.Runtime
         /// Fetch a single world by ID from the API.
         /// Returns null on failure.
         /// </summary>
-        public async Task<World> GetWorldAsync(string worldId)
+        public async Task<World> GetWorldAsync(string worldId, CancellationToken cancellationToken = default)
         {
             if (!CanCallApi(nameof(GetWorldAsync)))
                 return null;
 
             try
             {
-                return await Client.GetWorldAsync(worldId);
+                return await Client.GetWorldAsync(worldId, cancellationToken);
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
                 Debug.LogError($"[WorldLabsWorldManager] GetWorldAsync failed for '{worldId}': {ex.Message}");
@@ -198,248 +214,345 @@ namespace WorldLabs.Runtime
         /// Returns the spawned <see cref="GaussianSplatRenderer"/>, or null on failure.
         /// Already-loaded worlds are returned immediately without re-downloading.
         /// </summary>
-        public async Task<GaussianSplatRenderer> LoadWorldAsync(World world)
+        public async Task<GaussianSplatRenderer> LoadWorldAsync(
+            World world, WorldTransitionOperation operation = null,
+            Action<GameObject> beforeRendererCreated = null)
         {
             if (world == null) throw new ArgumentNullException(nameof(world));
-            LastLoadedWorld = world;
+            bool ownsOperation = operation == null;
+            operation ??= BeginTransition();
             string worldId = world.world_id;
-
-            // Return existing renderer immediately when it is the only live world.
-            if (_loadedWorlds.TryGetValue(worldId, out var existing) && _loadedWorlds.Count == 1)
-                return existing;
-
-            if (_loadingWorlds.Contains(worldId))
-            {
-                Debug.LogWarning($"[WorldLabsWorldManager] World {worldId} is already loading.");
-                return null;
-            }
-
-            _loadingWorlds.Add(worldId);
-            OnWorldLoadStarted?.Invoke(worldId);
-
+            GameObject root = null;
             try
             {
-                await PrepareForWorldLoadAsync();
-
-                // ── 1. Resolve SPZ URL ────────────────────────────────────────
+                operation.ThrowIfStale();
+                NotifyWorldLoadStarted(worldId, operation);
+                await PrepareForWorldLoadAsync(operation);
+                operation.ThrowIfStale();
                 string resKey = preferredResolution switch
                 {
                     SplatResolution.FullRes => "full_res",
-                    SplatResolution._100k   => "100k",
-                    _                       => "500k",
+                    SplatResolution._100k => "100k",
+                    _ => "500k",
                 };
                 string spzUrl = world.assets?.splats?.GetUrl(resKey)
                              ?? world.assets?.splats?.GetBestResolutionUrl();
                 if (string.IsNullOrEmpty(spzUrl))
                     throw new Exception("No SPZ URL found in world assets.");
-                Debug.Log($"[WorldLabsWorldManager] LoadWorldAsync: SPZ URL resolved for '{worldId}': {spzUrl}");
 
-                // ── 2. Download ───────────────────────────────────────────────
                 ReportProgress(worldId, 0.05f);
-                Debug.Log($"[WorldLabsWorldManager] LoadWorldAsync: download starting for '{worldId}'…");
-                byte[] spzBytes = await WorldLabsClientExtensions.DownloadBinaryAsync(spzUrl);
-                Debug.Log($"[WorldLabsWorldManager] LoadWorldAsync: download complete for '{worldId}', {spzBytes?.Length ?? 0} bytes");
-                OnSplatBytesDownloaded?.Invoke(worldId, spzBytes);
+                operation.ThrowIfStale();
+                byte[] bytes = await operation.AwaitAsync(DownloadWorldBytesAsync(spzUrl, operation.Token));
+                InvokeCurrent(OnSplatBytesDownloaded, worldId, bytes, operation);
+                operation.ThrowIfStale();
                 ReportProgress(worldId, 0.35f);
-
-                // ── 3. Process on a background thread ─────────────────────────
-                var (posFormat, scaleFormat, colorFormat, shFormat) = GetFormats(quality);
-                RuntimeSplatData data = null;
-
-                Debug.Log($"[WorldLabsWorldManager] LoadWorldAsync: background processing starting for '{worldId}'…");
-                await Task.Run(() =>
-                {
-                    data = RuntimeSplatProcessing.ProcessSPZBytes(
-                        spzBytes,
-                        posFormat, scaleFormat, colorFormat, shFormat);
-                });
-                Debug.Log($"[WorldLabsWorldManager] LoadWorldAsync: background processing complete for '{worldId}'");
-
-                data.worldId    = worldId;
-                data.worldName  = world.display_name;
+                operation.ThrowIfStale();
+                RuntimeSplatData data = await operation.AwaitAsync(ProcessWorldDataAsync(bytes));
+                data.worldId = worldId;
+                data.worldName = world.display_name;
                 data.thumbnailUrl = world.assets?.thumbnail_url;
                 ReportProgress(worldId, 0.90f);
-
-                // ── 4. Spawn renderer on the main thread ──────────────────────
                 await Task.Yield();
-                Debug.Log($"[WorldLabsWorldManager] LoadWorldAsync: creating renderer GameObject for '{worldId}'");
-                var go = new GameObject($"World_{world.display_name ?? worldId}");
-                go.transform.SetParent(worldParent, false);
-                go.transform.localRotation = Quaternion.Euler(-180f, 0f, 0f);
+                operation.ThrowIfStale();
 
-                var renderer = go.AddComponent<GaussianSplatRenderer>();
+                root = new GameObject($"World_{world.display_name ?? worldId}");
+                root.SetActive(false);
+                operation.Track(root);
+                root.transform.SetParent(worldParent, false);
+                root.transform.localRotation = Quaternion.Euler(-180f, 0f, 0f);
+                ApplySplatSemantics(root.transform, world);
+                beforeRendererCreated?.Invoke(root);
+                operation.ThrowIfStale();
+                var renderer = root.AddComponent<GaussianSplatRenderer>();
                 AssignShaders(renderer);
-                renderer.LoadFromRuntimeData(data);
+                InvokeCurrent(OnWorldBeforeActivated, worldId, renderer, operation);
+                operation.ThrowIfStale();
+                LoadRendererData(renderer, data);
+                operation.ThrowIfStale();
+                root.SetActive(true);
                 await Task.Yield();
-
-                _loadedWorlds[worldId] = renderer;
-
-                ReportProgress(worldId, 1.0f);
-
-                Debug.Log($"[WorldLabsWorldManager] LoadWorldAsync: firing OnWorldLoaded for '{worldId}'");
-                OnWorldLoaded?.Invoke(worldId, renderer);
-                onWorldLoaded?.Invoke(worldId, renderer);
-                return renderer;
+                operation.ThrowIfStale();
+                if (!RegisterExternalWorld(worldId, renderer, world, operation, beforeActivationAlreadyApplied: true))
+                    return null;
+                if (operation.IsCurrent) ReportProgress(worldId, 1f);
+                if (ownsOperation && operation.IsCurrent) CompleteTransition(operation);
+                return operation.IsCurrent ? renderer : null;
+            }
+            catch (OperationCanceledException)
+            {
+                WorldTransitionOperation.DestroyOwned(root);
+                return null;
             }
             catch (Exception ex)
             {
-                string msg = ex.Message;
-                Debug.LogError($"[WorldLabsWorldManager] LoadWorldAsync failed for '{worldId}': {msg}");
-                OnWorldLoadFailed?.Invoke(worldId, msg);
-                onWorldLoadFailed?.Invoke(worldId, msg);
+                WorldTransitionOperation.DestroyOwned(root);
+                if (operation.IsCurrent)
+                {
+                    Debug.LogError($"[WorldLabsWorldManager] LoadWorldAsync failed for '{worldId}': {ex.Message}");
+                    NotifyWorldLoadFailed(worldId, ex.Message, operation);
+                }
                 return null;
             }
             finally
             {
-                _loadingWorlds.Remove(worldId);
+                if (_loadingWorlds.TryGetValue(worldId, out var owner) && owner == operation)
+                    _loadingWorlds.Remove(worldId);
             }
         }
 
-        /// <summary>Destroy the renderer and free the slot for a world.</summary>
+        // Narrow overridable boundaries let isolated fixtures delay I/O and processing without
+        // contacting a provider or initializing GPU resources.
+        protected virtual Task<byte[]> DownloadWorldBytesAsync(string url, CancellationToken token) =>
+            WorldLabsClientExtensions.DownloadBinaryAsync(url, token);
+
+        protected virtual Task<RuntimeSplatData> ProcessWorldDataAsync(byte[] bytes)
+        {
+            var (pos, scale, color, sh) = GetFormats(quality);
+            return Task.Run(() => RuntimeSplatProcessing.ProcessSPZBytes(bytes, pos, scale, color, sh));
+        }
+
+        protected virtual void LoadRendererData(GaussianSplatRenderer renderer, RuntimeSplatData data) =>
+            renderer.LoadFromRuntimeData(data);
+
+        /// <summary>
+        /// Applies the metric scale and ground offset Marble reports for a splat. Ignoring them renders the
+        /// world at an arbitrary size and floating above or sunk into the floor — obvious in a headset and
+        /// the difference between "looks like a place" and "looks like a bug".
+        /// </summary>
+        static void ApplySplatSemantics(Transform root, World world)
+        {
+            SplatSemanticsMetadata semantics = world?.assets?.splats?.semantics_metadata;
+            if (root == null || semantics == null) return;
+
+            // These are plain floats, not nullable: responses are parsed with JsonUtility, which cannot
+            // deserialize Nullable<T>, so a nullable field would silently stay null for every world.
+            float scale = semantics.metric_scale_factor;
+            if (!float.IsFinite(scale) || scale <= 0f) scale = 1f;
+            float groundOffset = semantics.ground_plane_offset;
+            if (!float.IsFinite(groundOffset)) groundOffset = 0f;
+
+            if (!Mathf.Approximately(scale, 1f))
+                root.localScale = Vector3.one * scale;
+
+            if (!Mathf.Approximately(groundOffset, 0f))
+                root.localPosition += Vector3.up * (groundOffset * scale);
+
+            Debug.Log($"[WorldLabsWorldManager] Applied splat semantics for '{world.display_name}': " +
+                      $"metric_scale_factor={scale:0.####}, ground_plane_offset={groundOffset:0.####}.");
+        }
+
+        /// <summary>Newest request wins. Previous content is removed; failure leaves the static scene.</summary>
+        public WorldTransitionOperation BeginTransition()
+        {
+            if (!isActiveAndEnabled) throw new InvalidOperationException("World manager is disabled.");
+            var previous = CurrentTransition;
+            bool notifyPrevious = previous != null && !previous.Token.IsCancellationRequested;
+            WorldTransitionOperation next = null;
+            next = new WorldTransitionOperation(() => this != null && isActiveAndEnabled && CurrentTransition == next);
+            CurrentTransition = next;
+            next.Token.Register(() => OnOperationCancelled(next));
+            previous?.Cancel();
+            // Cancellation callbacks may themselves start a newer request.
+            if (CurrentTransition != next) return next;
+            ClearLoadedWorlds();
+            if (CurrentTransition != next) return next;
+            _loadingWorlds.Clear();
+            LastLoadedWorld = null;
+            _cleanupVersion++;
+            if (notifyPrevious) NotifyTransition(OnTransitionCancelled, previous);
+            if (CurrentTransition == next) NotifyTransition(OnTransitionStarted, next, requireCurrent: true);
+            return next;
+        }
+
+        public void CancelTransition(WorldTransitionOperation operation) => operation?.Cancel();
+
+        void OnOperationCancelled(WorldTransitionOperation operation)
+        {
+            // Operation.Cancel is a Unity-thread API, including calls from placement owners.
+            if (CurrentTransition != operation) return;
+            _cleanupVersion++;
+            _loadingWorlds.Clear();
+            ClearLoadedWorlds();
+            if (CurrentTransition != operation) return;
+            LastLoadedWorld = null;
+            NotifyTransition(OnTransitionCancelled, operation);
+        }
+
+        public void CompleteTransition(WorldTransitionOperation operation)
+        {
+            operation?.ThrowIfStale();
+            if (operation != null)
+            {
+                operation.IsCompleted = true;
+                foreach (var id in new List<string>(_loadingWorlds.Keys))
+                    if (_loadingWorlds[id] == operation) _loadingWorlds.Remove(id);
+            }
+        }
+
+        /// <summary>Explicit unload also invalidates pending downloads and placement.</summary>
         public void UnloadWorld(string worldId)
+        {
+            var operation = CurrentTransition;
+            if (_loadingWorlds.ContainsKey(worldId) || _loadedWorlds.ContainsKey(worldId))
+                CancelTransition(operation);
+            if (CurrentTransition == operation) UnloadWorldContent(worldId);
+        }
+
+        void UnloadWorldContent(string worldId)
         {
             if (!_loadedWorlds.TryGetValue(worldId, out var renderer)) return;
             _loadedWorlds.Remove(worldId);
-            if (renderer != null)
-            {
-                renderer.gameObject.SetActive(false);
-                Destroy(renderer.gameObject);
-            }
-            OnWorldUnloaded?.Invoke(worldId);
+            if (renderer != null) WorldTransitionOperation.DestroyOwned(renderer.gameObject);
+            if (OnWorldUnloaded != null)
+                foreach (Action<string> listener in OnWorldUnloaded.GetInvocationList())
+                {
+                    try { listener(worldId); }
+                    catch (Exception ex) { Debug.LogException(ex); }
+                }
         }
 
-        /// <summary>Show or hide all loaded world renderer GameObjects without unloading them.</summary>
         public void SetAllWorldsActive(bool active)
         {
             foreach (var renderer in _loadedWorlds.Values)
-                if (renderer != null)
-                    renderer.gameObject.SetActive(active);
+                if (renderer != null) renderer.gameObject.SetActive(active);
         }
 
-        /// <summary>Destroy all loaded worlds.</summary>
+        void ClearLoadedWorlds()
+        {
+            foreach (var pair in new List<KeyValuePair<string, GaussianSplatRenderer>>(_loadedWorlds))
+                if (_loadedWorlds.TryGetValue(pair.Key, out var current) && ReferenceEquals(current, pair.Value))
+                    UnloadWorldContent(pair.Key);
+        }
+
         public void UnloadAllWorlds()
         {
-            foreach (var id in new List<string>(_loadedWorlds.Keys))
-                UnloadWorld(id);
+            _cleanupVersion++;
+            var operation = CurrentTransition;
+            CancelTransition(operation);
+            if (CurrentTransition != operation) return;
+            ClearLoadedWorlds();
+            if (CurrentTransition == operation) LastLoadedWorld = null;
         }
 
-        /// <summary>
-        /// Clears all loaded splat renderers and gives Unity a chance to destroy objects and release unused assets.
-        /// Use this before starting a new load so old splats cannot linger alongside the incoming world.
-        /// </summary>
-        public async Task PrepareForWorldLoadAsync()
+        public async Task PrepareForWorldLoadAsync(WorldTransitionOperation operation = null)
         {
-            if (!clearLoadedWorldsBeforeLoad)
-                return;
-
-            _cleanupVersion++;
-            UnloadAllWorlds();
+            operation ??= CurrentTransition ?? BeginTransition();
+            operation.ThrowIfStale();
+            if (!clearLoadedWorldsBeforeLoad) return;
+            ClearLoadedWorlds();
+            operation.ThrowIfStale();
             ResetSplatRenderSystemForWorldSwitch();
             for (int i = 0; i < loadCleanupFrameDelay; i++)
+            {
                 await Task.Yield();
+                operation.ThrowIfStale();
+            }
             ResetSplatRenderSystemForWorldSwitch();
-
-            if (unloadUnusedAssetsBeforeLoad)
-                await UnloadUnusedAssetsAsync();
+            if (unloadUnusedAssetsBeforeLoad) await UnloadUnusedAssetsAsync();
+            operation.ThrowIfStale();
         }
 
-        public IEnumerator PrepareForWorldLoadCoroutine()
+        public IEnumerator PrepareForWorldLoadCoroutine(WorldTransitionOperation operation = null)
         {
-            if (!clearLoadedWorldsBeforeLoad)
-                yield break;
-
-            _cleanupVersion++;
-            UnloadAllWorlds();
+            operation ??= CurrentTransition ?? BeginTransition();
+            if (!operation.IsCurrent || !clearLoadedWorldsBeforeLoad) yield break;
+            ClearLoadedWorlds();
+            if (!operation.IsCurrent) yield break;
             ResetSplatRenderSystemForWorldSwitch();
             for (int i = 0; i < loadCleanupFrameDelay; i++)
+            {
                 yield return null;
+                if (!operation.IsCurrent) yield break;
+            }
             ResetSplatRenderSystemForWorldSwitch();
-
-            if (unloadUnusedAssetsBeforeLoad)
-                yield return Resources.UnloadUnusedAssets();
+            if (unloadUnusedAssetsBeforeLoad) yield return Resources.UnloadUnusedAssets();
         }
 
-        /// <summary>
-        /// Unloads all real worlds and brings back the default asset placeholder.
-        /// Call this from an "Unload" button so the user returns to the default view.
-        /// </summary>
         public void RestoreDefaultWorld()
         {
+            var operation = CurrentTransition;
+            UnloadAllWorlds();
+            if (CurrentTransition != operation) return;
             int version = ++_cleanupVersion;
-            foreach (var id in new List<string>(_loadedWorlds.Keys))
-                if (id != "__default__")
-                    UnloadWorld(id);
-
-            StartCoroutine(RestoreDefaultWorldAfterCleanup(version));
+            if (isActiveAndEnabled) StartCoroutine(RestoreDefaultWorldAfterCleanup(version));
         }
 
         IEnumerator RestoreDefaultWorldAfterCleanup(int version)
         {
             for (int i = 0; i < loadCleanupFrameDelay; i++)
-                yield return null;
-
-            ResetSplatRenderSystemForWorldSwitch();
-
-            if (unloadUnusedAssetsBeforeLoad)
-                yield return Resources.UnloadUnusedAssets();
-
-            if (version == _cleanupVersion &&
-                _loadingWorlds.Count == 0 &&
-                defaultAsset != null &&
-                !_loadedWorlds.ContainsKey("__default__"))
             {
+                yield return null;
+                if (version != _cleanupVersion) yield break;
+            }
+            if (version != _cleanupVersion) yield break;
+            ResetSplatRenderSystemForWorldSwitch();
+            if (unloadUnusedAssetsBeforeLoad) yield return Resources.UnloadUnusedAssets();
+            if (version == _cleanupVersion && isActiveAndEnabled && defaultAsset != null && !_loadedWorlds.ContainsKey("__default__"))
                 LoadDefaultAsset();
+        }
+
+        public void NotifyWorldLoadStarted(string worldId, WorldTransitionOperation operation = null)
+        {
+            if (string.IsNullOrEmpty(worldId)) throw new ArgumentException("worldId is required.", nameof(worldId));
+            operation ??= BeginTransition();
+            operation.ThrowIfStale();
+            _loadingWorlds[worldId] = operation;
+            if (OnWorldLoadStarted != null)
+                foreach (Action<string> listener in OnWorldLoadStarted.GetInvocationList())
+                {
+                    operation.ThrowIfStale();
+                    listener(worldId);
+                }
+        }
+
+        public bool RegisterExternalWorld(string worldId, GaussianSplatRenderer renderer, World world = null,
+            WorldTransitionOperation operation = null, bool beforeActivationAlreadyApplied = false)
+        {
+            if (string.IsNullOrEmpty(worldId)) throw new ArgumentException("worldId is required.", nameof(worldId));
+            if (renderer == null) throw new ArgumentNullException(nameof(renderer));
+            if (operation == null && !_loadingWorlds.TryGetValue(worldId, out operation))
+            {
+                // Preserve initial external registration for legacy integrations. Once a request
+                // exists, an unowned late registration must never claim the current world.
+                if (CurrentTransition == null) operation = BeginTransition();
+            }
+            if (operation == null || !operation.IsCurrent || CurrentTransition != operation)
+            {
+                WorldTransitionOperation.DestroyOwned(renderer.gameObject);
+                return false;
+            }
+            try
+            {
+                operation.Track(renderer.gameObject);
+                if (!beforeActivationAlreadyApplied) InvokeCurrent(OnWorldBeforeActivated, worldId, renderer, operation);
+                operation.ThrowIfStale();
+                _loadedWorlds[worldId] = renderer;
+                _loadingWorlds.Remove(worldId);
+                LastLoadedWorld = world;
+                InvokeCurrent(OnWorldLoaded, worldId, renderer, operation);
+                operation.ThrowIfStale();
+                onWorldLoaded?.Invoke(worldId, renderer);
+                return operation.IsCurrent;
+            }
+            catch (OperationCanceledException) { return false; }
+            catch
+            {
+                if (_loadedWorlds.TryGetValue(worldId, out var current) && current == renderer)
+                    UnloadWorldContent(worldId);
+                else WorldTransitionOperation.DestroyOwned(renderer.gameObject);
+                throw;
             }
         }
 
-        /// <summary>
-        /// Adds <paramref name="worldId"/> to the loading set and fires <see cref="OnWorldLoadStarted"/>.
-        /// Call this before downloading SPZ bytes when bypassing <see cref="LoadWorldAsync"/>.
-        /// </summary>
-        public void NotifyWorldLoadStarted(string worldId)
+        public void NotifyWorldLoadFailed(string worldId, string error, WorldTransitionOperation operation = null)
         {
-            if (string.IsNullOrEmpty(worldId))
-                throw new ArgumentException("worldId must not be null or empty.", nameof(worldId));
-
-            _loadingWorlds.Add(worldId);
-            OnWorldLoadStarted?.Invoke(worldId);
-        }
-
-        /// <summary>
-        /// Registers an externally-created renderer, dismisses the default placeholder,
-        /// and fires <see cref="OnWorldLoaded"/> / <see cref="onWorldLoaded"/>.
-        /// Call this after <see cref="RuntimeSplatFloorLoader.LoadPlacedRuntimeWorld"/> succeeds.
-        /// </summary>
-        public void RegisterExternalWorld(string worldId, GaussianSplatRenderer renderer, World world = null)
-        {
-            if (string.IsNullOrEmpty(worldId))
-                throw new ArgumentException("worldId must not be null or empty.", nameof(worldId));
-            if (renderer == null)
-                throw new ArgumentNullException(nameof(renderer));
-            if (world != null) LastLoadedWorld = world;
-
-            UnloadAllWorlds();
-            _loadedWorlds[worldId] = renderer;
+            if (string.IsNullOrEmpty(worldId)) throw new ArgumentException("worldId is required.", nameof(worldId));
+            if (operation == null) _loadingWorlds.TryGetValue(worldId, out operation);
+            if (operation != null && !operation.IsCurrent) return;
             _loadingWorlds.Remove(worldId);
-
-            OnWorldLoaded?.Invoke(worldId, renderer);
-            onWorldLoaded?.Invoke(worldId, renderer);
-        }
-
-        /// <summary>
-        /// Removes <paramref name="worldId"/> from the loading set and fires
-        /// <see cref="OnWorldLoadFailed"/> / <see cref="onWorldLoadFailed"/>.
-        /// Call this if SPZ download, floor analysis, or renderer creation fails.
-        /// </summary>
-        public void NotifyWorldLoadFailed(string worldId, string error)
-        {
-            if (string.IsNullOrEmpty(worldId))
-                throw new ArgumentException("worldId must not be null or empty.", nameof(worldId));
-
-            _loadingWorlds.Remove(worldId);
-
-            OnWorldLoadFailed?.Invoke(worldId, error ?? string.Empty);
-            onWorldLoadFailed?.Invoke(worldId, error ?? string.Empty);
+            if (operation != null) InvokeCurrent(OnWorldLoadFailed, worldId, error ?? string.Empty, operation);
+            else OnWorldLoadFailed?.Invoke(worldId, error ?? string.Empty);
+            if (operation == null || operation.IsCurrent) onWorldLoadFailed?.Invoke(worldId, error ?? string.Empty);
         }
 
         // ── Private helpers ───────────────────────────────────────────────────
@@ -462,9 +575,34 @@ namespace WorldLabs.Runtime
             onWorldLoaded?.Invoke(id, renderer);
         }
 
+        static void NotifyTransition(Action<WorldTransitionOperation> handlers, WorldTransitionOperation operation,
+            bool requireCurrent = false)
+        {
+            if (handlers == null) return;
+            foreach (Action<WorldTransitionOperation> listener in handlers.GetInvocationList())
+            {
+                if (requireCurrent && !operation.IsCurrent) return;
+                try { listener(operation); }
+                catch (Exception ex) { Debug.LogException(ex); }
+            }
+        }
+
+        static void InvokeCurrent<T>(Action<string, T> handlers, string worldId, T value, WorldTransitionOperation operation)
+        {
+            if (handlers == null) return;
+            foreach (Action<string, T> listener in handlers.GetInvocationList())
+            {
+                if (!operation.IsCurrent) return;
+                listener(worldId, value);
+            }
+        }
+
         void ReportProgress(string worldId, float progress)
         {
-            OnWorldLoadProgress?.Invoke(worldId, progress);
+            var operation = CurrentTransition;
+            operation.ThrowIfStale();
+            InvokeCurrent(OnWorldLoadProgress, worldId, progress, operation);
+            operation.ThrowIfStale();
             onWorldLoadProgress?.Invoke(worldId, progress);
         }
 

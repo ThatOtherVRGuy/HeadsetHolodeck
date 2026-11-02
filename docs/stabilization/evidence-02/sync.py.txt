@@ -1,0 +1,21 @@
+from pathlib import Path
+import subprocess, shutil, hashlib, json, datetime
+run=Path(__file__).parent; source=Path("/Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev"); project=run/"project"
+if (project/"Temp/UnityLockfile").exists(): raise SystemExit("Temporary Unity lock present; ensure prior batch process is finished before sync")
+files=subprocess.check_output(["git","ls-files","-z","--cached","--others","--exclude-standard"],cwd=source).decode().split("\0")
+changed=[]
+for name in files:
+ if not name or not name.startswith(("Assets/","Packages/","ProjectSettings/")):continue
+ src=source/name; dst=project/name
+ if not src.is_file() or src.name in (".env","worldlabs_env.txt"):continue
+ content=src.read_bytes()
+ if not dst.exists() or hashlib.sha256(content).digest()!=hashlib.sha256(dst.read_bytes()).digest():
+  dst.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(src,dst); changed.append(name)
+# Baseline-only probe uses intentionally obsolete API; remove before compiling changed sources.
+for suffix in (".cs",".cs.meta"):
+ probe=project/("Assets/App/Editor/StabilizationTransitionRisk02"+suffix)
+ if probe.exists():probe.unlink()
+shutil.copy2(run/"async-transition-adapter.cs.txt",project/"Assets/App/Editor/StabilizationTransitions02.cs")
+record={"time":datetime.datetime.now().astimezone().isoformat(),"copied":changed}
+(run/"latest-sync.json").write_text(json.dumps(record,indent=2)+"\n")
+print(json.dumps(record,indent=2))

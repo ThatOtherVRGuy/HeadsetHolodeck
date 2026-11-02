@@ -1,0 +1,80 @@
+{
+  "started": "2026-09-13T17:53:06.199558-07:00",
+  "trials": [
+    {
+      "trial": "trial-01",
+      "fixture": "/private/tmp/holodeck-quest-05/fixtures/trial-01",
+      "kill_delay_after_first_save_s": 0.02,
+      "writer_produced_first_save": true,
+      "process_returncode": -9,
+      "killed_with": "SIGKILL to process group",
+      "wall_seconds": 0.0,
+      "saves_started": 16,
+      "saves_completed": 16,
+      "kill_landed_inside_a_save": false
+    },
+    {
+      "trial": "trial-02",
+      "fixture": "/private/tmp/holodeck-quest-05/fixtures/trial-02",
+      "kill_delay_after_first_save_s": 0.05,
+      "writer_produced_first_save": true,
+      "process_returncode": -9,
+      "killed_with": "SIGKILL to process group",
+      "wall_seconds": 29.3,
+      "saves_started": 1,
+      "saves_completed": 1,
+      "kill_landed_inside_a_save": false
+    },
+    {
+      "trial": "trial-03",
+      "fixture": "/private/tmp/holodeck-quest-05/fixtures/trial-03",
+      "kill_delay_after_first_save_s": 0.09,
+      "writer_produced_first_save": true,
+      "process_returncode": -9,
+      "killed_with": "SIGKILL to process group",
+      "wall_seconds": 24.8,
+      "saves_started": 1,
+      "saves_completed": 1,
+      "kill_landed_inside_a_save": false
+    },
+    {
+      "trial": "trial-04",
+      "fixture": "/private/tmp/holodeck-quest-05/fixtures/trial-04",
+      "kill_delay_after_first_save_s": 0.13,
+      "writer_produced_first_save": true,
+      "process_returncode": -9,
+      "killed_with": "SIGKILL to process group",
+      "wall_seconds": 21.6,
+      "saves_started": 1,
+      "saves_completed": 1,
+      "kill_landed_inside_a_save": false
+    },
+    {
+      "trial": "trial-05",
+      "fixture": "/private/tmp/holodeck-quest-05/fixtures/trial-05",
+      "kill_delay_after_first_save_s": 0.21,
+      "writer_produced_first_save": true,
+      "process_returncode": -9,
+      "killed_with": "SIGKILL to process group",
+      "wall_seconds": 26.5,
+      "saves_started": 2,
+      "saves_completed": 1,
+      "kill_landed_inside_a_save": true
+    },
+    {
+      "trial": "trial-06",
+      "fixture": "/private/tmp/holodeck-quest-05/fixtures/trial-06",
+      "kill_delay_after_first_save_s": 0.31,
+      "writer_produced_first_save": true,
+      "process_returncode": -9,
+      "killed_with": "SIGKILL to process group",
+      "wall_seconds": 24.4,
+      "saves_started": 2,
+      "saves_completed": 1,
+      "kill_landed_inside_a_save": true
+    }
+  ],
+  "project": "/private/tmp/holodeck-saves-03-zusaQa/project",
+  "verify_exit_code": 0,
+  "ended": "2026-09-13T17:56:22.875213-07:00"
+}

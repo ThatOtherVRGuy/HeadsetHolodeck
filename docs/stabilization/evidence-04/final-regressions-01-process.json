@@ -1,0 +1,9 @@
+{
+  "check": "batch",
+  "label": "final-regressions-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-13T16:09:10.662335-07:00",
+  "ended": "2026-09-13T16:09:45.416185-07:00",
+  "log": "/private/tmp/holodeck-saves-04-verify/final-regressions-01.log"
+}

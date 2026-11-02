@@ -1,0 +1,49 @@
+Negative control for the order-06 docs claim audit
+=================================================
+
+Purpose: show the audit detects stale documentation rather than passing vacuously.
+
+Method (2026-09-14, Darwin/arm64, no Unity, no network, no credential value read):
+
+1. Built a scratch tree under the process temp directory containing only the files the audit reads.
+   `.env` was deliberately NOT copied, so the tree holds no credential material and the audit reports
+   "no .env present; value scan skipped" (8 checks skipped, hence checks=76 instead of 84).
+2. Replaced two files in that tree with their pre-order-06 (HEAD) versions, which are the ones that
+   carried the stale claims:
+      AGENTS.md                            <- git show HEAD:AGENTS.md
+      README_Holodeck_DirectPlugin.md      <- git show HEAD:README_Holodeck_DirectPlugin.md
+   Every other file was the current, post-order-06 version, so the only difference from a clean run
+   is those two documents.
+3. Ran: bash docs/stabilization/evidence-06/docs-claim-audit.sh claims
+
+Result: 7 failures, every one of them a stale claim in the two reverted documents (three outdated
+package versions, the `StreamingAssets/.env` copy claim, the missing three-intent table, the missing
+deliberate wake-alias set, and the missing superseded banner). No code-side or provider-side check
+failed, and every check that depends on the other documents still passed.
+
+Raw output:
+
+Headset Holodeck order 06 — docs claim audit
+date: 2026-09-14 (UTC)  host: Darwin/arm64  mode: claims
+
+FAIL  AGENTS.md documents the three intents (missing in AGENTS.md: -credentialMode device|private|distribution)
+FAIL  direct-plugin README is marked superseded (missing in README_Holodeck_DirectPlugin.md: Superseded)
+FAIL  AGENTS.md no longer claims a StreamingAssets copy (unexpected in AGENTS.md: StreamingAssets/.env)
+FAIL  AGENTS.md reproduces the full deliberate alias set (missing in AGENTS.md: computer, pewter, pudor, peter, impewter, pumpor)
+FAIL  AGENTS.md version for com.unity.xr.interaction.toolkit does not match manifest (3.5.0)
+FAIL  AGENTS.md version for com.unity.xr.openxr does not match manifest (1.17.0-pre.2)
+FAIL  AGENTS.md version for com.unity.xr.hands does not match manifest (1.7.3)
+NOTE  no .env present; value scan skipped
+
+SUMMARY checks=76 failures=7
+
+Reproduce: repeat steps 1-3 above. The scratch tree is disposable and was removed after the run.
+
+Session record (not a retained machine artifact): the same audit was first run against the
+un-edited working tree before any order-06 edit. It reported 84 checks with 17 failures, all of them
+doc-text checks in the stale points this order fixed — 5 in AGENTS.md (three package versions, the
+`StreamingAssets/.env` claim, the missing three-intent table), 3 alias-set checks (README.md,
+AGENTS.md, USER_MANUAL.md), 3 in USER_MANUAL.md (object-generation "reserved" wording, two-hand
+manipulation, grab world), 1 in README_Holodeck_DirectPlugin.md, and 5 in the documents this order
+created or rewrote (handoff-06.md, STATUS.md, docs/superpowers/plans/README.md). No code-side check
+failed before or after, which is why order 06 needed no behaviour change.

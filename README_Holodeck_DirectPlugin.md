@@ -1,5 +1,23 @@
 # Holodeck Direct + Official World Labs Plugin Bundle
 
+> **Historical / Superseded as a setup guide.** This file describes the original stripped-down
+> prototype bundle. The repo has moved on; several statements below are no longer true.
+>
+> - Keys are no longer hardcoded. `HolodeckDirectSecrets.OpenAiApiKey` is an empty const and is
+>   unused; every provider reads the project-root `.env` in the Editor.
+> - The World Labs plugin no longer copies `.env` to `StreamingAssets/.env`. A build now declares a
+>   credential intent: `device` embeds nothing and reads the headset's own
+>   `Application.persistentDataPath/.env`; `private` embeds a copy at
+>   `Assets/Resources/WorldLabs/worldlabs_env.txt`, removed after the build. See
+>   [README.md](README.md#build-credential-boundary).
+> - The scene is much larger than the minimal hierarchy below: the `SpeechIntent` object hosts the
+>   local Sherpa wake word, OpenAI intent routing, saved worlds, object generation, audio, UI, and
+>   hand interaction.
+>
+> Current setup and architecture: [README.md](README.md), [AGENTS.md](AGENTS.md),
+> [docs/stabilization/STATUS.md](docs/stabilization/STATUS.md), and
+> [docs/stabilization/handoff-06.md](docs/stabilization/handoff-06.md).
+
 This bundle is for the stripped-down prototype path:
 
 wake button -> microphone capture -> OpenAI transcription -> World Labs generation -> official World Labs Unity plugin loads the generated world at runtime.
@@ -21,7 +39,7 @@ wake button -> microphone capture -> OpenAI transcription -> World Labs generati
 
 ## Important key setup
 ### OpenAI
-Open `Assets/App/Scripts/Direct/HolodeckDirectSecrets.cs` and replace:
+Open `Assets/App/Shared/Scripts/Direct/HolodeckDirectSecrets.cs` and replace:
 
 `REPLACE_WITH_YOUR_OPENAI_KEY`
 
@@ -91,5 +109,3 @@ See the plugin README, but the important ones are:
 ## Notes
 - This is intentionally not secure. The OpenAI key is hardcoded in the client.
 - The World Labs plugin still loads its key from `.env`.
-- Quest runtime splats are decoded through the vendored SPZ reader. Keep its managed packed-byte unpack path when building IL2CPP; it prevents corrupted int24 positions and invalid saved spawns on device.
-- For reliable Quest microphone capture, use the local Sherpa VAD/ASR setup described in `Assets/App/Command/SpeechIntent/Runtime/VoiceActivation/README_VoiceActivation.md`.

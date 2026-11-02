@@ -1,0 +1,9 @@
+Comparison during Android build, after validation and tests.
+4415 source Assets/Packages/ProjectSettings files compared against initial SHA-256.
+Changed in copy: ["ProjectSettings/ProjectSettings.asset"]
+Missing in copy: ["Assets/XR/Resources/XRSimulationRuntimeSettings.asset", "Assets/XR/Resources/XRSimulationRuntimeSettings.asset.meta"]
+Temporary adapter and generated build artifacts are additional files, excluded from this comparison.
+
+After build and Unity exit:
+Changed in copy: []
+Missing in copy: []

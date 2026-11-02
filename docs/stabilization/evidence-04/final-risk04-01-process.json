@@ -1,0 +1,9 @@
+{
+  "check": "risk04",
+  "label": "final-risk04-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-13T16:05:50.133841-07:00",
+  "ended": "2026-09-13T16:06:25.760274-07:00",
+  "log": "/private/tmp/holodeck-saves-04-verify/final-risk04-01.log"
+}

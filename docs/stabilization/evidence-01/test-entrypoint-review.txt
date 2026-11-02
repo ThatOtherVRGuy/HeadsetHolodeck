@@ -1,0 +1,22 @@
+HeadsetHolodeck.EditorTests.AndroidAudioRecordBridgeBatchTests.NativeAudioRecorderImplementsFallbackSourceContract: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.AudioPersistenceBatchTests.RunAll: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.CachedObjectBatchTests.RunGeneratedObjectPhysicsTests: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.CachedObjectBatchTests.RunGeneratedObjectTextureRepairTests: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.CachedObjectBatchTests.RunCachedObjectStoreTests: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.GaussianSplatDepthOcclusionBatchTests.RenderShaderSamplesCameraDepthBeforeWritingSplats: No Exit call; isolated batch used.
+HeadsetHolodeck.EditorTests.HandOnlyInputBatchTests.RunAll: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.LocalRemoteSplatLoaderBatchTests.RunFailureReportingTests: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.RuntimePlyReaderBatchTests.RunBackgroundParseTest: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.RuntimeSplatProcessingBatchTests.RuntimeSplatFloorLoaderUsesQuestRendererPath: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.RuntimeSplatProcessingBatchTests.RuntimeSplatFloorLoaderUsesMetaHyperscapeCompatibilityScale: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.RuntimeSplatProcessingBatchTests.RuntimeSplatFloorLoaderClampsExtremeMetaHyperscapeAnisotropy: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.RuntimeSplatProcessingBatchTests.BackgroundProcessingDoesNotUseFrameLimitedAllocators: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.RuntimeSplatProcessingBatchTests.BoundsJobDoesNotWriteThroughStackPointers: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.SpeechIntentBatchTests.RunDistanceAndMovementTests: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.SplatSpawnAndOrientationBatchTests.RunAll: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.ViewModeControllerBatchTests.ShowCurrentWorldRootReactivatesLoadedRendererWithoutInteractionMemory: No Exit call; isolated batch used.
+HeadsetHolodeck.EditorTests.WorldConfigMigrationBatchTests.RunReadOnlyConfigMigrationTest: Exit(1) on failure; isolated batch only.
+HeadsetHolodeck.EditorTests.WorldConfigStoreBatchTests.RunMigrationTests: Exit(1) on failure; isolated batch only.
+Excluded: RuntimeSplatProcessingBatchTests.DiagnoseQuestCozyCabinSpz requires /tmp/headsetholodeck-quest-cache/CozyCabin.spz; fixture present=False
+Holodeck.Save.Tests: serialization, registry, store; store tests use unique temporary roots. Registry tests clear global test registry; use isolated editor.
+No scene repair/setup menus, Play mode, or headset deployment invoked. CachedObjectStore suite unexpectedly entered generation preflight before failing; see execution.txt and handoff-01.md.

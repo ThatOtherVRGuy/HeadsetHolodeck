@@ -1,0 +1,19 @@
+{
+  "time": "2026-09-13T15:06:35.959060-07:00",
+  "compared_prefixes": [
+    "Assets/",
+    "Packages/",
+    "ProjectSettings/"
+  ],
+  "source_files": 4427,
+  "copy_files": 4427,
+  "installed_adapters_in_copy": [
+    "Assets/App/Editor/StabilizationBaseline01.cs",
+    "Assets/App/Editor/StabilizationSaveRisk03.cs",
+    "Assets/App/Editor/StabilizationTransitions02.cs"
+  ],
+  "only_in_source": [],
+  "only_in_copy": [],
+  "mismatched": [],
+  "match": true
+}

@@ -1,0 +1,9 @@
+{
+  "check": "save",
+  "label": "final-save-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-13T15:00:34.002628-07:00",
+  "ended": "2026-09-13T15:01:34.181585-07:00",
+  "log": "/private/tmp/holodeck-saves-03-zusaQa/final-save-01.log"
+}

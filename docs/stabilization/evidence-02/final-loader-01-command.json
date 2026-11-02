@@ -1,0 +1,18 @@
+[
+  "/usr/bin/sandbox-exec",
+  "-f",
+  "/private/tmp/holodeck-transitions-02-final-sg5r74ko/offline-tests.sb",
+  "/Applications/Unity/Hub/Editor/6000.2.10f1/Unity.app/Contents/MacOS/Unity",
+  "-batchmode",
+  "-nographics",
+  "-projectPath",
+  "/private/tmp/holodeck-transitions-02-final-sg5r74ko/project",
+  "-executeMethod",
+  "StabilizationTransitions02.Run",
+  "-transitionMethod",
+  "HeadsetHolodeck.EditorTests.WorldLoaderTransitionBatchTests.RunAllAsync",
+  "-transitionResult",
+  "/private/tmp/holodeck-transitions-02-final-sg5r74ko/final-loader-01-results.txt",
+  "-logFile",
+  "/private/tmp/holodeck-transitions-02-final-sg5r74ko/final-loader-01.log"
+]

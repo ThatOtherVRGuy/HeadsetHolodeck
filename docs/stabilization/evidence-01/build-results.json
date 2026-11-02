@@ -1,0 +1,22 @@
+{
+  "date": "2026-09-08T16:12:58.758645-07:00",
+  "unity_exit_code": 0,
+  "unity_result": "Succeeded",
+  "unity_report_total_bytes": 2251931537,
+  "unity_report_duration": "00:16:35.6815210",
+  "apk": "/Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev/Builds/stabilization-01-20260908/Holodeck-baseline-01.apk",
+  "apk_bytes": 313495873,
+  "sha256": "415c679ec231da9fc70c3de71034876994d04c9ea6cc5c27c69207a936013bbe",
+  "zip_crc_check": "PASS",
+  "zip_uncompressed_bytes": 566513516,
+  "has_android_manifest": true,
+  "native_abis": [
+    "arm64-v8a"
+  ],
+  "has_il2cpp": true,
+  "has_unity": true,
+  "private_developer_build": true,
+  "deployed_to_device": false,
+  "embedded_env_removed_after_build": true,
+  "apk_signature_verification": "PASS (apksigner verify exit 0)"
+}

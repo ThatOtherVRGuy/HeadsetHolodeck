@@ -1,0 +1,16 @@
+Current isolated Android build: SUCCESS, Unity exit 0.
+Entry point: Holodeck.Editor.CommandLineAndroidBuild.BuildApk; Gradle assembleRelease.
+Enabled build scene: Assets/Scenes/Holodeck.unity.
+Version 9.2.1 / version code 1; package com.QLC.HeadsetHolodeck.
+Private developer artifact: build hook embedded the project-root .env. Do not distribute.
+No scene execution, device installation, or headset acceptance performed.
+[BuildEnvCopier] Embedded .env → Assets/Resources/WorldLabs/worldlabs_env.txt
+[BuildEnvCopier] Removed embedded .env after build.
+[CommandLineAndroidBuild] Result=Succeeded, Output=/private/tmp/holodeck-baseline-01-xddejnxt/Holodeck-baseline-01.apk, Size=2251931537 bytes, Time=00:16:35.6815210
+Artifact retained at /Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev/Builds/stabilization-01-20260908/Holodeck-baseline-01.apk
+APK SHA-256: 415c679ec231da9fc70c3de71034876994d04c9ea6cc5c27c69207a936013bbe
+APK bytes: 313495873
+ZIP CRC: PASS
+Native ABIs: arm64-v8a
+Unity BuildSummary totalSize is recorded separately from physical APK bytes; these are not interchangeable.
+APK signature verification: PASS (Android SDK 36.0.0 apksigner verify exit 0).

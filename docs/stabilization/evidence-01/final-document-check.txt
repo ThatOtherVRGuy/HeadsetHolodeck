@@ -1,0 +1,3 @@
+PASS: Handoff/status local links resolve.
+PASS: No configured credential values found in stabilization documentation/evidence (values not printed).
+PASS: Build artifact retained.

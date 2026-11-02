@@ -301,95 +301,119 @@ PlayerSettings:
   m_BuildTargetPlatformIcons:
   - m_BuildTarget: Android
     m_Icons:
-    - m_Textures: []
+    - m_Textures:
+      - {fileID: 2800000, guid: d6b0ee750da0d034bb87adf318580ed4, type: 3}
+      m_Width: 192
+      m_Height: 192
+      m_Kind: 1
+      m_SubKind: 
+    - m_Textures:
+      - {fileID: 2800000, guid: bbd80e3881d2c3e409aed86a525c2679, type: 3}
+      m_Width: 144
+      m_Height: 144
+      m_Kind: 1
+      m_SubKind: 
+    - m_Textures:
+      - {fileID: 2800000, guid: f31e091f033263a4d8970a92dddf9024, type: 3}
+      m_Width: 96
+      m_Height: 96
+      m_Kind: 1
+      m_SubKind: 
+    - m_Textures:
+      - {fileID: 2800000, guid: ea03a1e33cb75ef47b3d3b4aed532bd9, type: 3}
+      m_Width: 72
+      m_Height: 72
+      m_Kind: 1
+      m_SubKind: 
+    - m_Textures:
+      - {fileID: 2800000, guid: 09e3caccae4519b4fbfa2203b14858b9, type: 3}
+      m_Width: 48
+      m_Height: 48
+      m_Kind: 1
+      m_SubKind: 
+    - m_Textures:
+      - {fileID: 2800000, guid: 09e3caccae4519b4fbfa2203b14858b9, type: 3}
+      m_Width: 36
+      m_Height: 36
+      m_Kind: 1
+      m_SubKind: 
+    - m_Textures:
+      - {fileID: 2800000, guid: 3eb6e342a31571442bae9c80d433c54d, type: 3}
+      - {fileID: 2800000, guid: bca7304eb69a7664ba62b53481879e03, type: 3}
       m_Width: 432
       m_Height: 432
       m_Kind: 2
       m_SubKind: 
-    - m_Textures: []
+    - m_Textures:
+      - {fileID: 2800000, guid: 3eb6e342a31571442bae9c80d433c54d, type: 3}
+      - {fileID: 2800000, guid: bca7304eb69a7664ba62b53481879e03, type: 3}
       m_Width: 324
       m_Height: 324
       m_Kind: 2
       m_SubKind: 
-    - m_Textures: []
+    - m_Textures:
+      - {fileID: 2800000, guid: 3eb6e342a31571442bae9c80d433c54d, type: 3}
+      - {fileID: 2800000, guid: bca7304eb69a7664ba62b53481879e03, type: 3}
       m_Width: 216
       m_Height: 216
       m_Kind: 2
       m_SubKind: 
-    - m_Textures: []
+    - m_Textures:
+      - {fileID: 2800000, guid: 3eb6e342a31571442bae9c80d433c54d, type: 3}
+      - {fileID: 2800000, guid: bca7304eb69a7664ba62b53481879e03, type: 3}
       m_Width: 162
       m_Height: 162
       m_Kind: 2
       m_SubKind: 
-    - m_Textures: []
+    - m_Textures:
+      - {fileID: 2800000, guid: 3eb6e342a31571442bae9c80d433c54d, type: 3}
+      - {fileID: 2800000, guid: bca7304eb69a7664ba62b53481879e03, type: 3}
       m_Width: 108
       m_Height: 108
       m_Kind: 2
       m_SubKind: 
-    - m_Textures: []
+    - m_Textures:
+      - {fileID: 2800000, guid: 3eb6e342a31571442bae9c80d433c54d, type: 3}
+      - {fileID: 2800000, guid: bca7304eb69a7664ba62b53481879e03, type: 3}
       m_Width: 81
       m_Height: 81
       m_Kind: 2
       m_SubKind: 
-    - m_Textures: []
+    - m_Textures:
+      - {fileID: 2800000, guid: e67c65f53745dac4e9a7f670dadbdf7a, type: 3}
       m_Width: 192
       m_Height: 192
       m_Kind: 0
       m_SubKind: 
-    - m_Textures: []
+    - m_Textures:
+      - {fileID: 2800000, guid: 3128325107205ee45871028d0dc1698a, type: 3}
       m_Width: 144
       m_Height: 144
       m_Kind: 0
       m_SubKind: 
-    - m_Textures: []
+    - m_Textures:
+      - {fileID: 2800000, guid: b5af078644785644f8ba62b368d849f1, type: 3}
       m_Width: 96
       m_Height: 96
       m_Kind: 0
       m_SubKind: 
-    - m_Textures: []
+    - m_Textures:
+      - {fileID: 2800000, guid: fe2e22329dc71dc40b2f86e44e67f6af, type: 3}
       m_Width: 72
       m_Height: 72
       m_Kind: 0
       m_SubKind: 
-    - m_Textures: []
+    - m_Textures:
+      - {fileID: 2800000, guid: 5498578af24f1ef45b7d99a0879494b9, type: 3}
       m_Width: 48
       m_Height: 48
       m_Kind: 0
       m_SubKind: 
-    - m_Textures: []
+    - m_Textures:
+      - {fileID: 2800000, guid: 5498578af24f1ef45b7d99a0879494b9, type: 3}
       m_Width: 36
       m_Height: 36
       m_Kind: 0
-      m_SubKind: 
-    - m_Textures: []
-      m_Width: 192
-      m_Height: 192
-      m_Kind: 1
-      m_SubKind: 
-    - m_Textures: []
-      m_Width: 144
-      m_Height: 144
-      m_Kind: 1
-      m_SubKind: 
-    - m_Textures: []
-      m_Width: 96
-      m_Height: 96
-      m_Kind: 1
-      m_SubKind: 
-    - m_Textures: []
-      m_Width: 72
-      m_Height: 72
-      m_Kind: 1
-      m_SubKind: 
-    - m_Textures: []
-      m_Width: 48
-      m_Height: 48
-      m_Kind: 1
-      m_SubKind: 
-    - m_Textures: []
-      m_Width: 36
-      m_Height: 36
-      m_Kind: 1
       m_SubKind: 
   - m_BuildTarget: iPhone
     m_Icons:
@@ -894,22 +918,28 @@ PlayerSettings:
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
-    Android: USE_INPUT_SYSTEM_POSE_CONTROL;UNITY_POST_PROCESSING_STACK_V2;USE_STICK_CONTROL_THUMBSTICKS;SHERPA_ONNX
+    Android: USE_INPUT_SYSTEM_POSE_CONTROL;UNITY_POST_PROCESSING_STACK_V2;USE_STICK_CONTROL_THUMBSTICKS;SHERPA_ONNX;PICO_SPATIALIZER;ENABLE_PICO_OPENXR_SDK;ENABLE_PICO_INTERACTION_PACK;UNITY_MCP_READY;UNITY_MCP_DEPS_17
     CloudRendering: UNITY_POST_PROCESSING_STACK_V2
-    EmbeddedLinux: UNITY_POST_PROCESSING_STACK_V2
-    GameCoreXboxOne: UNITY_POST_PROCESSING_STACK_V2
+    EmbeddedLinux: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY;UNITY_MCP_DEPS_17
+    GameCoreScarlett: UNITY_MCP_READY;UNITY_MCP_DEPS_17
+    GameCoreXboxOne: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY;UNITY_MCP_DEPS_17
+    Kepler: UNITY_MCP_READY;UNITY_MCP_DEPS_17
+    LinuxHeadlessSimulation: UNITY_MCP_READY;UNITY_MCP_DEPS_17
     Lumin: UNITY_POST_PROCESSING_STACK_V2
-    Nintendo Switch: UNITY_POST_PROCESSING_STACK_V2
-    PS4: UNITY_POST_PROCESSING_STACK_V2
-    PS5: UNITY_POST_PROCESSING_STACK_V2
-    Server: SHERPA_ONNX
+    Nintendo Switch: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY;UNITY_MCP_DEPS_17
+    PS4: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY;UNITY_MCP_DEPS_17
+    PS5: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY;UNITY_MCP_DEPS_17
+    QNX: UNITY_MCP_READY;UNITY_MCP_DEPS_17
+    ReservedCFE: UNITY_MCP_READY;UNITY_MCP_DEPS_17
+    Server: SHERPA_ONNX;UNITY_MCP_READY;UNITY_MCP_DEPS_17
     Stadia: UNITY_POST_PROCESSING_STACK_V2
-    Standalone: USE_INPUT_SYSTEM_POSE_CONTROL;UNITY_POST_PROCESSING_STACK_V2;USE_STICK_CONTROL_THUMBSTICKS;SHERPA_ONNX
-    WebGL: UNITY_POST_PROCESSING_STACK_V2
-    Windows Store Apps: USE_INPUT_SYSTEM_POSE_CONTROL;UNITY_POST_PROCESSING_STACK_V2;USE_STICK_CONTROL_THUMBSTICKS
-    XboxOne: UNITY_POST_PROCESSING_STACK_V2
-    iPhone: SHERPA_ONNX
-    tvOS: UNITY_POST_PROCESSING_STACK_V2
+    Standalone: USE_INPUT_SYSTEM_POSE_CONTROL;UNITY_POST_PROCESSING_STACK_V2;USE_STICK_CONTROL_THUMBSTICKS;SHERPA_ONNX;ENABLE_PICO_XR_SDK;PICO_SPATIALIZER;UNITY_MCP_READY;UNITY_MCP_DEPS_17
+    VisionOS: UNITY_MCP_READY;UNITY_MCP_DEPS_17
+    WebGL: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY;UNITY_MCP_DEPS_17
+    Windows Store Apps: USE_INPUT_SYSTEM_POSE_CONTROL;UNITY_POST_PROCESSING_STACK_V2;USE_STICK_CONTROL_THUMBSTICKS;UNITY_MCP_READY;UNITY_MCP_DEPS_17
+    XboxOne: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY;UNITY_MCP_DEPS_17
+    iPhone: SHERPA_ONNX;UNITY_MCP_READY;UNITY_MCP_DEPS_17
+    tvOS: UNITY_POST_PROCESSING_STACK_V2;UNITY_MCP_READY;UNITY_MCP_DEPS_17
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

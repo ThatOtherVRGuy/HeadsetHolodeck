@@ -1,0 +1,16 @@
+[
+  "/usr/bin/sandbox-exec",
+  "-f",
+  "/private/tmp/holodeck-saves-03-zusaQa/offline-tests.sb",
+  "/Applications/Unity/Hub/Editor/6000.2.10f1/Unity.app/Contents/MacOS/Unity",
+  "-batchmode",
+  "-nographics",
+  "-projectPath",
+  "/private/tmp/holodeck-saves-03-zusaQa/project",
+  "-executeMethod",
+  "StabilizationSaveRisk03.Run",
+  "-riskResult",
+  "/private/tmp/holodeck-saves-03-zusaQa/risk-after-results.txt",
+  "-logFile",
+  "/private/tmp/holodeck-saves-03-zusaQa/risk-after.log"
+]

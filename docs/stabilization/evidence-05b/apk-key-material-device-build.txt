@@ -1,0 +1,7 @@
+== Holodeck-order05b-device.apk (313580753 bytes)
+-- unpacked apk: /private/tmp/holodeck-quest-05/apk-extract
+   '<KEY>=' markers (an embedded .env document): 0
+   token-shaped strings: 3
+      WLT-[A-Za-z0-9_\-]{10,}  x1
+      sk-[A-Za-z0-9_\-]{20,}  x2
+

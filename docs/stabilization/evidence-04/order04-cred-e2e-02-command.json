@@ -1,0 +1,16 @@
+[
+  "/usr/bin/sandbox-exec",
+  "-f",
+  "/private/tmp/holodeck-saves-04-verify/offline-tests.sb",
+  "/Applications/Unity/Hub/Editor/6000.2.10f1/Unity.app/Contents/MacOS/Unity",
+  "-batchmode",
+  "-nographics",
+  "-projectPath",
+  "/private/tmp/holodeck-saves-04-verify/project",
+  "-executeMethod",
+  "StabilizationCredentials04.Run",
+  "-credentialsResult",
+  "/private/tmp/holodeck-saves-04-verify/order04-cred-e2e-02-results.txt",
+  "-logFile",
+  "/private/tmp/holodeck-saves-04-verify/order04-cred-e2e-02.log"
+]

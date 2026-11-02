@@ -1,0 +1,13 @@
+2026-09-13T23:06:46.2683330Z ENV unity=6000.2.10f1 batch=True platform=OSXEditor
+2026-09-13T23:06:46.2700120Z FIXTURE-ROOT /var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveRisk03_539643a513fd4802aeb7c10d0e17fbda
+2026-09-13T23:06:46.4172670Z FIRST-SAVE primary-exists=True primary-name=Risk backup-exists=False lock-exists=True temp-files=0
+2026-09-13T23:06:46.4206710Z SECOND-SAVE primary-name=First primary-bytes=541 backup-exists=True backup-name=Risk temp-files=0
+2026-09-13T23:06:46.4233060Z REPEATED-SAVE primary-name=Second backup-name=First temp-files=0
+2026-09-13T23:06:46.4268450Z INTERRUPTION-STATE primary-bytes=271 primary-name=UNPARSEABLE(JsonReaderException) backup-exists=True backup-name=First lock-exists=True
+2026-09-13T23:06:46.4319250Z INTERRUPTION-RECOVERY recovered=True display_name=First
+2026-09-13T23:06:46.4332470Z INTERRUPTION-FILES-RETAINED primary=True backup=True temp-files=0
+2026-09-13T23:06:46.4361160Z INTERRUPTION-REPAIR primary-name=Repaired backup-name=First recovered-write=True temp-files=0
+2026-09-13T23:06:52.6983380Z TORN-WRITE-LARGE-PAYLOAD pre-bytes=542 expected-bytes=8018324 final-bytes=8018324 final-name=Large
+2026-09-13T23:06:52.7044880Z TORN-WRITE-WINDOW observations=39710 min-bytes=542 zero-length=0 foreign-length=0 parse-failures=0 concurrent-open-failures=0 first=<none>
+2026-09-13T23:07:16.0722620Z CONCURRENT-SAME-FILE writers=4 rounds=4 save-errors=0 first-error=<none> final-primary-name=Writer0_3 final-primary-objects=20000 final-backup-name=Writer3_3 temp-files=0
+2026-09-13T23:07:16.0787830Z RISK-PROBE COMPLETE

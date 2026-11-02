@@ -1,0 +1,269 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using Holodeck.Save;
+using Newtonsoft.Json.Linq;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
+
+/// <summary>
+/// Work order 05 save-interruption probe.
+///
+/// This adapter exists only inside the isolated project copy. It never touches a real user save:
+/// every fixture directory is passed on the command line and lives under a scratch root.
+///
+/// Modes:
+///   write   — create one config and save it in a tight loop until the budget expires or the
+///             process is killed from outside (SIGKILL to the process group = an app kill).
+///   verify  — inspect every killed trial directory and ask the real store whether it can still
+///             load a save, reporting the primary/backup state and any abandoned temporaries.
+///   profile — time repeated saves at several object counts so the cost of the journaled write
+///             path (two durable writes per save) is measured rather than assumed.
+/// </summary>
+public static class StabilizationSaveKill05
+{
+    static string _resultPath;
+
+    static string Arg(string name)
+    {
+        string[] args = Environment.GetCommandLineArgs();
+        for (int i = 0; i < args.Length - 1; i++) if (args[i] == name) return args[i + 1];
+        throw new ArgumentException("Missing " + name);
+    }
+
+    static void Record(string message)
+    {
+        File.AppendAllText(_resultPath, DateTime.UtcNow.ToString("o") + " " + message + "\n");
+        Debug.Log("[SaveKill05] " + message);
+    }
+
+    public static void Run()
+    {
+        if (!Application.isBatchMode)
+            throw new InvalidOperationException("Only run in an isolated batch editor.");
+
+        EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+        _resultPath = Arg("-killResult");
+        string mode = Arg("-killMode");
+        Record($"ENV unity={Application.unityVersion} platform={Application.platform} mode={mode}");
+
+        int code = 0;
+        try
+        {
+            switch (mode)
+            {
+                case "write": WriteLoop(); break;
+                case "verify": Verify(); break;
+                case "profile": Profile(); break;
+                default: throw new ArgumentException("Unknown -killMode '" + mode + "'");
+            }
+            Record("MODE-COMPLETE mode=" + mode);
+        }
+        catch (Exception error)
+        {
+            code = 1;
+            Record("FAIL " + error.GetBaseException());
+        }
+        EditorApplication.Exit(code);
+    }
+
+    // ── write ─────────────────────────────────────────────────────────────────
+
+    static void WriteLoop()
+    {
+        string root = Arg("-killFixture");
+        int objects = int.Parse(Arg("-killObjects"));
+        int budgetMs = int.Parse(Arg("-killBudgetMs"));
+        Directory.CreateDirectory(root);
+
+        WorldConfigStore store = WorldConfigStore.CreateForTesting(root);
+        try
+        {
+            WorldConfig config = store.CreateConfig(
+                new WorldSourceData { type = "local_splat", display_name = "KillFixture" }, "KillFixture", null);
+            string dir = Path.Combine(root, config.config_id);
+            string path = Path.Combine(dir, "world.json");
+            Record($"WRITE-START fixture={root} config_id={config.config_id} objects-per-save={objects} budget-ms={budgetMs}");
+
+            var clock = Stopwatch.StartNew();
+            int n = 0;
+            while (clock.ElapsedMilliseconds < budgetMs)
+            {
+                n++;
+                Fill(config, objects, n);
+                Record($"SAVE-START n={n}");
+                var save = Stopwatch.StartNew();
+                store.SaveConfig(config);
+                save.Stop();
+                Record($"SAVE-DONE n={n} ms={save.Elapsed.TotalMilliseconds:F1} primary-bytes={Length(path)} backup-bytes={Length(path + ".bak")}");
+                if (n >= 4000) break;
+            }
+            Record($"WRITE-BUDGET-EXHAUSTED saves={n} elapsed-ms={clock.ElapsedMilliseconds}");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(store.gameObject);
+        }
+    }
+
+    // ── verify ────────────────────────────────────────────────────────────────
+
+    static void Verify()
+    {
+        string root = Arg("-killRoot");
+        string[] trials = Directory.GetDirectories(root, "trial-*");
+        Array.Sort(trials, StringComparer.Ordinal);
+        Record($"VERIFY-START root={root} trials={trials.Length} unity={Application.unityVersion} platform={Application.platform}");
+
+        int recoverable = 0, unrecoverable = 0, missing = 0, primaryRecovered = 0;
+        foreach (string trial in trials)
+        {
+            string trialName = Path.GetFileName(trial);
+            string[] ids = Directory.GetDirectories(trial);
+            Array.Sort(ids, StringComparer.Ordinal);
+            if (ids.Length == 0)
+            {
+                Record($"VERIFY trial={trialName} STATE=no-config-folder");
+                missing++;
+                continue;
+            }
+
+            foreach (string dir in ids)
+            {
+                string id = Path.GetFileName(dir);
+                string path = Path.Combine(dir, "world.json");
+                string backup = path + ".bak";
+                string primaryState = ParseState(path);
+                string backupState = ParseState(backup);
+
+                WorldConfigStore store = WorldConfigStore.CreateForTesting(trial);
+                string loadState;
+                string detail = "";
+                try
+                {
+                    WorldConfig loaded = store.LoadConfig(id);
+                    if (loaded == null)
+                    {
+                        loadState = "null";
+                        missing++;
+                    }
+                    else
+                    {
+                        loadState = "loaded";
+                        detail = $"display_name={loaded.display_name} objects={(loaded.objects == null ? -1 : loaded.objects.Count)}";
+                        recoverable++;
+                        if (primaryState != "ok") primaryRecovered++;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    loadState = "threw:" + ex.GetType().Name;
+                    detail = Flatten(ex.Message);
+                    unrecoverable++;
+                }
+                finally
+                {
+                    if (store != null) UnityEngine.Object.DestroyImmediate(store.gameObject);
+                }
+
+                Record($"VERIFY trial={trialName} id={id} primary={primaryState} primary-bytes={Length(path)} " +
+                       $"backup={backupState} backup-bytes={Length(backup)} temp-files={CountTemps(dir)} " +
+                       $"lock-exists={File.Exists(WorldConfigFileLockPath(dir))} load={loadState} {detail}");
+            }
+        }
+
+        Record($"VERIFY-SUMMARY trials={trials.Length} recoverable={recoverable} recovered-from-backup={primaryRecovered} " +
+               $"unrecoverable={unrecoverable} no-save-present={missing}");
+    }
+
+    // ── profile ───────────────────────────────────────────────────────────────
+
+    static void Profile()
+    {
+        string root = Arg("-killFixture");
+        int[] counts = Array.ConvertAll(Arg("-killProfileCounts").Split(','), int.Parse);
+        Directory.CreateDirectory(root);
+
+        WorldConfigStore store = WorldConfigStore.CreateForTesting(root);
+        try
+        {
+            foreach (int objects in counts)
+            {
+                int repeats = objects >= 20000 ? 6 : objects >= 1000 ? 12 : 20;
+                WorldConfig config = store.CreateConfig(
+                    new WorldSourceData { type = "local_splat", display_name = "Profile" }, "Profile", null);
+                string path = Path.Combine(root, config.config_id, "world.json");
+
+                var samples = new List<double>();
+                for (int i = 0; i < repeats; i++)
+                {
+                    Fill(config, objects, i);
+                    var save = Stopwatch.StartNew();
+                    store.SaveConfig(config);
+                    save.Stop();
+                    samples.Add(save.Elapsed.TotalMilliseconds);
+                }
+
+                samples.Sort();
+                double median = samples[samples.Count / 2];
+                Record($"PROFILE objects={objects} saves={samples.Count} first-ms={samples[0]:F1} median-ms={median:F1} " +
+                       $"max-ms={samples[samples.Count - 1]:F1} primary-bytes={Length(path)} backup-bytes={Length(path + ".bak")} " +
+                       $"temp-files={CountTemps(Path.GetDirectoryName(path))}");
+            }
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(store.gameObject);
+        }
+    }
+
+    // ── helpers ───────────────────────────────────────────────────────────────
+
+    static void Fill(WorldConfig config, int objects, int generation)
+    {
+        config.display_name = "gen-" + generation;
+        config.objects.Clear();
+        for (int i = 0; i < objects; i++)
+        {
+            config.objects.Add(new SavedObject
+            {
+                instance_id = "obj-" + i,
+                prefab_name = "Cube",
+                display_name = "Object " + i,
+                components = new List<SavedComponent>
+                {
+                    new SavedComponent
+                    {
+                        type = "Transform",
+                        data = new JObject { ["x"] = i % 10, ["y"] = generation, ["z"] = (i * 3) % 17 }
+                    }
+                }
+            });
+        }
+    }
+
+    static string ParseState(string path)
+    {
+        if (!File.Exists(path)) return "missing";
+        try
+        {
+            JObject value = JObject.Parse(File.ReadAllText(path));
+            return value["display_name"]?.Type == JTokenType.String ? "ok" : "shape-mismatch";
+        }
+        catch (Exception ex)
+        {
+            return "corrupt:" + ex.GetType().Name;
+        }
+    }
+
+    static string WorldConfigFileLockPath(string directory) => Path.Combine(directory, ".world.json.lock");
+
+    static long Length(string path) => File.Exists(path) ? new FileInfo(path).Length : -1;
+
+    static int CountTemps(string directory) => Directory.GetFiles(directory, "*.tmp").Length;
+
+    static string Flatten(string message) => message == null ? "" : message.Replace('\n', ' ').Replace('\r', ' ');
+}

@@ -1,0 +1,10 @@
+.f..t..g. Settings/Project Configuration/Performance URP Config.asset
+.f..t..g. Settings/Project Configuration/Quality URP Config.asset
+.f..t..g. Settings/Project Configuration/UniversalRenderPipelineGlobalSettings.asset
+.f..t..g. StreamingAssets/SherpaOnnx/streaming-assets-manifest.json
+.f..t..g. TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+.f..t..g. XR/AndroidXR/AndroidXRSettingsInitializer
+.f..t..g. XR/Settings/OpenXR Package Settings.asset
+.L.....g. com.ponyudev.sherpa-onnx/DevProject~/Assets/Samples -> ../../Samples~
+.f..t..g. GraphicsSettings.asset
+.f..t..g. ProjectSettings.asset

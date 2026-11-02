@@ -1,0 +1,13 @@
+2026-09-13T21:45:45.3483310Z ENV unity=6000.2.10f1 batch=True platform=OSXEditor
+2026-09-13T21:45:45.3524870Z FIXTURE-ROOT /var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveRisk03_3d5762d2bcfb48148ba60ecf3f6b04b6
+2026-09-13T21:45:45.5595380Z FIRST-SAVE primary-exists=True primary-name=Risk backup-exists=False lock-exists=False temp-files=0
+2026-09-13T21:45:45.5657350Z SECOND-SAVE primary-name=First primary-bytes=541 backup-exists=False backup-name=<missing> temp-files=0
+2026-09-13T21:45:45.5669150Z REPEATED-SAVE primary-name=Second backup-name=<missing> temp-files=0
+2026-09-13T21:45:45.5700750Z INTERRUPTION-STATE primary-bytes=271 primary-name=UNPARSEABLE(JsonReaderException) backup-exists=False backup-name=<missing> lock-exists=False
+2026-09-13T21:45:45.5709330Z INTERRUPTION-RECOVERY THREW JsonReaderException: Unexpected end when reading JSON. Path 'world_source.display_name', line 10, position 23.
+2026-09-13T21:45:45.5712400Z INTERRUPTION-FILES-RETAINED primary=True backup=False temp-files=0
+2026-09-13T21:45:45.5792100Z INTERRUPTION-REPAIR primary-name=Repaired backup-name=<missing> recovered-write=True temp-files=0
+2026-09-13T21:45:50.5311970Z TORN-WRITE-LARGE-PAYLOAD pre-bytes=542 expected-bytes=8018324 final-bytes=8018324 final-name=Large
+2026-09-13T21:45:50.5352840Z TORN-WRITE-WINDOW observations=245 min-bytes=542 zero-length=0 foreign-length=0 parse-failures=0 concurrent-open-failures=0 first=<none>
+2026-09-13T21:45:52.3847970Z CONCURRENT-SAME-FILE writers=4 rounds=4 save-errors=9 first-error=IOException: Sharing violation on path /var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveRisk03_3d5762d2bcfb48148ba60ecf3f6b04b6/Concurrent_2026-09-13T214550Z_fe46d1/world.json final-primary-name=Writer3_3 final-primary-objects=20000 final-backup-name=<missing> temp-files=0
+2026-09-13T21:45:52.3930290Z RISK-PROBE COMPLETE

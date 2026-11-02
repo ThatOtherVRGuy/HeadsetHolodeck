@@ -1,0 +1,10 @@
+2026-09-14T00:55:34.3811370Z ENV unity=6000.2.10f1 platform=OSXEditor mode=verify
+2026-09-14T00:55:34.3838690Z VERIFY-START root=/private/tmp/holodeck-quest-05/fixtures trials=6 unity=6000.2.10f1 platform=OSXEditor
+2026-09-14T00:55:43.2440950Z VERIFY trial=trial-01 id=KillFixture_2026-09-14T004531Z_d25131 primary=ok primary-bytes=5726574 backup=ok backup-bytes=5726574 temp-files=0 lock-exists=True load=loaded display_name=gen-16 objects=20000
+2026-09-14T00:55:47.6753060Z VERIFY trial=trial-02 id=KillFixture_2026-09-14T005332Z_ada4d7 primary=ok primary-bytes=5706573 backup=ok backup-bytes=563 temp-files=0 lock-exists=True load=loaded display_name=gen-1 objects=20000
+2026-09-14T00:55:54.3710250Z VERIFY trial=trial-03 id=KillFixture_2026-09-14T005355Z_ac0094 primary=ok primary-bytes=5706573 backup=ok backup-bytes=563 temp-files=0 lock-exists=True load=loaded display_name=gen-1 objects=20000
+2026-09-14T00:55:58.7344850Z VERIFY trial=trial-04 id=KillFixture_2026-09-14T005418Z_85764f primary=ok primary-bytes=5706573 backup=ok backup-bytes=563 temp-files=0 lock-exists=True load=loaded display_name=gen-1 objects=20000
+2026-09-14T00:56:05.3218000Z VERIFY trial=trial-05 id=KillFixture_2026-09-14T005444Z_c711f3 primary=ok primary-bytes=5706573 backup=ok backup-bytes=563 temp-files=0 lock-exists=True load=loaded display_name=gen-1 objects=20000
+2026-09-14T00:56:09.9906420Z VERIFY trial=trial-06 id=KillFixture_2026-09-14T005509Z_a7445f primary=ok primary-bytes=5706573 backup=ok backup-bytes=563 temp-files=0 lock-exists=True load=loaded display_name=gen-1 objects=20000
+2026-09-14T00:56:09.9968860Z VERIFY-SUMMARY trials=6 recoverable=6 recovered-from-backup=0 unrecoverable=0 no-save-present=0
+2026-09-14T00:56:09.9982780Z MODE-COMPLETE mode=verify

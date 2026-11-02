@@ -1,0 +1,4 @@
+2026-09-09T06:35:53.9662540Z AFTER_B activated=B LastLoadedWorld=B
+2026-09-09T06:35:54.5059820Z RAPID_A_B_LATE_A stale_activation=True activated=A LastLoadedWorld=A
+2026-09-09T06:35:54.5800940Z FAILED_RESTORE error=True incorrect_ActiveConfig=True active=Failed
+2026-09-09T06:35:54.5809010Z REPRODUCTION_COMPLETE cases=2 reproduced=2 fixture=/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/holodeck-transition-risk02-06a69639836c4bbb95d8a3490ca55ea4 no_provider_calls=true

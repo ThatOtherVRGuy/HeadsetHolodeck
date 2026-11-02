@@ -1,0 +1,11 @@
+(version 1)
+(allow default)
+(deny network-outbound)
+(allow network-outbound (remote unix-socket) (remote ip "localhost:*"))
+;; Never let a test run read the developer's real credentials. Scoped to the home tree so fixtures
+;; under the process temp path can still create their own throwaway .env / worldlabs_env.txt: a
+;; name-only deny also blocks .NET's share-mode open for writing those fixture files.
+;; One filter per rule on purpose: SBPL ORs the filters inside a single rule, so a two-filter rule
+;; would deny everything under /Users and stop Unity from starting.
+(deny file-read-data (regex #"^/Users/.*\.env$"))
+(deny file-read-data (regex #"^/Users/.*/worldlabs_env\.txt$"))

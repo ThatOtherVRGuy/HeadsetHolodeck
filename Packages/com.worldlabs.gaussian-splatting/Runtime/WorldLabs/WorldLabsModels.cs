@@ -381,6 +381,13 @@ namespace WorldLabs.API
         [NonSerialized]
         public Dictionary<string, string> spz_urls;
 
+        /// <summary>
+        /// Metric scale and ground alignment for the splat, as documented for SPZ rendering. Without it a
+        /// world renders at arbitrary size and floats above or sinks below the floor, which is
+        /// immediately obvious in a headset.
+        /// </summary>
+        public SplatSemanticsMetadata semantics_metadata;
+
         // Raw JSON string for manual parsing (set by custom deserializer)
         [NonSerialized]
         public string spz_urls_raw;
@@ -430,6 +437,19 @@ namespace WorldLabs.API
 
             return null;
         }
+    }
+
+    /// <summary>
+    /// Metric scale and ground alignment reported alongside a splat.
+    /// </summary>
+    [Serializable]
+    public class SplatSemanticsMetadata
+    {
+        /// <summary>Multiplier that turns splat units into metres. 0 when the API omitted it.</summary>
+        public float metric_scale_factor;
+
+        /// <summary>Ground plane height in splat units; used to sit the world on the floor.</summary>
+        public float ground_plane_offset;
     }
 
     /// <summary>
@@ -519,7 +539,32 @@ namespace WorldLabs.API
     public class OperationMetadata
     {
         public string world_id;
-        public float? progress;
+
+        /// <summary>
+        /// The API sends an object here, not a number: {"status":"IN_PROGRESS","description":"…"}.
+        /// It was declared as a float, which both misreported progress and would fail deserialization
+        /// once the API included the object.
+        /// </summary>
+        public OperationProgress progress;
+    }
+
+    /// <summary>
+    /// Generation progress as reported by the operations endpoint.
+    /// </summary>
+    [Serializable]
+    public class OperationProgress
+    {
+        public string status;       // "IN_PROGRESS" | "SUCCEEDED"
+        public string description;  // human-readable detail, may be empty
+
+        /// <summary>
+        /// Compatibility value for callers written against the old numeric field. The API reports no
+        /// fraction, so this is 1 when the operation has succeeded and 0 otherwise — callers that show a
+        /// percentage should show <see cref="description"/> instead.
+        /// </summary>
+        public float Value => string.Equals(status, "SUCCEEDED", StringComparison.OrdinalIgnoreCase) ? 1f : 0f;
+
+        public bool IsSucceeded => string.Equals(status, "SUCCEEDED", StringComparison.OrdinalIgnoreCase);
     }
 
     #endregion

@@ -1,0 +1,78 @@
+ M Assets/App/Command/SpeechIntent/OpenAiSpeechIntentConfig.asset
+ M Assets/App/Command/SpeechIntent/Runtime/Behaviors/BehaviorCommandController.cs
+ M Assets/App/Command/SpeechIntent/Runtime/CachedObjectChoiceController.cs
+ M Assets/App/Command/SpeechIntent/Runtime/HandInput/HandOnlyInputCoordinator.cs
+ M Assets/App/Command/SpeechIntent/Runtime/InteractableObjectWrapper.cs
+ M Assets/App/Command/SpeechIntent/Runtime/InteractionMemory.cs
+ M Assets/App/Command/SpeechIntent/Runtime/LightActionController.cs
+ M Assets/App/Command/SpeechIntent/Runtime/LocalRemoteSplatLoader.cs
+ M Assets/App/Command/SpeechIntent/Runtime/LocalTypedIntentParser.cs
+ M Assets/App/Command/SpeechIntent/Runtime/MaterialTargetController.cs
+ M Assets/App/Command/SpeechIntent/Runtime/OpenAiSpeechIntentConfig.cs
+ M Assets/App/Command/SpeechIntent/Runtime/OpenAiSpeechIntentService.cs
+ M Assets/App/Command/SpeechIntent/Runtime/PlayerOriginController.cs
+ M Assets/App/Command/SpeechIntent/Runtime/SceneEntityResolver.cs
+ M Assets/App/Command/SpeechIntent/Runtime/SpatialContextProvider.cs
+ M Assets/App/Command/SpeechIntent/Runtime/TargetTransformController.cs
+ M Assets/App/Command/SpeechIntent/Runtime/UI/ArchOperationsPanel.cs
+ M Assets/App/Command/SpeechIntent/Runtime/VoiceCommandRouter.cs
+ M Assets/App/Command/SpeechIntent/Runtime/VoiceIntentSchemas.cs
+ M Assets/App/Command/SpeechIntent/Runtime/WorldActionDispatcher.cs
+ M Assets/App/Editor/CachedObjectBatchTests.cs
+ M Assets/App/Editor/RuntimeSplatProcessingBatchTests.cs
+ M Assets/App/Editor/SpeechIntentBatchTests.cs
+ M Assets/App/Editor/SplatSpawnAndOrientationBatchTests.cs
+ M Assets/App/Editor/WorldViewCaptureUiSetup.cs
+ M Assets/App/Prefabs/GSplatRenderer.prefab
+ M Assets/App/Save/Runtime/WorldConfigStore.cs
+ M Assets/App/Save/Tests/WorldConfigStoreTests.cs
+ M Assets/App/Save/WorldConfigRestorer.cs
+ M Assets/App/Scripts/Direct/ObjectGeneration/ObjectGenerationService.cs
+ M Assets/App/Scripts/Direct/RuntimeSplatFloorLoader.cs
+ M Assets/Plugins/Android/AndroidManifest.xml
+ M "Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-0_comp_dir.png.meta"
+ M "Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-0_comp_light.exr.meta"
+ M "Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-1_comp_dir.png.meta"
+ M "Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-1_comp_light.exr.meta"
+ M "Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-2_comp_dir.png.meta"
+ M "Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-2_comp_light.exr.meta"
+ M "Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/ReflectionProbe-0.exr.meta"
+ M Assets/Scenes/Holodeck.unity
+ M Packages/com.worldlabs.gaussian-splatting/Runtime/GaussianSplatting/SPZFileReader.cs
+ M Packages/com.worldlabs.gaussian-splatting/Runtime/WorldLabs/WorldBrowserController.cs
+ M Packages/com.worldlabs.gaussian-splatting/Runtime/WorldLabs/WorldLabsWorldManager.cs
+ M Packages/manifest.json
+ M Packages/packages-lock.json
+ M ProjectSettings/PackageManagerSettings.asset
+ M ProjectSettings/ProjectSettings.asset
+ M docs/project-learning-log.md
+?? .agents/
+?? .claude/
+?? .codex/
+?? .superpowers/
+?? Assets/App/Command/SpeechIntent/Runtime/SceneFocusContext.cs
+?? Assets/App/Command/SpeechIntent/Runtime/SceneFocusContext.cs.meta
+?? Assets/App/Command/SpeechIntent/Runtime/SnapWhileGrabbed.cs
+?? Assets/App/Command/SpeechIntent/Runtime/SnapWhileGrabbed.cs.meta
+?? Assets/App/Command/SpeechIntent/Runtime/TargetSelectionUtility.cs
+?? Assets/App/Command/SpeechIntent/Runtime/TargetSelectionUtility.cs.meta
+?? Assets/App/Command/SpeechIntent/Runtime/Testing.meta
+?? Assets/App/Command/SpeechIntent/Runtime/Testing/
+?? Assets/App/Command/SpeechIntent/Runtime/WorldManipulationController.cs
+?? Assets/App/Command/SpeechIntent/Runtime/WorldManipulationController.cs.meta
+?? Assets/App/Editor/HolodeckRigTestHarnessSetup.cs
+?? Assets/App/Editor/HolodeckRigTestHarnessSetup.cs.meta
+?? Assets/App/Editor/OptionsPanelUiSetup.cs
+?? Assets/App/Editor/OptionsPanelUiSetup.cs.meta
+?? Assets/App/Scripts/Direct/ObjectGeneration/GeneratedObjectGlbTextureRepair.cs
+?? Assets/App/Scripts/Direct/ObjectGeneration/GeneratedObjectGlbTextureRepair.cs.meta
+?? Assets/Plugins/NuGet.meta
+?? Assets/Plugins/NuGet/
+?? Assets/Scenes/ChakraTest.unity
+?? Assets/Scenes/ChakraTest.unity.meta
+?? Assets/XR/Temp.meta
+?? Assets/XR/Temp/
+?? ProjectSettings/Packages/com.unity.ai.assistant/
+?? com.QLC.HeadsetHolodeck-logcat2.txt
+?? docs/stabilization/
+?? spz-renderer-handoff-notes.md

@@ -9,10 +9,15 @@ namespace WorldLabs.API
     /// Utility class to load environment variables from a .env file.
     ///
     /// Resolution order:
-    ///   1. Resources TextAsset "WorldLabs/worldlabs_env" — embedded by the build
-    ///      preprocessor; works on ALL platforms including Android/Pico.
-    ///   2. System.IO file path — project root in the Editor, custom path if provided.
-    ///   3. System environment variables (fallback).
+    ///   1. An explicit <c>filePath</c> passed by the caller.
+    ///   2. The live .env beside the app's own data: <c>Application.persistentDataPath/.env</c>.
+    ///      On a headset this is <c>/sdcard/Android/data/&lt;package&gt;/files/.env</c> and it is the
+    ///      credential source a device build (<c>-credentialMode device</c>) relies on, because such
+    ///      a build embeds nothing.
+    ///   3. The project-root .env — Editor and desktop only, for convenience.
+    ///   4. Resources TextAsset "WorldLabs/worldlabs_env" — a copy baked in by a private build.
+    ///      Deliberately last so a baked copy can never shadow the device's own file.
+    ///   5. System environment variables (per-key fallback, checked by <see cref="Get"/>).
     /// </summary>
     public static class EnvLoader
     {
@@ -32,45 +37,77 @@ namespace WorldLabs.API
         {
             _envVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            // ── 1. Embedded Resources TextAsset (works on Android / all platforms) ──
-            if (string.IsNullOrEmpty(filePath))
+            // ── 1. Explicit path wins ─────────────────────────────────────────────
+            if (!string.IsNullOrEmpty(filePath))
             {
-                var textAsset = Resources.Load<TextAsset>(ResourcesPath);
-                if (textAsset != null)
-                {
-                    ParseContent(textAsset.text);
-                    Debug.Log($"[EnvLoader] Loaded {_envVariables.Count} variables from embedded Resources.");
-                    _isLoaded = true;
-                    return;
-                }
-            }
-
-            // ── 2. File system ────────────────────────────────────────────────────
-            if (string.IsNullOrEmpty(filePath))
-            {
-                // In the Editor, read straight from the project root for convenience.
-                string projectRoot = Directory.GetParent(Application.dataPath).FullName;
-                filePath = Path.Combine(projectRoot, ".env");
-            }
-
-            if (!File.Exists(filePath))
-            {
-                Debug.LogWarning($"[EnvLoader] .env not found at '{filePath}' and no embedded resource present.");
+                TryLoadFromFile(filePath, announceMissing: true);
                 _isLoaded = true;
                 return;
             }
 
+            // ── 2. The device's own .env (the only source available on Android) ───
+            if (TryLoadFromFile(DeviceEnvPath)) { _isLoaded = true; return; }
+
+            // ── 3. Project root, Editor/desktop only ──────────────────────────────
+#if !UNITY_ANDROID || UNITY_EDITOR
+            string projectRoot = Path.Combine(Directory.GetParent(Application.dataPath).FullName, ".env");
+            if (!string.Equals(Path.GetFullPath(projectRoot), Path.GetFullPath(DeviceEnvPath), StringComparison.Ordinal) &&
+                TryLoadFromFile(projectRoot))
+            {
+                _isLoaded = true;
+                return;
+            }
+#endif
+
+            // ── 4. A copy baked into the build by a private build (never shadows 2 or 3) ──
+            var textAsset = Resources.Load<TextAsset>(ResourcesPath);
+            if (textAsset != null)
+            {
+                ParseContent(textAsset.text);
+                Debug.Log($"[EnvLoader] Loaded {_envVariables.Count} variables from the embedded Resources copy.");
+                _isLoaded = true;
+                return;
+            }
+
+            Debug.LogWarning($"[EnvLoader] No configuration found. Put a .env at '{DeviceEnvPath}' on the " +
+                             "device (that is where provider keys are read from), or build with " +
+                             $"-credentialMode private to embed one.");
+            _isLoaded = true;
+        }
+
+        /// <summary>Where the app expects the device's own .env: its persistent data directory.</summary>
+        public static string DeviceEnvPath => Path.Combine(Application.persistentDataPath, ".env");
+
+        /// <summary>
+        /// The order sources are consulted in, for logging and fixtures. Android has no project-root
+        /// file, and the embedded copy is always last so a baked build cannot shadow the device .env.
+        /// </summary>
+        public static string[] DescribeSourceOrder(bool isAndroid)
+        {
+            return isAndroid
+                ? new[] { "device .env (" + DeviceEnvPath + ")", "embedded resources", "process environment" }
+                : new[] { "device .env (" + DeviceEnvPath + ")", "project-root .env", "embedded resources", "process environment" };
+        }
+
+        static bool TryLoadFromFile(string path, bool announceMissing = false)
+        {
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+            {
+                if (announceMissing)
+                    Debug.LogWarning($"[EnvLoader] .env not found at '{path}'.");
+                return false;
+            }
+
             try
             {
-                ParseContent(File.ReadAllText(filePath));
-                Debug.Log($"[EnvLoader] Loaded {_envVariables.Count} variables from '{filePath}'.");
+                ParseContent(File.ReadAllText(path));
+                Debug.Log($"[EnvLoader] Loaded {_envVariables.Count} variables from '{path}'.");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[EnvLoader] Failed to read '{filePath}': {ex.Message}");
+                Debug.LogError($"[EnvLoader] Failed to read '{path}': {ex.Message}");
             }
-
-            _isLoaded = true;
+            return true;
         }
 
         /// <summary>

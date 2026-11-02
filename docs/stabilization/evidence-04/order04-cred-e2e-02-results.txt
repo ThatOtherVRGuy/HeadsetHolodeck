@@ -1,0 +1,21 @@
+2026-09-13T23:02:40.0568680Z ENV unity=6000.2.10f1 platform=OSXEditor
+2026-09-13T23:02:40.0580860Z PROJECT-ROOT /private/tmp/holodeck-saves-03-zusaQa/project
+2026-09-13T23:02:40.0588920Z PASS copier-type-found
+2026-09-13T23:02:40.5069180Z PASS distribution-preprocess-succeeds
+2026-09-13T23:02:40.5073420Z PASS distribution-embedded-file-written
+2026-09-13T23:02:40.5076490Z PASS distribution-keeps-safe-configuration
+2026-09-13T23:02:40.5078320Z PASS distribution-drops-credentials
+2026-09-13T23:02:40.5079960Z PASS distribution-drops-unrelated-entries
+2026-09-13T23:02:40.5097470Z PASS undeclared-build-stops :: BuildCredentialModeException
+2026-09-13T23:02:40.5099780Z PASS undeclared-build-says-how-to-choose
+2026-09-13T23:02:40.5104000Z PASS undeclared-build-embeds-nothing
+2026-09-13T23:02:40.5639840Z PASS private-preprocess-succeeds
+2026-09-13T23:02:40.5643690Z PASS private-embeds-credentials
+2026-09-13T23:02:40.5646030Z PASS private-leaves-no-temporary-file
+2026-09-13T23:02:41.3274280Z PASS postprocess-removes-embedded-file
+2026-09-13T23:02:41.3287860Z PASS postprocess-removes-embedded-meta
+2026-09-13T23:02:41.8902480Z PASS stale-copy-preprocess-succeeds
+2026-09-13T23:02:41.8917440Z PASS stale-copy-credentials-do-not-survive
+2026-09-13T23:02:44.0334230Z PASS cleanup-removes-everything
+2026-09-13T23:02:44.0341490Z PASS cleanup-left-no-stray-resources-dir
+2026-09-13T23:02:44.0344390Z CREDENTIALS COMPLETE

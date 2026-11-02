@@ -1,0 +1,9 @@
+{
+  "check": "save",
+  "label": "save-fix-02",
+  "exit_code": 2,
+  "timed_out": false,
+  "started": "2026-09-13T14:57:47.629832-07:00",
+  "ended": "2026-09-13T14:59:02.692643-07:00",
+  "log": "/private/tmp/holodeck-saves-03-zusaQa/save-fix-02.log"
+}

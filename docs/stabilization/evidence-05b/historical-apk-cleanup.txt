@@ -1,0 +1,34 @@
+Historical key-bearing build artifacts — removal record, 2026-09-13
+
+Method: for each APK, every entry was read and searched for the 10 real credential/URL values in the
+project .env (script reads values in memory; only key names and counts were printed, never a value).
+
+Deleted at the developer's request (all were built before the device intent existed, so each
+embedded the project .env):
+  Builds/Holodeck.apk                                              313.5 MB  all 10 values
+  Builds/stabilization-01-20260908/Holodeck-baseline-01.apk        313.5 MB  all 10 values
+  Builds/Holodeck-CodexBuildCheck.apk                              278.5 MB  all 10 values
+  Builds/Holodeck-CodexTest.apk                                    278.3 MB  all 10 values
+  Builds/Holodeck-XRITK350.apk                                     306.4 MB  all 10 values
+  Builds/Holodeck-main-xritk350.apk                                307.3 MB  all 10 values
+  Builds/HolodeckPico.apk                                          184.9 MB  OpenAI + World Labs
+
+Kept (verified key-free):
+  Builds/stabilization-05b-20260913/Holodeck-order05b-device.apk   313.6 MB  0 of 10; only the
+      two code-default base URLs (HITEM_BASE_URL, THREEDAISTUDIO_BASE_URL) appear
+
+Sibling debug folders checked individually and left in place (no credential values):
+  Holodeck-CodexBuildCheck_BackUpThisFolder_ButDontShipItWithYourGame
+  Holodeck-CodexTest_BackUpThisFolder_ButDontShipItWithYourGame
+  Holodeck-XRITK350{,-camera-offset-teleport,-hand-origin-fix,-handteleport-fix,-wired}_BackUp…
+  Holodeck-main-xritk350_BackUpThisFolder_ButDontShipItWithYourGame
+  Holodeck_BackUpThisFolder_ButDontShipItWithYourGame
+  HeadsetHolodeck_BurstDebugInformation_DoNotShip
+
+Follow-up sweeps after deletion:
+  working tree, 5,295 files outside Library/Builds/.git/Temp  → real values only in .env
+  Library/ cache, 83,282 files                                → no credential value found
+
+Disk before/after: 16 GiB free → 18 GiB free.
+
+Recommendation: rotate the provider credentials, because these artifacts may have been copied.

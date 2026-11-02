@@ -1,0 +1,16 @@
+Save EditMode suite: {"id": "2", "testcasecount": "15", "result": "Passed", "total": "15", "passed": "15", "failed": "0", "inconclusive": "0", "skipped": "0", "asserts": "0", "engine-version": "3.5.0.0", "clr-version": "4.0.30319.42000", "start-time": "2026-09-08 23:24:18Z", "end-time": "2026-09-08 23:24:19Z", "duration": "1.66426"}
+Passed Holodeck.Save.Tests.WorldConfigRegistryTests.Register_AddsSerializer
+Passed Holodeck.Save.Tests.WorldConfigRegistryTests.Register_NullSerializer_ThrowsArgumentNullException
+Passed Holodeck.Save.Tests.WorldConfigRegistryTests.RestoreAll_CallsRestoreOnMatchingSerializer
+Passed Holodeck.Save.Tests.WorldConfigRegistryTests.RestoreAll_UnknownType_LogsWarningAndDoesNotThrow
+Passed Holodeck.Save.Tests.WorldConfigRegistryTests.SaveAll_CallsSaveOnRegisteredSerializer
+Passed Holodeck.Save.Tests.WorldConfigSerializationTests.WorldConfig_JsonRoundTrip_PreservesAllFields
+Passed Holodeck.Save.Tests.WorldConfigSerializationTests.WorldConfig_NullOptionalFields_SerializesCleanly
+Passed Holodeck.Save.Tests.WorldConfigStoreTests.CreateConfig_WritesJsonToDisk
+Passed Holodeck.Save.Tests.WorldConfigStoreTests.DeleteConfig_RemovesFolderAndInMemory
+Passed Holodeck.Save.Tests.WorldConfigStoreTests.ForkConfig_CreatesSeparateFolderWithSameObjects
+Passed Holodeck.Save.Tests.WorldConfigStoreTests.HasConfigForWorldId_ReturnsTrueWhenExists
+Passed Holodeck.Save.Tests.WorldConfigStoreTests.ListConfigs_ReturnsAllCreated
+Passed Holodeck.Save.Tests.WorldConfigStoreTests.MigrateConfigToWritableCopy_PreservesDataAndHidesLegacyDuplicateOnNextScan
+Passed Holodeck.Save.Tests.WorldConfigStoreTests.SaveConfig_UpdatesModifiedAt
+Passed Holodeck.Save.Tests.WorldConfigStoreTests.ScanAndMigrateAsync_WithMultipleStores_CreatesOneConfigPerLooseSplat

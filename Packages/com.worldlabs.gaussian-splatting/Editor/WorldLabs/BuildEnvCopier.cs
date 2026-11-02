@@ -9,19 +9,24 @@ using UnityEngine;
 namespace WorldLabs.Editor
 {
     /// <summary>
-    /// Before each build, copies the project-root .env file into
-    /// Assets/Resources/WorldLabs/worldlabs_env.txt so it is embedded in the build
-    /// and readable on all platforms (including Android/Pico) via Resources.Load.
+    /// Before each build, decides what the project-root .env may contribute to the artifact and
+    /// writes (or removes) Assets/Resources/WorldLabs/worldlabs_env.txt so it can be read on every
+    /// platform through Resources.Load.
     ///
-    /// The copy is deleted immediately after the build so it never ends up in source control.
+    /// What is embedded depends on the declared build credential intent — see
+    /// <see cref="BuildEnvCredentials"/>. A private build carries every entry; a distribution build
+    /// carries non-secret configuration only; an undeclared build that would leak credentials is
+    /// stopped instead of guessing.
+    ///
+    /// The copy is deleted immediately after the build, at editor shutdown, and at editor startup
+    /// (for a build that crashed before its cleanup ran) so it never ends up in source control or in
+    /// a later build.
     /// </summary>
     class BuildEnvCopier : IPreprocessBuildWithReport, IPostprocessBuild
     {
-        const string EnvFileName   = ".env";
         const string ResourcesDir  = "Assets/Resources/WorldLabs";
         // Unity TextAsset requires a .txt extension; EnvLoader references "WorldLabs/worldlabs_env"
         const string ResourcesFile = ResourcesDir + "/worldlabs_env.txt";
-        const string ResourcesMeta = ResourcesFile + ".meta";
 
         public int callbackOrder => 0;
 
@@ -29,23 +34,65 @@ namespace WorldLabs.Editor
 
         public void OnPreprocessBuild(BuildReport report)
         {
-            string projectRoot = Directory.GetParent(Application.dataPath).FullName;
-            string sourcePath  = Path.Combine(projectRoot, EnvFileName);
+            string sourcePath = BuildCredentialSettings.ProjectEnvPath;
+            BuildCredentialMode mode = BuildCredentialSettings.Mode;
+            Debug.Log($"[BuildEnvCopier] Build credential intent: {BuildCredentialSettings.Describe()}");
 
-            if (!File.Exists(sourcePath))
+            BuildEnvEmbedResult result;
+            try
+            {
+                result = BuildEnvCredentials.Embed(sourcePath, ResourcesFile, mode);
+            }
+            catch (BuildCredentialModeException error)
+            {
+                Debug.LogError("[BuildEnvCopier] " + error.Message);
+                throw;
+            }
+
+            if (result.RemovedStaleEmbeddedFile)
+                Debug.Log("[BuildEnvCopier] Removed an embedded .env copy left behind by an earlier build.");
+
+            if (result.WroteEmbeddedFile)
+            {
+                AssetDatabase.ImportAsset(ResourcesFile, ImportAssetOptions.ForceSynchronousImport);
+                Debug.Log($"[BuildEnvCopier] Embedded {result.IncludedKeys.Count} .env " +
+                          $"entr{(result.IncludedKeys.Count == 1 ? "y" : "ies")} → {ResourcesFile}. {result.Reason}.");
+            }
+            else
+            {
+                Debug.Log($"[BuildEnvCopier] No .env embedded in this build. {result.Reason}.");
+            }
+
+            if (result.ExcludedKeys.Count > 0)
+            {
+                // Key names only: values are never logged and never written into the build.
+                Debug.Log($"[BuildEnvCopier] Excluded {result.ExcludedKeys.Count} .env " +
+                          $"entr{(result.ExcludedKeys.Count == 1 ? "y" : "ies")} from this build: " +
+                          string.Join(", ", result.ExcludedKeys) + ".");
+            }
+
+            if (mode == BuildCredentialMode.Private && result.WroteEmbeddedFile)
+            {
+                Debug.LogWarning("[BuildEnvCopier] This is a PRIVATE build: it contains your live API keys. " +
+                                 "Do not share this artifact. Switch to 'Headset Holodeck > Build Credentials > Distribution' " +
+                                 "before building anything for someone else.");
+            }
+            else if (mode == BuildCredentialMode.Private)
             {
                 Debug.LogWarning($"[BuildEnvCopier] No .env found at '{sourcePath}'. " +
                                  "The build will not contain an API key.");
-                return;
             }
-
-            if (!Directory.Exists(ResourcesDir))
-                Directory.CreateDirectory(ResourcesDir);
-
-            File.Copy(sourcePath, ResourcesFile, overwrite: true);
-            AssetDatabase.ImportAsset(ResourcesFile, ImportAssetOptions.ForceSynchronousImport);
-
-            Debug.Log($"[BuildEnvCopier] Embedded .env → {ResourcesFile}");
+            else if (mode == BuildCredentialMode.Distribution && !result.WroteEmbeddedFile && File.Exists(sourcePath))
+            {
+                Debug.LogWarning("[BuildEnvCopier] Distribution build: no API keys are embedded. " +
+                                 "The app will need provider keys from its environment or its own .env on the target device.");
+            }
+            else if (mode == BuildCredentialMode.Device)
+            {
+                Debug.Log("[BuildEnvCopier] Device build: the artifact contains no .env at all. " +
+                          "The app reads keys from 'Application.persistentDataPath/.env' on the device " +
+                          "(for this project's headset builds: /sdcard/Android/data/com.QLC.HeadsetHolodeck/files/.env).");
+            }
         }
 
         // ── After build ───────────────────────────────────────────────────────
@@ -60,22 +107,15 @@ namespace WorldLabs.Editor
         static void RegisterEditorQuitCleanup()
         {
             EditorApplication.quitting += Cleanup;
+
+            // A build that crashed before its postprocess step left the embedded copy on disk; that
+            // copy must never be committed and must never reach a later distribution build.
+            EditorApplication.delayCall += Cleanup;
         }
 
         static void Cleanup()
         {
-            bool changed = false;
-
-            if (File.Exists(ResourcesFile))
-            {
-                File.Delete(ResourcesFile);
-                changed = true;
-            }
-            if (File.Exists(ResourcesMeta))
-            {
-                File.Delete(ResourcesMeta);
-                changed = true;
-            }
+            bool changed = BuildEnvCredentials.RemoveEmbedded(ResourcesFile);
 
             // Remove empty WorldLabs Resources dir so it doesn't pollute the project
             if (Directory.Exists(ResourcesDir) &&

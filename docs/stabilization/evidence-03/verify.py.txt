@@ -1,0 +1,87 @@
+from pathlib import Path
+import datetime, hashlib, json, subprocess
+
+run = Path(__file__).parent
+source = Path("/Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev")
+project = run / "project"
+evidence = source / "docs/stabilization/evidence-03"
+
+SKIP_NAMES = {".env", "worldlabs_env.txt"}
+ADAPTERS = {
+    "Assets/App/Editor/StabilizationBaseline01.cs",
+    "Assets/App/Editor/StabilizationSaveRisk03.cs",
+    "Assets/App/Editor/StabilizationTransitions02.cs",
+}
+
+
+def digest(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def project_files(root, prefixes):
+    names = subprocess.check_output(
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"], cwd=source
+    ).decode().split("\0")
+    for name in names:
+        if not name or not name.startswith(prefixes):
+            continue
+        if Path(name).name in SKIP_NAMES:
+            continue
+        candidate = root / name
+        if candidate.is_file():
+            yield name, candidate
+
+
+prefixes = ("Assets/", "Packages/", "ProjectSettings/")
+source_hashes = {name: digest(path) for name, path in project_files(source, prefixes)}
+copy_hashes = {name: digest(path) for name, path in project_files(project, prefixes)}
+
+only_in_source = sorted(name for name in source_hashes if name not in copy_hashes and name not in ADAPTERS)
+only_in_copy = sorted(name for name in copy_hashes if name not in source_hashes and name not in ADAPTERS)
+mismatched = sorted(name for name in source_hashes if name in copy_hashes and source_hashes[name] != copy_hashes[name])
+
+comparison = {
+    "time": datetime.datetime.now().astimezone().isoformat(),
+    "compared_prefixes": list(prefixes),
+    "source_files": len(source_hashes),
+    "copy_files": len(copy_hashes),
+    "installed_adapters_in_copy": sorted(ADAPTERS),
+    "only_in_source": only_in_source,
+    "only_in_copy": only_in_copy,
+    "mismatched": mismatched,
+    "match": not only_in_source and not only_in_copy and not mismatched,
+}
+(evidence / "final-source-comparison.json").write_text(json.dumps(comparison, indent=2) + "\n")
+(evidence / "verification-source-hashes.json").write_text(json.dumps(source_hashes, indent=1, sort_keys=True) + "\n")
+
+baseline = json.loads((evidence / "source-hashes-before.json").read_text())
+current = {}
+for name in baseline:
+    path = source / name
+    current[name] = digest(path) if path.is_file() else None
+
+changed = sorted(name for name in baseline if current[name] is not None and current[name] != baseline[name])
+removed = sorted(name for name in baseline if current[name] is None)
+
+now = subprocess.check_output(["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"], cwd=source).decode().split("\0")
+added = sorted(
+    name for name in now
+    if name and name not in baseline and Path(name).name not in SKIP_NAMES and (source / name).is_file()
+)
+
+preservation = {
+    "time": datetime.datetime.now().astimezone().isoformat(),
+    "baseline_snapshot": "source-hashes-before.json (4748 files, 2026-09-10T18:37:52-07:00)",
+    "baseline_files": len(baseline),
+    "changed": changed,
+    "removed": removed,
+    "added": added,
+}
+(evidence / "preservation-final.json").write_text(json.dumps(preservation, indent=2) + "\n")
+
+print(json.dumps({"comparison": {k: comparison[k] for k in ("match", "mismatched", "only_in_source", "only_in_copy", "source_files", "copy_files")}}, indent=2))
+print(json.dumps(preservation, indent=2))

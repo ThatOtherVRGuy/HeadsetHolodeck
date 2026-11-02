@@ -1,0 +1,3 @@
+2026-09-13T22:56:15.3410990Z ENV unity=6000.2.10f1 platform=OSXEditor
+2026-09-13T22:56:15.3429110Z PROJECT-ROOT /private/tmp/holodeck-saves-03-zusaQa/project
+2026-09-13T22:56:15.3435290Z FAIL isolated copy already has a .env; refusing to overwrite it

@@ -119,6 +119,7 @@ namespace WorldLabs.Runtime
         string _currentToken;
         string _nextToken;
         bool   _loading;
+        float  _worldCardClickBlockedUntil;
 
         [Header("Startup")]
         [Tooltip("If false, the WorldLabs list is loaded only when Refresh is called after the panel is explicitly shown.")]
@@ -131,6 +132,7 @@ namespace WorldLabs.Runtime
         bool            _createPanelOpen;
         bool            _isGenerating;
         bool            _generationCancelled;
+        WorldTransitionOperation _generationOperation;
 
         // ── Delete state ──────────────────────────────────────────────────────
         World _pendingDeleteWorld;
@@ -292,7 +294,9 @@ namespace WorldLabs.Runtime
             worldManager.OnWorldLoadFailed   -= OnWorldLoadFailed;
             worldManager.OnWorldLoadProgress -= OnWorldProgress;
             worldManager.OnWorldUnloaded     -= OnWorldUnloadedHandler;
-            _generationCancelled = true;   // abort any in-progress polling
+            _generationCancelled = true;
+            if (_generationOperation != null && !_generationOperation.IsCompleted)
+                worldManager.CancelTransition(_generationOperation);
         }
 
         // ── Public ────────────────────────────────────────────────────────────
@@ -542,6 +546,23 @@ namespace WorldLabs.Runtime
 
         public MarbleModel SelectedGenerationModel => selectedModel;
 
+        /// <summary>
+        /// Prevents the navigation button press that reveals this browser from also
+        /// activating a world card beneath the pointer. Uses unscaled time so the
+        /// guard remains reliable while gameplay is paused.
+        /// </summary>
+        public void BlockWorldCardClicksFor(float seconds)
+        {
+            _worldCardClickBlockedUntil = Mathf.Max(
+                _worldCardClickBlockedUntil,
+                Time.unscaledTime + Mathf.Max(0f, seconds));
+            Debug.Log($"[WorldLabsInputTrace] Card-click guard armed at frame {Time.frameCount}: " +
+                      $"duration={seconds:0.###}s, blockedUntil={_worldCardClickBlockedUntil:0.###}, " +
+                      $"browserActive={gameObject.activeInHierarchy}.", this);
+        }
+
+        internal bool AreWorldCardClicksBlocked => Time.unscaledTime < _worldCardClickBlockedUntil;
+
         public static string GetGenerationModelLabel(MarbleModel model) => model switch
         {
             MarbleModel.Draft    => "Draft",
@@ -585,8 +606,6 @@ namespace WorldLabs.Runtime
         /// </summary>
         async void StartWorldCreation()
         {
-            if (_isGenerating) return;
-
             string prompt = promptInputField != null ? (promptInputField.text ?? string.Empty).Trim() : string.Empty;
             if (string.IsNullOrEmpty(prompt))
             {
@@ -597,12 +616,13 @@ namespace WorldLabs.Runtime
             if (!CanCallWorldLabsApi("World creation"))
                 return;
 
-            _isGenerating        = true;
+            // Reserve ownership before submitting work so a later browse/load wins.
+            var transition = worldManager.BeginTransition();
+            if (!transition.IsCurrent) return;
+            _generationOperation = transition;
+            _isGenerating = true;
             _generationCancelled = false;
             if (createWorldButton != null) createWorldButton.interactable = false;
-
-            // Show the default asset as a placeholder while generation is in progress
-            worldManager.RestoreDefaultWorld();
             SetStatus("Starting generation…");
 
             string modelStr = selectedModel switch
@@ -615,6 +635,7 @@ namespace WorldLabs.Runtime
 
             try
             {
+                transition.ThrowIfStale();
                 var request = new WorldsGenerateRequest
                 {
                     world_prompt = TextPrompt.Create(prompt),
@@ -622,7 +643,7 @@ namespace WorldLabs.Runtime
                     permission   = Permission.Private
                 };
 
-                GenerateWorldResponse genResponse = await _wlClient.GenerateWorldAsync(request);
+                GenerateWorldResponse genResponse = await transition.AwaitAsync(_wlClient.GenerateWorldAsync(request));
                 string opId = genResponse.operation_id;
 
                 // Poll until the operation is done AND world assets are ready
@@ -633,12 +654,13 @@ namespace WorldLabs.Runtime
 
                 while (elapsed < timeout && !_generationCancelled)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(pollInterval));
+                    await Task.Delay(TimeSpan.FromSeconds(pollInterval), transition.Token);
                     elapsed += pollInterval;
 
                     if (_generationCancelled) break;
 
-                    GetOperationResponse op = await _wlClient.GetOperationAsync(opId);
+                    GetOperationResponse op = await _wlClient.GetOperationAsync(opId, transition.Token);
+                    transition.ThrowIfStale();
 
                     if (op.error != null && !string.IsNullOrEmpty(op.error.message))
                         throw new Exception(op.error.message);
@@ -651,7 +673,9 @@ namespace WorldLabs.Runtime
 
                     SetStatus(op.done
                         ? "Finalizing assets…"
-                        : $"Generating {(op.metadata?.progress ?? 0f) * 100:0}%…");
+                        : string.IsNullOrEmpty(op.metadata?.progress?.description)
+                            ? "Generating…"
+                            : $"Generating: {op.metadata.progress.description}");
                 }
 
                 if (_generationCancelled)
@@ -662,6 +686,7 @@ namespace WorldLabs.Runtime
 
                 if (readyWorld == null)
                 {
+                    worldManager.CancelTransition(transition);
                     SetStatus("Timed out waiting for world assets.");
                     return;
                 }
@@ -670,21 +695,30 @@ namespace WorldLabs.Runtime
                 if (_createPanelOpen) ToggleCreateMode();
                 SetStatus("Loading world…");
 
-                await worldManager.LoadWorldAsync(readyWorld);
+                var renderer = await worldManager.LoadWorldAsync(readyWorld, transition);
+                transition.ThrowIfStale();
+                if (renderer == null) throw new InvalidOperationException("World load failed.");
+                worldManager.CompleteTransition(transition);
                 SetStatus("World loaded!");
 
                 // Refresh the browse list so the new world appears in the grid
                 Refresh();
             }
+            catch (OperationCanceledException) { }
             catch (Exception ex)
             {
+                if (!transition.IsCurrent) return;
+                worldManager.CancelTransition(transition);
                 SetStatus($"Error: {ex.Message}");
                 Debug.LogError($"[WorldBrowserController] World creation failed: {ex}");
             }
             finally
             {
-                _isGenerating = false;
-                if (createWorldButton != null) createWorldButton.interactable = true;
+                if (_generationOperation == transition)
+                {
+                    _isGenerating = false;
+                    if (this != null && createWorldButton != null) createWorldButton.interactable = true;
+                }
             }
         }
 
@@ -1239,6 +1273,9 @@ namespace WorldLabs.Runtime
     public class WorldCardUI : MonoBehaviour,
         IPointerEnterHandler,
         IPointerExitHandler,
+        IPointerDownHandler,
+        IPointerUpHandler,
+        IPointerClickHandler,
         IInitializePotentialDragHandler,
         IBeginDragHandler,
         IDragHandler,
@@ -1278,17 +1315,23 @@ namespace WorldLabs.Runtime
 
         // ── IPointerEnterHandler / IPointerExitHandler ────────────────────────
 
-        public void OnPointerEnter(PointerEventData _)
+        public void OnPointerEnter(PointerEventData eventData)
         {
+            TracePointer("enter", eventData);
             if (_hoverOverlay != null)
                 _hoverOverlay.color = new Color(0.60f, 0.75f, 1.00f, 0.28f);
         }
 
-        public void OnPointerExit(PointerEventData _)
+        public void OnPointerExit(PointerEventData eventData)
         {
+            TracePointer("exit", eventData);
             if (_hoverOverlay != null)
                 _hoverOverlay.color = new Color(1f, 1f, 1f, 0f);
         }
+
+        public void OnPointerDown(PointerEventData eventData) => TracePointer("down", eventData);
+        public void OnPointerUp(PointerEventData eventData) => TracePointer("up", eventData);
+        public void OnPointerClick(PointerEventData eventData) => TracePointer("click", eventData);
 
         // ── Drag interception ─────────────────────────────────────────────────
         // WorldCardUI is on the same GO as the Button, so when the event system
@@ -1299,10 +1342,14 @@ namespace WorldLabs.Runtime
         // even if the pointer drifts — so Button.onClick always fires on tap.
         // The no-op drag methods also prevent ScrollRect from ever receiving drags
         // from the card area, so dragging cards never scrolls the list.
-        public void OnInitializePotentialDrag(PointerEventData e) { e.useDragThreshold = true; }
-        public void OnBeginDrag(PointerEventData e) { }
+        public void OnInitializePotentialDrag(PointerEventData e)
+        {
+            e.useDragThreshold = true;
+            TracePointer("potential-drag", e);
+        }
+        public void OnBeginDrag(PointerEventData e) => TracePointer("begin-drag", e);
         public void OnDrag(PointerEventData e) { }
-        public void OnEndDrag(PointerEventData e) { }
+        public void OnEndDrag(PointerEventData e) => TracePointer("end-drag", e);
 
         // ── Binding ───────────────────────────────────────────────────────────
 
@@ -1405,16 +1452,18 @@ namespace WorldLabs.Runtime
 
         // ── Click ─────────────────────────────────────────────────────────────
 
+        WorldTransitionOperation _loadOperation;
+
+        void OnDisable()
+        {
+            if (_loadOperation != null && !_loadOperation.IsCompleted)
+                _manager?.CancelTransition(_loadOperation);
+        }
+
         async void HandleClick()
         {
-            Debug.Log($"[WorldCardUI] Click: '{_world?.display_name}'");
-
-            if (_world == null || _manager == null) return;
-            if (_manager.IsWorldLoading(_world.world_id)) return;
-
-            _onClicked?.Invoke(_world);
-
-            // ── Unload path (unchanged) ───────────────────────────────────────────
+            WorldBrowserController browser = GetComponentInParent<WorldBrowserController>();
+            if (_world == null || _manager == null || browser?.AreWorldCardClicksBlocked == true) return;
             if (_manager.IsWorldLoaded(_world.world_id))
             {
                 _manager.UnloadWorld(_world.world_id);
@@ -1422,79 +1471,99 @@ namespace WorldLabs.Runtime
                 return;
             }
 
-            RefreshState();
-
-            // Capture world reference before any await — card may be rebound during downloads.
             World worldAtClick = _world;
-
-            // ── 1. Download panorama texture ──────────────────────────────────────
-            string panoUrl  = _world?.assets?.imagery?.pano_url;
-            string thumbUrl = _world?.assets?.thumbnail_url;
-
-            if (!string.IsNullOrEmpty(panoUrl) || !string.IsNullOrEmpty(thumbUrl))
+            var transition = _manager.BeginTransition();
+            _loadOperation = transition;
+            bool panoramaReady = false;
+            try
             {
-                try
+                _onClicked?.Invoke(worldAtClick);
+                transition.ThrowIfStale();
+                _manager.NotifyWorldLoadStarted(worldAtClick.world_id, transition);
+                RefreshState();
+                string panoUrl = worldAtClick.assets?.imagery?.pano_url;
+                string thumbUrl = worldAtClick.assets?.thumbnail_url;
+                if (!string.IsNullOrEmpty(panoUrl) || !string.IsNullOrEmpty(thumbUrl))
                 {
-                    // Use binary download so we can cache the raw bytes before decoding.
-                    // Skip WebP URLs — Unity doesn't decode them natively.
-                    bool primaryIsWebP = panoUrl != null && panoUrl.EndsWith(".webp", StringComparison.OrdinalIgnoreCase);
-                    string urlToUse = primaryIsWebP && !string.IsNullOrEmpty(thumbUrl) ? thumbUrl : (panoUrl ?? thumbUrl);
-
-                    byte[] imageBytes = await WorldLabsClientExtensions.DownloadBinaryAsync(urlToUse);
-
-                    // Guard: if card was rebound to a different world while awaiting, discard.
-                    if (_world != worldAtClick) return;
-
-                    Texture2D tex = new Texture2D(2, 2);
-                    if (imageBytes != null && tex.LoadImage(imageBytes))
+                    try
                     {
-                        _onPanoBytesDownloaded?.Invoke(_world.world_id, imageBytes);
-                        _onPanoramaReady?.Invoke(tex);
+                        bool webp = panoUrl != null && panoUrl.EndsWith(".webp", StringComparison.OrdinalIgnoreCase);
+                        string url = webp && !string.IsNullOrEmpty(thumbUrl) ? thumbUrl : (panoUrl ?? thumbUrl);
+                        byte[] bytes = await WorldLabsClientExtensions.DownloadBinaryAsync(url, transition.Token);
+                        transition.ThrowIfStale();
+                        if (this == null || _world != worldAtClick) throw new OperationCanceledException();
+                        var texture = new Texture2D(2, 2);
+                        transition.Track(texture);
+                        if (bytes != null && texture.LoadImage(bytes))
+                        {
+                            _onPanoBytesDownloaded?.Invoke(worldAtClick.world_id, bytes);
+                            transition.ThrowIfStale();
+                            _onPanoramaReady?.Invoke(texture);
+                            transition.ThrowIfStale();
+                            panoramaReady = true;
+                        }
+                        else
+                        {
+                            WorldTransitionOperation.DestroyOwned(texture);
+                            _onPanoramaFailed?.Invoke();
+                        }
                     }
-                    else
+                    catch (OperationCanceledException) { throw; }
+                    catch (Exception ex)
                     {
-                        UnityEngine.Object.Destroy(tex);
+                        transition.ThrowIfStale();
+                        Debug.LogWarning($"[WorldCardUI] Panorama download failed: {ex.Message}");
                         _onPanoramaFailed?.Invoke();
                     }
                 }
-                catch (Exception ex)
+                transition.ThrowIfStale();
+                if (this == null || _world != worldAtClick) throw new OperationCanceledException();
+                if (_panoramaOnly)
                 {
-                    if (_world != worldAtClick) return;
-                    Debug.LogWarning($"[WorldCardUI] Panorama sphere download failed for " +
-                                     $"'{_world?.display_name}': {ex.Message}");
-                    _onPanoramaFailed?.Invoke();
+                    if (!panoramaReady) throw new InvalidOperationException("Panorama load failed.");
+                    _onPanoWorldShown?.Invoke(worldAtClick.world_id);
                 }
-            }
-
-            // ── 2. Panorama-only mode — stop here ─────────────────────────────────
-            if (_panoramaOnly)
-            {
-                _onPanoWorldShown?.Invoke(worldAtClick.world_id);
-                RefreshState();
-                return;
-            }
-
-            // Guard: check again before starting the SPZ load (covers the case where no
-            // pano URL existed so the block above was skipped entirely).
-            if (_world != worldAtClick) return;
-
-            // ── 3. Load splat ─────────────────────────────────────────────────────
-            try
-            {
-                var loaded = await _manager.LoadWorldAsync(_world);
-                if (_world != worldAtClick) return;
-                if (loaded != null)
-                    _onSplatReady?.Invoke();
                 else
-                    Debug.LogWarning($"[WorldCardUI] LoadWorldAsync returned null for '{_world?.display_name}'");
+                {
+                    var renderer = await _manager.LoadWorldAsync(worldAtClick, transition);
+                    transition.ThrowIfStale();
+                    if (renderer == null) throw new InvalidOperationException("World load failed.");
+                    _onSplatReady?.Invoke();
+                }
+                transition.ThrowIfStale();
+                _manager.CompleteTransition(transition);
+            }
+            catch (OperationCanceledException)
+            {
+                if (transition.IsCurrent) _manager.CancelTransition(transition);
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[WorldCardUI] Load failed '{_world?.display_name}': {ex.Message}");
+                if (transition.IsCurrent)
+                {
+                    _manager.NotifyWorldLoadFailed(worldAtClick.world_id, ex.Message, transition);
+                    _manager.CancelTransition(transition);
+                    Debug.LogWarning($"[WorldCardUI] Load failed: {ex.Message}");
+                }
             }
+            if (this != null && _world == worldAtClick && transition.IsCurrent) RefreshState();
+        }
 
-            if (_world != worldAtClick) return;
-            RefreshState();
+        void TracePointer(string phase, PointerEventData eventData)
+        {
+            if (eventData == null)
+                return;
+
+            string press = eventData.pointerPress != null ? eventData.pointerPress.name : "<none>";
+            string rawPress = eventData.rawPointerPress != null ? eventData.rawPointerPress.name : "<none>";
+            string currentRaycast = eventData.pointerCurrentRaycast.gameObject != null
+                ? eventData.pointerCurrentRaycast.gameObject.name : "<none>";
+            string pressRaycast = eventData.pointerPressRaycast.gameObject != null
+                ? eventData.pointerPressRaycast.gameObject.name : "<none>";
+            Debug.Log($"[WorldLabsInputTrace] Card pointer-{phase}: world='{_world?.display_name}', " +
+                      $"frame={Time.frameCount}, pointer={eventData.pointerId}, button={eventData.button}, " +
+                      $"press={press}, rawPress={rawPress}, currentRaycast={currentRaycast}, " +
+                      $"pressRaycast={pressRaycast}, eligible={eventData.eligibleForClick}.", this);
         }
 
         // ── Panorama download — async/await, no coroutine ─────────────────────

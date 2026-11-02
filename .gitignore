@@ -76,7 +76,6 @@ mono_crash.*
 *.unitypackage
 *.unitypackage.meta
 *.app
-*_BurstDebugInformation_DoNotShip/
 
 # Crashlytics generated file
 crashlytics-build.properties
@@ -106,5 +105,39 @@ InitTestScene*.unity*
 # Local secrets — never commit
 .env
 
+# Transient copy of .env that BuildEnvCopier embeds before a build and deletes after it.
+# Ignored so a crashed build can never have its leftover committed.
+/[Aa]ssets/Resources/WorldLabs/
+/[Aa]ssets/Resources/WorldLabs.meta
+
+# Local AI-agent state and generated tool caches.
+/.agents/
+/.claude/
+/.codex/
+# Pico CLI machine-local setup state (absolute paths and installed tool versions).
+/.pico-env.json
+/.superpowers/
+/[Aa]ssets/Plugins/NuGet/
+/[Aa]ssets/Plugins/NuGet.meta
+/[Pp]rojectSettings/Packages/com.unity.ai.assistant/
+
+# XR simulation scratch files written by the editor.
+/[Aa]ssets/XR/Temp/
+/[Aa]ssets/XR/Temp.meta
+
+# Local device-log exports.
+/com.QLC.HeadsetHolodeck-logcat*.txt
+
 # Vendored package development projects are not needed by this Unity app.
 /Packages/com.ponyudev.sherpa-onnx/DevProject~/
+
+# Agent scratch space. Unity owns Temp/ and deletes from it, so scratch work gets its own folder
+# instead of competing with the editor for files it will clean up underneath us.
+/.scratch/
+
+# Local Python environments and caches used by the fixture splitter and the MCP servers.
+/.uv-cache/
+/.venv-audacity/
+
+# Project MCP configuration written by PICO CLI. Carries a bearer token, so it must never be committed.
+/.mcp.json

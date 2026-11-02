@@ -1,0 +1,8 @@
+{
+  "check": "transitions",
+  "label": "final-manager-01",
+  "exit_code": -15,
+  "started": "2026-09-09T23:28:41.252105-07:00",
+  "ended": "2026-09-10T11:29:36.468732-07:00",
+  "log": "/private/tmp/holodeck-transitions-02-final-sg5r74ko/final-manager-01.log"
+}

@@ -1,0 +1,9 @@
+{
+  "check": "risk",
+  "label": "final-risk-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-13T15:03:48.220050-07:00",
+  "ended": "2026-09-13T15:04:50.793671-07:00",
+  "log": "/private/tmp/holodeck-saves-03-zusaQa/final-risk-01.log"
+}

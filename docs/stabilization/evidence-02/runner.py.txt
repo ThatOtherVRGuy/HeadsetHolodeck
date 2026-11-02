@@ -1,0 +1,22 @@
+from pathlib import Path
+import os, re, subprocess, json, sys, datetime, argparse
+parser=argparse.ArgumentParser()
+parser.add_argument("case",choices=["risk","batch","save","transitions"])
+parser.add_argument("--method",default="HeadsetHolodeck.EditorTests.WorldTransitionBatchTests.RunAsync")
+parser.add_argument("--label",default=None)
+args=parser.parse_args()
+run=Path(__file__).parent
+label=args.label or args.case
+if not re.fullmatch(r"[A-Za-z0-9_-]+",label):raise SystemExit("Unsafe label")
+env={k:v for k,v in os.environ.items() if not re.search(r"KEY|TOKEN|SECRET|PASSWORD",k,re.I)}
+base=["/usr/bin/sandbox-exec","-f",str(run/"offline-tests.sb"),"/Applications/Unity/Hub/Editor/6000.2.10f1/Unity.app/Contents/MacOS/Unity","-batchmode","-nographics","-projectPath",str(run/"project")]
+cases={"risk":["-executeMethod","StabilizationTransitionRisk02.Run","-riskResult",str(run/(label+"-results.txt"))],"batch":["-quit","-executeMethod","StabilizationBaseline01.RunRegressions","-baselineResult",str(run/(label+"-results.txt"))],"save":["-runTests","-testPlatform","EditMode","-assemblyNames","Holodeck.Save.Tests","-testResults",str(run/(label+"-tests.xml"))],"transitions":["-executeMethod","StabilizationTransitions02.Run","-transitionMethod",args.method,"-transitionResult",str(run/(label+"-results.txt"))]}
+command=base+cases[args.case]+["-logFile",str(run/(label+".log"))]
+started=datetime.datetime.now().astimezone().isoformat()
+(run/(label+"-command.json")).write_text(json.dumps(command,indent=2)+"\n")
+print("Starting "+label+" in isolated batch editor; provider network and credential-file reads blocked.",flush=True)
+process=subprocess.run(command,env=env)
+result={"check":args.case,"label":label,"exit_code":process.returncode,"started":started,"ended":datetime.datetime.now().astimezone().isoformat(),"log":str(run/(label+".log"))}
+(run/(label+"-process.json")).write_text(json.dumps(result,indent=2)+"\n")
+print(json.dumps(result),flush=True)
+sys.exit(process.returncode)

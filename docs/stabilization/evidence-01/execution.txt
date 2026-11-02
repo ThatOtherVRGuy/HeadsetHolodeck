@@ -1,0 +1,18 @@
+All Unity commands run against an APFS copy of the current dirty checkout, never a clean HEAD checkout.
+UNITY=/Applications/Unity/Hub/Editor/6000.2.10f1/Unity.app/Contents/MacOS/Unity
+PROJECT=/private/tmp/holodeck-baseline-01-xddejnxt/project
+Logs and result flags refer to /private/tmp/holodeck-baseline-01-xddejnxt.
+
+1. -batchmode -nographics -quit -projectPath PROJECT -executeMethod StabilizationBaseline01.Validate -baselineResult validation-results.txt -logFile validation.log
+   Exit 0. Temporary adapter invokes install validator Refresh through reflection; does not invoke repair menus.
+2. -batchmode -nographics -quit -projectPath PROJECT -executeMethod StabilizationBaseline01.RunRegressions -baselineResult batch-results.txt -logFile batch-01.log
+   Exit 1 at entry 4. Entries 0-3 passed; entry 4 terminated Unity inside its own failure handler.
+3. Same as 2, plus -baselineStart 5; -logFile batch-02.log
+   Exit 0; entries 5-18 passed. This is continuation after failure, not a successful rerun of entry 4.
+4. -batchmode -nographics -projectPath PROJECT -runTests -testPlatform EditMode -assemblyNames Holodeck.Save.Tests -testResults save-tests.xml -logFile save-tests.log
+   Exit 2; 15 discovered, 13 passed, 2 failed. No -quit flag; test runner controls exit.
+5. -batchmode -nographics -quit -projectPath PROJECT -executeMethod Holodeck.Editor.CommandLineAndroidBuild.BuildApk -outputPath /private/tmp/holodeck-baseline-01-xddejnxt/Holodeck-baseline-01.apk -logFile android-build.log
+   See build-results.txt for outcome.
+
+Adapter source is temporary-validation-adapter.cs.txt. It was added only to the temporary copy, not Assets in the source checkout.
+Test caveat: cached-object entry 4 unexpectedly entered object-generation preflight. No provider generation result was observed before test failure exited Unity. Future reruns need credentials removed and outbound provider calls blocked; its test-key only makes a configuration-presence component look configured.

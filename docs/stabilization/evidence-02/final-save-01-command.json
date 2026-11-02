@@ -1,0 +1,19 @@
+[
+  "/usr/bin/sandbox-exec",
+  "-f",
+  "/private/tmp/holodeck-transitions-02-final-sg5r74ko/offline-tests.sb",
+  "/Applications/Unity/Hub/Editor/6000.2.10f1/Unity.app/Contents/MacOS/Unity",
+  "-batchmode",
+  "-nographics",
+  "-projectPath",
+  "/private/tmp/holodeck-transitions-02-final-sg5r74ko/project",
+  "-runTests",
+  "-testPlatform",
+  "EditMode",
+  "-assemblyNames",
+  "Holodeck.Save.Tests",
+  "-testResults",
+  "/private/tmp/holodeck-transitions-02-final-sg5r74ko/final-save-01-tests.xml",
+  "-logFile",
+  "/private/tmp/holodeck-transitions-02-final-sg5r74ko/final-save-01.log"
+]

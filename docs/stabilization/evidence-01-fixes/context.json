@@ -1,0 +1,7 @@
+{
+  "date": "2026-09-08T16:20:33.079393-07:00",
+  "head": "05a09dd46710d82ac4bf1c91c1488d249872ae3d",
+  "run_directory": "/private/tmp/holodeck-baseline-fixes-rb97gddc",
+  "original_hashed_files": 4666,
+  "scope": "Resolve three baseline regression failures; no later work orders or commits."
+}

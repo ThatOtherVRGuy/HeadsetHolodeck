@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="21" result="Failed(Child)" total="21" passed="10" failed="11" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.1199692">
+  <test-suite type="TestSuite" id="1000" name="HeadsetHolodeck" fullname="HeadsetHolodeck" runstate="Runnable" testcasecount="263" result="Failed" site="Child" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.119969" total="21" passed="10" failed="11" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1025" name="Holodeck.BuildCredentials.Tests.dll" fullname="/private/tmp/holodeck-saves-03-zusaQa/project/Library/ScriptAssemblies/Holodeck.BuildCredentials.Tests.dll" runstate="Runnable" testcasecount="21" result="Failed" site="Child" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.108795" total="21" passed="10" failed="11" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="46728" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1026" name="Holodeck" fullname="Holodeck" runstate="Runnable" testcasecount="21" result="Failed" site="Child" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.106426" total="21" passed="10" failed="11" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1027" name="BuildCredentials" fullname="Holodeck.BuildCredentials" runstate="Runnable" testcasecount="21" result="Failed" site="Child" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.105667" total="21" passed="10" failed="11" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestSuite" id="1028" name="Tests" fullname="Holodeck.BuildCredentials.Tests" runstate="Runnable" testcasecount="21" result="Failed" site="Child" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.105052" total="21" passed="10" failed="11" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-suite type="TestFixture" id="1003" name="BuildEnvCredentialsTests" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" testcasecount="21" result="Failed" site="Child" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.102411" total="21" passed="10" failed="11" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-case id="1008" name="AllowList_NeverNamesACredentialShapedKey" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.AllowList_NeverNamesACredentialShapedKey" methodname="AllowList_NeverNamesACredentialShapedKey" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="694489374" result="Passed" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.009298" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1009" name="CredentialShapedKeys_AreRecognised" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.CredentialShapedKeys_AreRecognised" methodname="CredentialShapedKeys_AreRecognised" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="833893962" result="Passed" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.000462" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1014" name="Distribution_DropsAStaleCopyLeftByACrashedPrivateBuild" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Distribution_DropsAStaleCopyLeftByACrashedPrivateBuild" methodname="Distribution_DropsAStaleCopyLeftByACrashedPrivateBuild" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="2146072926" result="Failed" label="Error" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.010276" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[System.UnauthorizedAccessException : Access to the path "/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckBuildCredentials_b29822692316490a91b79a44f89dd66d/resources/worldlabs_env.txt" is denied.]]></message>
+                  <stack-trace><![CDATA[  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.Boolean anonymous, System.IO.FileOptions options) [0x0019e] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.IO.FileOptions options) [0x00000] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.FileStream..ctor(string,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare,int,System.IO.FileOptions)
+  at System.IO.StreamWriter..ctor (System.String path, System.Boolean append, System.Text.Encoding encoding, System.Int32 bufferSize) [0x00055] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.StreamWriter..ctor (System.String path) [0x00008] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.StreamWriter..ctor(string)
+  at System.IO.File.WriteAllText (System.String path, System.String contents) [0x00026] in <3c470575843b432e876313222d20c5ed>:0 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests+Fixture.WriteEmbedded (System.String content) [0x00012] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:38 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Distribution_DropsAStaleCopyLeftByACrashedPrivateBuild () [0x00007] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:220 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <3c470575843b432e876313222d20c5ed>:0 ]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1012" name="Distribution_ExcludesCredentialsAndUnrelatedEntries" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Distribution_ExcludesCredentialsAndUnrelatedEntries" methodname="Distribution_ExcludesCredentialsAndUnrelatedEntries" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="189409907" result="Failed" label="Error" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.002937" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[System.UnauthorizedAccessException : Access to the path "/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckBuildCredentials_53f4d65b08924b87a47daae9f7b44216/.env" is denied.]]></message>
+                  <stack-trace><![CDATA[  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.Boolean anonymous, System.IO.FileOptions options) [0x0019e] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.IO.FileOptions options) [0x00000] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.FileStream..ctor(string,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare,int,System.IO.FileOptions)
+  at System.IO.StreamWriter..ctor (System.String path, System.Boolean append, System.Text.Encoding encoding, System.Int32 bufferSize) [0x00055] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.StreamWriter..ctor (System.String path) [0x00008] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.StreamWriter..ctor(string)
+  at System.IO.File.WriteAllText (System.String path, System.String contents) [0x00026] in <3c470575843b432e876313222d20c5ed>:0 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests+Fixture.WriteEnv (System.String content) [0x00000] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:33 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Distribution_ExcludesCredentialsAndUnrelatedEntries () [0x00007] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:181 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <3c470575843b432e876313222d20c5ed>:0 ]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1013" name="Distribution_NeverWritesAValueBelongingToAnExcludedEntry" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Distribution_NeverWritesAValueBelongingToAnExcludedEntry" methodname="Distribution_NeverWritesAValueBelongingToAnExcludedEntry" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1995515642" result="Failed" label="Error" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.003865" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[System.UnauthorizedAccessException : Access to the path "/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckBuildCredentials_fc76f2ff726e4e5da6a765086ecf141d/.env" is denied.]]></message>
+                  <stack-trace><![CDATA[  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.Boolean anonymous, System.IO.FileOptions options) [0x0019e] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.IO.FileOptions options) [0x00000] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.FileStream..ctor(string,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare,int,System.IO.FileOptions)
+  at System.IO.StreamWriter..ctor (System.String path, System.Boolean append, System.Text.Encoding encoding, System.Int32 bufferSize) [0x00055] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.StreamWriter..ctor (System.String path) [0x00008] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.StreamWriter..ctor(string)
+  at System.IO.File.WriteAllText (System.String path, System.String contents) [0x00026] in <3c470575843b432e876313222d20c5ed>:0 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests+Fixture.WriteEnv (System.String content) [0x00000] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:33 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Distribution_NeverWritesAValueBelongingToAnExcludedEntry () [0x00007] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:204 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <3c470575843b432e876313222d20c5ed>:0 ]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1015" name="Distribution_RemovesAStaleCopyEvenWhenNothingIsEmbeddable" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Distribution_RemovesAStaleCopyEvenWhenNothingIsEmbeddable" methodname="Distribution_RemovesAStaleCopyEvenWhenNothingIsEmbeddable" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="449052890" result="Failed" label="Error" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.001442" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[System.UnauthorizedAccessException : Access to the path "/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckBuildCredentials_05a499caacbc4f4fb744c8ec97430907/resources/worldlabs_env.txt" is denied.]]></message>
+                  <stack-trace><![CDATA[  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.Boolean anonymous, System.IO.FileOptions options) [0x0019e] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.IO.FileOptions options) [0x00000] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.FileStream..ctor(string,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare,int,System.IO.FileOptions)
+  at System.IO.StreamWriter..ctor (System.String path, System.Boolean append, System.Text.Encoding encoding, System.Int32 bufferSize) [0x00055] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.StreamWriter..ctor (System.String path) [0x00008] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.StreamWriter..ctor(string)
+  at System.IO.File.WriteAllText (System.String path, System.String contents) [0x00026] in <3c470575843b432e876313222d20c5ed>:0 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests+Fixture.WriteEmbedded (System.String content) [0x00012] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:38 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Distribution_RemovesAStaleCopyEvenWhenNothingIsEmbeddable () [0x00007] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:234 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <3c470575843b432e876313222d20c5ed>:0 ]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1016" name="Distribution_WithNoEnvFile_WritesNothing" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Distribution_WithNoEnvFile_WritesNothing" methodname="Distribution_WithNoEnvFile_WritesNothing" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1170868815" result="Passed" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.001310" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1021" name="Embed_LeavesNoTemporaryFileBehind" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Embed_LeavesNoTemporaryFileBehind" methodname="Embed_LeavesNoTemporaryFileBehind" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1389055056" result="Failed" label="Error" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.001680" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[System.UnauthorizedAccessException : Access to the path "/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckBuildCredentials_6e8a1cb540cf41609391de4f9399e3c0/.env" is denied.]]></message>
+                  <stack-trace><![CDATA[  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.Boolean anonymous, System.IO.FileOptions options) [0x0019e] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.IO.FileOptions options) [0x00000] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.FileStream..ctor(string,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare,int,System.IO.FileOptions)
+  at System.IO.StreamWriter..ctor (System.String path, System.Boolean append, System.Text.Encoding encoding, System.Int32 bufferSize) [0x00055] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.StreamWriter..ctor (System.String path) [0x00008] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.StreamWriter..ctor(string)
+  at System.IO.File.WriteAllText (System.String path, System.String contents) [0x00026] in <3c470575843b432e876313222d20c5ed>:0 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests+Fixture.WriteEnv (System.String content) [0x00000] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:33 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Embed_LeavesNoTemporaryFileBehind () [0x00007] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:319 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <3c470575843b432e876313222d20c5ed>:0 ]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1022" name="Embed_ReplacesAnExistingDocumentWithoutLeavingOneBehind" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Embed_ReplacesAnExistingDocumentWithoutLeavingOneBehind" methodname="Embed_ReplacesAnExistingDocumentWithoutLeavingOneBehind" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1358325208" result="Failed" label="Error" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.001921" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[System.UnauthorizedAccessException : Access to the path "/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckBuildCredentials_a960d71f3fe14fb9864fd32d88c024e8/.env" is denied.]]></message>
+                  <stack-trace><![CDATA[  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.Boolean anonymous, System.IO.FileOptions options) [0x0019e] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.IO.FileOptions options) [0x00000] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.FileStream..ctor(string,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare,int,System.IO.FileOptions)
+  at System.IO.StreamWriter..ctor (System.String path, System.Boolean append, System.Text.Encoding encoding, System.Int32 bufferSize) [0x00055] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.StreamWriter..ctor (System.String path) [0x00008] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.StreamWriter..ctor(string)
+  at System.IO.File.WriteAllText (System.String path, System.String contents) [0x00026] in <3c470575843b432e876313222d20c5ed>:0 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests+Fixture.WriteEnv (System.String content) [0x00000] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:33 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Embed_ReplacesAnExistingDocumentWithoutLeavingOneBehind () [0x00007] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:330 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <3c470575843b432e876313222d20c5ed>:0 ]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1020" name="EmbeddedDocument_KeepsTheRuntimeEnvFormat" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.EmbeddedDocument_KeepsTheRuntimeEnvFormat" methodname="EmbeddedDocument_KeepsTheRuntimeEnvFormat" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1001292019" result="Failed" label="Error" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.001838" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[System.UnauthorizedAccessException : Access to the path "/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckBuildCredentials_4160583c19444651828c4eeef9718571/.env" is denied.]]></message>
+                  <stack-trace><![CDATA[  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.Boolean anonymous, System.IO.FileOptions options) [0x0019e] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.IO.FileOptions options) [0x00000] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.FileStream..ctor(string,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare,int,System.IO.FileOptions)
+  at System.IO.StreamWriter..ctor (System.String path, System.Boolean append, System.Text.Encoding encoding, System.Int32 bufferSize) [0x00055] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.StreamWriter..ctor (System.String path) [0x00008] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.StreamWriter..ctor(string)
+  at System.IO.File.WriteAllText (System.String path, System.String contents) [0x00026] in <3c470575843b432e876313222d20c5ed>:0 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests+Fixture.WriteEnv (System.String content) [0x00000] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:33 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.EmbeddedDocument_KeepsTheRuntimeEnvFormat () [0x00007] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:301 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <3c470575843b432e876313222d20c5ed>:0 ]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1024" name="EmbeddedPath_MatchesTheRuntimeResourcesName" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.EmbeddedPath_MatchesTheRuntimeResourcesName" methodname="EmbeddedPath_MatchesTheRuntimeResourcesName" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1527397679" result="Passed" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.002412" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1006" name="ParseMode_RejectsAnUnknownValueInsteadOfGuessing" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.ParseMode_RejectsAnUnknownValueInsteadOfGuessing" methodname="ParseMode_RejectsAnUnknownValueInsteadOfGuessing" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="812815898" result="Passed" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.008228" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1010" name="Private_EmbedsEveryEntryUnchanged" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Private_EmbedsEveryEntryUnchanged" methodname="Private_EmbedsEveryEntryUnchanged" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="111166741" result="Failed" label="Error" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.001685" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[System.UnauthorizedAccessException : Access to the path "/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckBuildCredentials_eb0e21729edc4a1c8c2741403aae4f1a/.env" is denied.]]></message>
+                  <stack-trace><![CDATA[  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.Boolean anonymous, System.IO.FileOptions options) [0x0019e] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.IO.FileOptions options) [0x00000] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.FileStream..ctor(string,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare,int,System.IO.FileOptions)
+  at System.IO.StreamWriter..ctor (System.String path, System.Boolean append, System.Text.Encoding encoding, System.Int32 bufferSize) [0x00055] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.StreamWriter..ctor (System.String path) [0x00008] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.StreamWriter..ctor(string)
+  at System.IO.File.WriteAllText (System.String path, System.String contents) [0x00026] in <3c470575843b432e876313222d20c5ed>:0 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests+Fixture.WriteEnv (System.String content) [0x00000] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:33 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Private_EmbedsEveryEntryUnchanged () [0x00014] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:150 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <3c470575843b432e876313222d20c5ed>:0 ]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1011" name="Private_WithNoEnvFile_EmbedsNothingAndCreatesNothing" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Private_WithNoEnvFile_EmbedsNothingAndCreatesNothing" methodname="Private_WithNoEnvFile_EmbedsNothingAndCreatesNothing" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="374697375" result="Passed" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.000652" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1007" name="ReadCommandLineValue_FindsTheDeclaredArgument" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.ReadCommandLineValue_FindsTheDeclaredArgument" methodname="ReadCommandLineValue_FindsTheDeclaredArgument" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1394153986" result="Passed" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.000430" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1023" name="RemoveEmbedded_DeletesTheCopyAndItsMetadata" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.RemoveEmbedded_DeletesTheCopyAndItsMetadata" methodname="RemoveEmbedded_DeletesTheCopyAndItsMetadata" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1244206020" result="Failed" label="Error" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.003331" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[System.UnauthorizedAccessException : Access to the path "/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckBuildCredentials_d64b7c42d01f44a493f8b6df82b6a3e5/resources/worldlabs_env.txt" is denied.]]></message>
+                  <stack-trace><![CDATA[  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.Boolean anonymous, System.IO.FileOptions options) [0x0019e] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.IO.FileOptions options) [0x00000] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.FileStream..ctor(string,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare,int,System.IO.FileOptions)
+  at System.IO.StreamWriter..ctor (System.String path, System.Boolean append, System.Text.Encoding encoding, System.Int32 bufferSize) [0x00055] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.StreamWriter..ctor (System.String path) [0x00008] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.StreamWriter..ctor(string)
+  at System.IO.File.WriteAllText (System.String path, System.String contents) [0x00026] in <3c470575843b432e876313222d20c5ed>:0 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests+Fixture.WriteEmbedded (System.String content) [0x00012] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:38 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.RemoveEmbedded_DeletesTheCopyAndItsMetadata () [0x00007] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:345 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <3c470575843b432e876313222d20c5ed>:0 ]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1004" name="Resolve_PrefersCommandLineThenEnvironmentThenSavedChoice" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Resolve_PrefersCommandLineThenEnvironmentThenSavedChoice" methodname="Resolve_PrefersCommandLineThenEnvironmentThenSavedChoice" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="883806904" result="Passed" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.001953" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1005" name="Resolve_WithNoDeclaration_IsUnspecified" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Resolve_WithNoDeclaration_IsUnspecified" methodname="Resolve_WithNoDeclaration_IsUnspecified" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1381806690" result="Passed" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.004799" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1017" name="Undeclared_WithCredentials_StopsTheBuildWithActionableText" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Undeclared_WithCredentials_StopsTheBuildWithActionableText" methodname="Undeclared_WithCredentials_StopsTheBuildWithActionableText" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="2098714304" result="Failed" label="Error" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.001430" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[System.UnauthorizedAccessException : Access to the path "/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckBuildCredentials_2852c9f0321d4d52b82dbdb85560e7a3/.env" is denied.]]></message>
+                  <stack-trace><![CDATA[  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.Boolean anonymous, System.IO.FileOptions options) [0x0019e] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.IO.FileOptions options) [0x00000] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.FileStream..ctor(string,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare,int,System.IO.FileOptions)
+  at System.IO.StreamWriter..ctor (System.String path, System.Boolean append, System.Text.Encoding encoding, System.Int32 bufferSize) [0x00055] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.StreamWriter..ctor (System.String path) [0x00008] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.StreamWriter..ctor(string)
+  at System.IO.File.WriteAllText (System.String path, System.String contents) [0x00026] in <3c470575843b432e876313222d20c5ed>:0 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests+Fixture.WriteEnv (System.String content) [0x00000] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:33 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Undeclared_WithCredentials_StopsTheBuildWithActionableText () [0x00012] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:261 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <3c470575843b432e876313222d20c5ed>:0 ]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1019" name="Undeclared_WithNoEnvFile_DoesNotStopTheBuild" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Undeclared_WithNoEnvFile_DoesNotStopTheBuild" methodname="Undeclared_WithNoEnvFile_DoesNotStopTheBuild" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="417289070" result="Passed" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.000968" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1018" name="Undeclared_WithOnlyNonCredentialEntries_DoesNotStopTheBuild" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Undeclared_WithOnlyNonCredentialEntries_DoesNotStopTheBuild" methodname="Undeclared_WithOnlyNonCredentialEntries_DoesNotStopTheBuild" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1815740155" result="Failed" label="Error" start-time="2026-09-13 22:52:32Z" end-time="2026-09-13 22:52:32Z" duration="0.000934" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[System.UnauthorizedAccessException : Access to the path "/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckBuildCredentials_8da674fcaaf24846a1d90ec89d1e5f7c/.env" is denied.]]></message>
+                  <stack-trace><![CDATA[  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.Boolean anonymous, System.IO.FileOptions options) [0x0019e] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.IO.FileOptions options) [0x00000] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.FileStream..ctor(string,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare,int,System.IO.FileOptions)
+  at System.IO.StreamWriter..ctor (System.String path, System.Boolean append, System.Text.Encoding encoding, System.Int32 bufferSize) [0x00055] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.StreamWriter..ctor (System.String path) [0x00008] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.StreamWriter..ctor(string)
+  at System.IO.File.WriteAllText (System.String path, System.String contents) [0x00026] in <3c470575843b432e876313222d20c5ed>:0 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests+Fixture.WriteEnv (System.String content) [0x00000] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:33 
+  at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Undeclared_WithOnlyNonCredentialEntries_DoesNotStopTheBuild () [0x00007] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:276 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <3c470575843b432e876313222d20c5ed>:0 ]]></stack-trace>
+                </failure>
+                <output><![CDATA[<color=#ff6b6b>fail:</color> [15:52:32:3867] <color=#B4FF32>[AI]</color> <color=#58D68D><b>TestResultCollector</b></color> Test run finished, but the pending MCP request id was missing. The test results cannot be delivered to the client.
+<color=#ff6b6b>fail:</color> [15:52:32:3867] <color=#B4FF32>[AI]</color> <color=#58D68D><b>TestResultCollector</b></color> Test run finished, but the pending MCP request id was missing. The test results cannot be delivered to the client.
+Saving results to: /Users/davidarendash/Library/Application Support/QLC/HeadsetHolodeck/TestResults.xml
+Saving results to: /Users/davidarendash/Library/Application Support/QLC/HeadsetHolodeck/TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

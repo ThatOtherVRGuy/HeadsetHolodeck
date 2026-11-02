@@ -1,0 +1,44 @@
+# Build log excerpts — work order 05 (raw log: /private/tmp/holodeck-quest-05/build-order05.log)
+
+## Command line
+Unity Editor version:    6000.2.10f1 (d3d30d158480)
+Branch:                  6000.2/staging
+Build type:              Release
+Batch mode:              YES
+macOS version:           Version 26.6.2 (Build 25G83)
+Darwin version:          25.6.0
+Architecture:            arm64
+Running under Rosetta:   NO
+Available memory:        8192 MB
+Date:                    2026-09-13T23:43:13Z
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Channel LicenseClient-davidarendash doesn't exist
+Launching external process: /Applications/Unity/Hub/Editor/6000.2.10f1/Unity.app/Contents/Frameworks/UnityLicensingClient.app/Contents/MacOS/Unity.Licensing.Client
+[Licensing::Module] Successfully launched the LicensingClient (PId: 55498)
+Launching external process: /Applications/Unity/Hub/Editor/6000.2.10f1/Unity.app/Contents/Resources/PackageManager/Server/UnityPackageManager
+COMMAND LINE ARGUMENTS:
+/Applications/Unity/Hub/Editor/6000.2.10f1/Unity.app/Contents/MacOS/Unity
+-batchmode
+-quit
+-projectPath
+/Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev
+-executeMethod
+Holodeck.Editor.CommandLineAndroidBuild.BuildApk
+-outputPath
+Builds/stabilization-05-20260913/Holodeck-order05-private.apk
+-credentialMode
+private
+-logFile
+/private/tmp/holodeck-quest-05/build-order05.log
+
+## Credential decision
+1276:[CommandLineAndroidBuild] Build credential intent: Private build (embeds .env; do not share the artifact) (from -credentialMode)
+1333:[BuildEnvCopier] Build credential intent: Private build (embeds .env; do not share the artifact) (from -credentialMode)
+1392:[BuildEnvCopier] Embedded 15 .env entries → Assets/Resources/WorldLabs/worldlabs_env.txt. private build: every .env entry embedded.
+1411:[BuildEnvCopier] This is a PRIVATE build: it contains your live API keys. Do not share this artifact. Switch to 'Headset Holodeck > Build Credentials > Distribution' before building anything for someone else.
+
+## Result
+166734:[CommandLineAndroidBuild] Result=Succeeded, Output=/Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev/Builds/stabilization-05-20260913/Holodeck-order05-private.apk, Size=2254611447 bytes, Time=00:34:28.0935320
+
+## Compiler errors (expected: none)
+0

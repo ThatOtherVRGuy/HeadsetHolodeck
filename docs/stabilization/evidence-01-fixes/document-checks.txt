@@ -1,0 +1,2 @@
+PASS: Handoff/status local links resolve.
+PASS: Stabilization documentation/evidence has no configured credential-value matches.

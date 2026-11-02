@@ -1,0 +1,19 @@
+[
+  "/usr/bin/sandbox-exec",
+  "-f",
+  "/private/tmp/holodeck-saves-03-zusaQa/offline-tests.sb",
+  "/Applications/Unity/Hub/Editor/6000.2.10f1/Unity.app/Contents/MacOS/Unity",
+  "-batchmode",
+  "-nographics",
+  "-projectPath",
+  "/private/tmp/holodeck-saves-03-zusaQa/project",
+  "-runTests",
+  "-testPlatform",
+  "EditMode",
+  "-assemblyNames",
+  "Holodeck.Save.Tests",
+  "-testResults",
+  "/private/tmp/holodeck-saves-03-zusaQa/save-fix-03-tests.xml",
+  "-logFile",
+  "/private/tmp/holodeck-saves-03-zusaQa/save-fix-03.log"
+]

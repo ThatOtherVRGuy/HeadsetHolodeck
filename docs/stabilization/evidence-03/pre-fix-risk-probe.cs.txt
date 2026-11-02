@@ -1,0 +1,278 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Holodeck.Save;
+using Newtonsoft.Json;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+
+/// <summary>
+/// Work order 03 pre/post probe. Uses only the public store API plus raw file inspection so the
+/// identical script can be run against the pre-fix and post-fix writer. Every fixture lives in a
+/// fresh directory under the process temp path; no real user save is ever touched.
+/// </summary>
+public static class StabilizationSaveRisk03
+{
+    static string Arg(string name)
+    {
+        string[] args = Environment.GetCommandLineArgs();
+        for (int i = 0; i < args.Length - 1; i++) if (args[i] == name) return args[i + 1];
+        throw new ArgumentException("Missing " + name);
+    }
+
+    static void Record(string message)
+    {
+        File.AppendAllText(Arg("-riskResult"), DateTime.UtcNow.ToString("o") + " " + message + "\n");
+        Debug.Log("[SaveRisk03] " + message);
+    }
+
+    public static void Run()
+    {
+        if (!Application.isBatchMode)
+            throw new InvalidOperationException("Only run in an isolated batch editor.");
+
+        EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+        Record("ENV unity=" + Application.unityVersion + " batch=" + Application.isBatchMode + " platform=" + Application.platform);
+        int code = 0;
+        try
+        {
+            string root = Path.Combine(Path.GetTempPath(), "HolodeckSaveRisk03_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+            Record("FIXTURE-ROOT " + root);
+            try
+            {
+                Exercise(root);
+                Record("RISK-PROBE COMPLETE");
+            }
+            finally
+            {
+                TryDelete(root);
+            }
+        }
+        catch (Exception error)
+        {
+            code = 1;
+            Record("FAIL " + error.GetBaseException());
+        }
+        EditorApplication.Exit(code);
+    }
+
+    static void Exercise(string root)
+    {
+        WorldConfigStore store = WorldConfigStore.CreateForTesting(root);
+        try
+        {
+            WorldConfig config = store.CreateConfig(new WorldSourceData { type = "local_splat" }, "Risk", null);
+            string dir = Path.Combine(root, config.config_id);
+            string path = Path.Combine(dir, "world.json");
+
+            Record($"FIRST-SAVE primary-exists={File.Exists(path)} primary-name={NameOf(path)} backup-exists={File.Exists(path + ".bak")} lock-exists={File.Exists(Path.Combine(dir, ".world.json.lock"))} temp-files={CountTemps(dir)}");
+
+            config.display_name = "First";
+            store.SaveConfig(config);
+            Record($"SECOND-SAVE primary-name={NameOf(path)} primary-bytes={Length(path)} backup-exists={File.Exists(path + ".bak")} backup-name={NameOf(path + ".bak")} temp-files={CountTemps(dir)}");
+
+            config.display_name = "Second";
+            store.SaveConfig(config);
+            Record($"REPEATED-SAVE primary-name={NameOf(path)} backup-name={NameOf(path + ".bak")} temp-files={CountTemps(dir)}");
+
+            SimulatedInterruption(store, config, path, dir);
+            TornWriteWindow(store, root);
+            ConcurrentSameFile(store, root);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(store.gameObject);
+        }
+    }
+
+    /// <summary>
+    /// A process killed inside a direct overwrite leaves a truncated primary. This reproduces that
+    /// on-disk state and asks whether the store can still produce the previous committed save.
+    /// </summary>
+    static void SimulatedInterruption(WorldConfigStore store, WorldConfig config, string path, string dir)
+    {
+        string json = File.ReadAllText(path);
+        File.WriteAllText(path, json.Substring(0, Math.Max(1, json.Length / 2)));
+        Record($"INTERRUPTION-STATE primary-bytes={Length(path)} primary-name={NameOf(path)} backup-exists={File.Exists(path + ".bak")} backup-name={NameOf(path + ".bak")} lock-exists={File.Exists(Path.Combine(dir, ".world.json.lock"))}");
+
+        try
+        {
+            WorldConfig recovered = store.LoadConfig(config.config_id);
+            Record($"INTERRUPTION-RECOVERY recovered={recovered != null} display_name={recovered?.display_name ?? "<null>"}");
+        }
+        catch (Exception ex)
+        {
+            Record($"INTERRUPTION-RECOVERY THREW {ex.GetType().Name}: {Flatten(ex.Message)}");
+        }
+
+        Record($"INTERRUPTION-FILES-RETAINED primary={File.Exists(path)} backup={File.Exists(path + ".bak")} temp-files={CountTemps(dir)}");
+
+        config.display_name = "Repaired";
+        try
+        {
+            store.SaveConfig(config);
+            Record($"INTERRUPTION-REPAIR primary-name={NameOf(path)} backup-name={NameOf(path + ".bak")} recovered-write={(NameOf(path) == "Repaired")} temp-files={CountTemps(dir)}");
+        }
+        catch (Exception ex)
+        {
+            Record($"INTERRUPTION-REPAIR THREW {ex.GetType().Name}: {Flatten(ex.Message)}");
+        }
+    }
+
+    /// <summary>
+    /// Observes the primary path while a large save is in flight. A direct overwrite truncates the
+    /// file first, so an interruption in that window destroys the only copy.
+    /// </summary>
+    static void TornWriteWindow(WorldConfigStore store, string root)
+    {
+        WorldConfig big = store.CreateConfig(new WorldSourceData { type = "local_splat" }, "Large", null);
+        for (int i = 0; i < 60000; i++)
+            big.objects.Add(new SavedObject { instance_id = "obj" + i, display_name = "Object " + i });
+
+        string path = Path.Combine(root, big.config_id, "world.json");
+        string expectedJson = JsonConvert.SerializeObject(big, Formatting.Indented);
+        long expectedBytes = new System.Text.UTF8Encoding(false).GetByteCount(expectedJson);
+        long preBytes = Length(path);
+
+        long observations = 0, zeroLength = 0, foreignLength = 0, parseFailures = 0, openFailures = 0;
+        long minLength = long.MaxValue;
+        string firstFailure = null;
+        var stop = new ManualResetEventSlim(false);
+
+        Task observer = Task.Run(() =>
+        {
+            while (!stop.IsSet)
+            {
+                observations++;
+                long len = Length(path);
+                if (len < minLength) minLength = len;
+                if (len == 0)
+                {
+                    zeroLength++;
+                    continue;
+                }
+                // Only lengths that match neither the last committed generation nor the payload
+                // being written can be a torn document; sampling stays cheap so the window is
+                // actually observed.
+                if (len != preBytes && len != expectedBytes)
+                {
+                    foreignLength++;
+                    try
+                    {
+                        JsonConvert.DeserializeObject<WorldConfig>(File.ReadAllText(path));
+                    }
+                    catch (Exception ex)
+                    {
+                        parseFailures++;
+                        firstFailure ??= ex.GetType().Name + ": " + Flatten(ex.Message);
+                    }
+                    try { using (new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete)) { } }
+                    catch (Exception) { openFailures++; }
+                }
+            }
+        });
+
+        try
+        {
+            store.SaveConfig(big);
+        }
+        catch (Exception ex)
+        {
+            Record($"TORN-WRITE-SAVE THREW {ex.GetType().Name}: {Flatten(ex.Message)}");
+        }
+        finally
+        {
+            stop.Set();
+            observer.Wait();
+        }
+
+        Record($"TORN-WRITE-LARGE-PAYLOAD pre-bytes={preBytes} expected-bytes={expectedBytes} final-bytes={Length(path)} final-name={NameOf(path)}");
+        Record($"TORN-WRITE-WINDOW observations={observations} min-bytes={(minLength == long.MaxValue ? -1 : minLength)} zero-length={zeroLength} foreign-length={foreignLength} parse-failures={parseFailures} concurrent-open-failures={openFailures} first={firstFailure ?? "<none>"}");
+    }
+
+    /// <summary>
+    /// Four writers pushing full replacements at the same world.json. Without a writer lock the
+    /// bytes can interleave; with one, every committed generation is a complete document.
+    /// </summary>
+    static void ConcurrentSameFile(WorldConfigStore store, string root)
+    {
+        WorldConfig seed = store.CreateConfig(new WorldSourceData { type = "local_splat" }, "Concurrent", null);
+        string path = Path.Combine(root, seed.config_id, "world.json");
+
+        int writers = 4, rounds = 4;
+        var errors = new List<string>();
+        var tasks = new List<Task>();
+        for (int w = 0; w < writers; w++)
+        {
+            int writerId = w;
+            tasks.Add(Task.Run(() =>
+            {
+                WorldConfig mine = Clone(seed);
+                for (int i = 0; i < 20000; i++)
+                    mine.objects.Add(new SavedObject { instance_id = $"w{writerId}_{i}", display_name = "Object " + i });
+
+                for (int round = 0; round < rounds; round++)
+                {
+                    mine.display_name = $"Writer{writerId}_{round}";
+                    try { store.SaveConfig(mine); }
+                    catch (Exception ex)
+                    {
+                        lock (errors) errors.Add($"{ex.GetType().Name}: {Flatten(ex.Message)}");
+                    }
+                }
+            }));
+        }
+
+        try
+        {
+            Task.WaitAll(tasks.ToArray());
+        }
+        catch (Exception ex)
+        {
+            errors.Add("task: " + Flatten(ex.Message));
+        }
+
+        int committedObjects = ObjectCount(path);
+        Record($"CONCURRENT-SAME-FILE writers={writers} rounds={rounds} save-errors={errors.Count} first-error={(errors.Count > 0 ? errors[0] : "<none>")} final-primary-name={NameOf(path)} final-primary-objects={committedObjects} final-backup-name={NameOf(path + ".bak")} temp-files={CountTemps(Path.GetDirectoryName(path))}");
+    }
+
+    static WorldConfig Clone(WorldConfig source) =>
+        JsonConvert.DeserializeObject<WorldConfig>(JsonConvert.SerializeObject(source));
+
+    static int ObjectCount(string path)
+    {
+        try { return JsonConvert.DeserializeObject<WorldConfig>(File.ReadAllText(path))?.objects?.Count ?? -1; }
+        catch (Exception) { return -1; }
+    }
+
+    static string NameOf(string path)
+    {
+        if (!File.Exists(path)) return "<missing>";
+        try { return JsonConvert.DeserializeObject<WorldConfig>(File.ReadAllText(path))?.display_name ?? "<unnamed>"; }
+        catch (Exception ex) { return "UNPARSEABLE(" + ex.GetType().Name + ")"; }
+    }
+
+    static long Length(string path)
+    {
+        try { return File.Exists(path) ? new FileInfo(path).Length : -1; }
+        catch (Exception) { return -1; }
+    }
+
+    static int CountTemps(string dir)
+    {
+        try { return Directory.Exists(dir) ? Directory.GetFiles(dir, "*.tmp").Length : -1; }
+        catch (Exception) { return -1; }
+    }
+
+    static string Flatten(string value) => (value ?? string.Empty).Replace("\r", " ").Replace("\n", " ");
+
+    static void TryDelete(string dir)
+    {
+        try { if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true); }
+        catch (Exception ex) { Record("CLEANUP-WARNING " + Flatten(ex.Message)); }
+    }
+}

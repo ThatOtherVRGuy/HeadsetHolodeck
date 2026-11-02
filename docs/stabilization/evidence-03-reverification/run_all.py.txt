@@ -1,0 +1,34 @@
+from pathlib import Path
+import datetime, json, subprocess, sys
+
+run = Path(__file__).parent
+evidence = Path("/Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev/docs/stabilization/evidence-04")
+
+checks = [
+    ("save", None, "order04-save-01"),
+    ("risk04", None, "order04-risk04-01"),
+    ("risk", None, "order04-risk03-01"),
+    ("transitions", "HeadsetHolodeck.EditorTests.WorldRestoreTransitionBatchTests.RunAllAsync", "order04-restore-01"),
+    ("transitions", "HeadsetHolodeck.EditorTests.WorldTransitionBatchTests.RunAsync", "order04-manager-01"),
+    ("transitions", "HeadsetHolodeck.EditorTests.WorldLoaderTransitionBatchTests.RunAllAsync", "order04-loader-01"),
+    ("batch", None, "order04-regressions-01"),
+]
+
+results = []
+for case, method, label in checks:
+    command = [sys.executable, str(run / "runner.py"), case, "--label", label]
+    if method:
+        command += ["--method", method]
+    print("=== " + label + " ===", flush=True)
+    process = subprocess.run(command)
+    results.append({"check": case, "label": label, "exit_code": process.returncode})
+
+summary = {
+    "time": datetime.datetime.now().astimezone().isoformat(),
+    "checks": results,
+    "failed": [r for r in results if r["exit_code"] != 0],
+}
+(run / "verification-summary.json").write_text(json.dumps(summary, indent=2) + "\n")
+(evidence / "verification-summary.json").write_text(json.dumps(summary, indent=2) + "\n")
+print(json.dumps(summary, indent=2), flush=True)
+sys.exit(1 if summary["failed"] else 0)

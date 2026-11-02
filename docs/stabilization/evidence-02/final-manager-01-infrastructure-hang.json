@@ -1,0 +1,10 @@
+{
+  "status": "terminated hung isolated batch process",
+  "pid": 8148,
+  "signal": "SIGTERM",
+  "test_result": "incomplete; BEGIN marker only",
+  "scope": "temporary project only; no interactive editor",
+  "correction": "Synchronous temporary executeMethod drains a dedicated main-thread SynchronizationContext in bounded queue snapshots with a 120-second stopwatch watchdog, 10-second heartbeat, and runner process-group timeout600",
+  "root_cause": "Async continuation starvation is the working diagnosis; prior GPU warning alone does not establish root cause.",
+  "verification_boundary": "Controlled managed async boundaries; pump turns are not real rendered frames."
+}

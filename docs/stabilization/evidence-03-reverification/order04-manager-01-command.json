@@ -1,0 +1,18 @@
+[
+  "/usr/bin/sandbox-exec",
+  "-f",
+  "/private/tmp/holodeck-saves-04-verify/offline-tests.sb",
+  "/Applications/Unity/Hub/Editor/6000.2.10f1/Unity.app/Contents/MacOS/Unity",
+  "-batchmode",
+  "-nographics",
+  "-projectPath",
+  "/private/tmp/holodeck-saves-04-verify/project",
+  "-executeMethod",
+  "StabilizationTransitions02.Run",
+  "-transitionMethod",
+  "HeadsetHolodeck.EditorTests.WorldTransitionBatchTests.RunAsync",
+  "-transitionResult",
+  "/private/tmp/holodeck-saves-04-verify/order04-manager-01-results.txt",
+  "-logFile",
+  "/private/tmp/holodeck-saves-04-verify/order04-manager-01.log"
+]

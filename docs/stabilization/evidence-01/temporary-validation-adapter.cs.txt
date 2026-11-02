@@ -1,0 +1,27 @@
+using System;
+using System.IO;
+using System.Reflection;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+public static class StabilizationBaseline01 {
+ static string Arg(string name,string fallback) { var a=Environment.GetCommandLineArgs(); for(int i=0;i<a.Length-1;i++)if(a[i]==name)return a[i+1]; return fallback; }
+ static void Record(string message) { File.AppendAllText(Arg("-baselineResult","baseline-results.txt"),DateTime.UtcNow.ToString("o")+" "+message+"\n"); Debug.Log("[Baseline01] "+message); }
+ public static void Validate() {
+  Record("STATE unity="+Application.unityVersion+" batch="+Application.isBatchMode+" playing="+EditorApplication.isPlaying+" compiling="+EditorApplication.isCompiling+" updating="+EditorApplication.isUpdating+" target="+EditorUserBuildSettings.activeBuildTarget);
+  var window=ScriptableObject.CreateInstance<HeadsetHolodeck.Editor.HeadsetHolodeckInstallValidator>();
+  try { var t=window.GetType(); t.GetMethod("Refresh",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(window,null); Record("VALIDATOR "+t.GetField("_summary",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(window)); }
+  finally { UnityEngine.Object.DestroyImmediate(window); }
+ }
+ public static void RunRegressions() {
+  EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
+  string[] entries = new string[] { "HeadsetHolodeck.EditorTests.AndroidAudioRecordBridgeBatchTests.NativeAudioRecorderImplementsFallbackSourceContract","HeadsetHolodeck.EditorTests.AudioPersistenceBatchTests.RunAll","HeadsetHolodeck.EditorTests.CachedObjectBatchTests.RunGeneratedObjectPhysicsTests","HeadsetHolodeck.EditorTests.CachedObjectBatchTests.RunGeneratedObjectTextureRepairTests","HeadsetHolodeck.EditorTests.CachedObjectBatchTests.RunCachedObjectStoreTests","HeadsetHolodeck.EditorTests.GaussianSplatDepthOcclusionBatchTests.RenderShaderSamplesCameraDepthBeforeWritingSplats","HeadsetHolodeck.EditorTests.HandOnlyInputBatchTests.RunAll","HeadsetHolodeck.EditorTests.LocalRemoteSplatLoaderBatchTests.RunFailureReportingTests","HeadsetHolodeck.EditorTests.RuntimePlyReaderBatchTests.RunBackgroundParseTest","HeadsetHolodeck.EditorTests.RuntimeSplatProcessingBatchTests.RuntimeSplatFloorLoaderUsesQuestRendererPath","HeadsetHolodeck.EditorTests.RuntimeSplatProcessingBatchTests.RuntimeSplatFloorLoaderUsesMetaHyperscapeCompatibilityScale","HeadsetHolodeck.EditorTests.RuntimeSplatProcessingBatchTests.RuntimeSplatFloorLoaderClampsExtremeMetaHyperscapeAnisotropy","HeadsetHolodeck.EditorTests.RuntimeSplatProcessingBatchTests.BackgroundProcessingDoesNotUseFrameLimitedAllocators","HeadsetHolodeck.EditorTests.RuntimeSplatProcessingBatchTests.BoundsJobDoesNotWriteThroughStackPointers","HeadsetHolodeck.EditorTests.SpeechIntentBatchTests.RunDistanceAndMovementTests","HeadsetHolodeck.EditorTests.SplatSpawnAndOrientationBatchTests.RunAll","HeadsetHolodeck.EditorTests.ViewModeControllerBatchTests.ShowCurrentWorldRootReactivatesLoadedRendererWithoutInteractionMemory","HeadsetHolodeck.EditorTests.WorldConfigMigrationBatchTests.RunReadOnlyConfigMigrationTest","HeadsetHolodeck.EditorTests.WorldConfigStoreBatchTests.RunMigrationTests" };
+  int start=int.Parse(Arg("-baselineStart","0"));
+  for(int i=start;i<entries.Length;i++) {
+   var name=entries[i]; Record("BEGIN "+i+" "+name);
+   try { int dot=name.LastIndexOf('.'); var type=typeof(HeadsetHolodeck.EditorTests.SpeechIntentBatchTests).Assembly.GetType(name.Substring(0,dot),true); type.GetMethod(name.Substring(dot+1),BindingFlags.Public|BindingFlags.Static).Invoke(null,null); Record("PASS "+i+" "+name); }
+   catch(Exception ex) { Record("FAIL "+i+" "+name+" "+ex.GetBaseException()); EditorApplication.Exit(1); return; }
+  }
+  Record("REGRESSIONS COMPLETE");
+ }
+}

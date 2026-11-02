@@ -1,0 +1,9 @@
+Read-only check that the key in the HEADSET's .env authenticates (2026-09-13).
+Method: read /sdcard/Android/data/com.QLC.HeadsetHolodeck/files/.env over adb, POST a
+one-item page to https://api.worldlabs.ai/marble/v1/worlds:list (the same non-paid call the
+app makes), print only the status and counts. The key value was never printed or stored.
+
+key present on device: True (value never printed)
+HTTP status: 200
+worlds returned in this page: 1
+next page token present: True

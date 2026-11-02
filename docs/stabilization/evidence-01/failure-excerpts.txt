@@ -1,0 +1,8 @@
+SOURCE validation.log
+SOURCE batch-01.log
+[CachedObjectBatchTests] Failed: System.InvalidOperationException: Expected unresolved generated placement to ask for clarification.
+  at HeadsetHolodeck.EditorTests.CachedObjectBatchTests.AssertTrue (System.Boolean condition, System.String message) [0x00009] in /private/tmp/holodeck-baseline-01-xddejnxt/project/Assets/App/Editor/CachedObjectBatchTests.cs:177 
+  at HeadsetHolodeck.EditorTests.CachedObjectBatchTests.TestDispatcherAsksWhereBeforeGeneratingWithoutPlacement () [0x000b7] in /private/tmp/holodeck-baseline-01-xddejnxt/project/Assets/App/Editor/CachedObjectBatchTests.cs:796 
+  at HeadsetHolodeck.EditorTests.CachedObjectBatchTests.RunCachedObjectStoreTests () [0x00282] in /private/tmp/holodeck-baseline-01-xddejnxt/project/Assets/App/Editor/CachedObjectBatchTests.cs:114 
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+SOURCE batch-02.log

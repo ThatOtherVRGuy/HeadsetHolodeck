@@ -10,7 +10,9 @@ This manual describes the current `Assets/Scenes/Holodeck.unity` scene.
 - Meta Quest 3 or Unity Editor for local testing.
 - Microphone permission.
 - Internet access for OpenAI, World Labs, image search, and online audio libraries.
-- Project-root `.env` file for API-backed features.
+- A provider `.env` for API-backed features: the project root when you run in the Editor, and the
+  headset's own `files/.env` when you run an installed device build (see the README's
+  "Headset Run Flow").
 - Optional Quest camera/headset-camera permission for real-world image capture.
 
 Useful keys:
@@ -20,7 +22,14 @@ Useful keys:
 - `PIXABAY_API_KEY`: online image search.
 - `FREESOUND_API_KEY`: Freesound audio search.
 - `XENO_CANTO_API_KEY`: bird/wildlife audio search.
-- `MESHY_API_KEY`, `TRIPO_API_KEY`, `HITEM_API_KEY`: future object generation providers.
+- `THREEDAISTUDIO_API_KEY`: 3dAIStudio Tripo image-to-3D/text-to-3D object generation (the primary
+  object provider; it has a credit preflight and a credit estimate before it generates).
+- `HITEM_ACCESS_KEY` + `HITEM_SECRET_KEY`: HiTem image-to-3D object generation.
+- `MESHY_API_KEY`, `TRIPO_API_KEY`: reserved. They only satisfy the "an object provider is
+  configured" check; no Meshy or standalone Tripo provider exists in this build.
+
+Openverse audio search needs no key. Setting the object-generation keys is optional — without them
+the object-generation UI is disabled and the app tells you which key to add.
 
 Run `Headset Holodeck > Validate Install` in Unity after cloning. It checks the scene, packages, Sherpa models, Android permissions, and local key configuration without printing secret values.
 
@@ -37,6 +46,25 @@ The main environment starts in the static holodeck arch world. The Arch UI is vi
 
 The app now supports hands-free wake-word input and push-to-talk fallback.
 
+### How A Command Becomes An Action
+
+Each phrase is interpreted as one **intent** — a structured command such as "create an object",
+"move this", or "load a saved world" — rather than as free text. The app fills in the details it
+heard (the object, the target, the distance, the direction) and acts only when the action can be
+carried out without guessing. If a detail is missing it asks one short follow-up ("How many degrees
+should I rotate it?"), and if the phrase is not a command it says so instead of guessing.
+
+The same idea can arrive in several phrasings:
+
+- "Computer, create a ball in my left hand." — place an object, anchored to the left hand.
+- "Computer, move the red cube up one meter." — move a named target one meter up.
+- "Computer, make the river quieter." — change an existing sound, not add a new one.
+- "Computer, load Redwood Dawn." — restore that saved world; this is never treated as a request to
+  generate a new world.
+
+The full field reference, every intent type, and worked examples are in the
+[developer guide](docs/intent.md).
+
 ### Wake Word
 
 Say `Computer` followed by a command:
@@ -47,7 +75,12 @@ Say `Computer` followed by a command:
 
 Inline commands are supported. If you only say "Computer", the app enters a short listening window and waits for the next utterance.
 
-The wake system uses local VAD plus Sherpa ASR today. The configured wake words include `computer` plus a few common partial transcriptions such as `pewter`, because wake detection may begin mid-word. During text-to-speech playback, wake detection is suppressed where the scene wiring can detect active TTS audio sources.
+The wake system uses local VAD plus Sherpa ASR today. The configured wake list is a deliberate alias
+set: `computer, pewter, pudor, peter, impewter, pumpor`. The VAD/ASR front end often begins mid-word
+and hears only the last syllables of "computer", so those accepts are by design, not a defect. If the
+app ignores a different mis-hearing (`fudor`, `letter`, `future`, …), that is a real limitation: the
+alias list can be widened or the speech front end replaced, but both are deliberately deferred for
+now. During text-to-speech playback, wake detection is suppressed so the app does not wake itself.
 
 ### Push-To-Talk Fallback
 
@@ -117,7 +150,11 @@ The captured image appears on the LCARS preview panel and becomes the current im
 - "Computer, make world from capture, turn it into an ancient temple."
 - "Computer, create object from image."
 
-Object creation from image is scaffolded, but the object-generator backend is not connected yet. Its buttons are disabled unless a Meshy, Tripo, or Hitem key is configured.
+Object creation from image is implemented for the configured 3dAIStudio Tripo or HiTem provider. Its
+buttons are disabled until `THREEDAISTUDIO_API_KEY` (or `HITEM_ACCESS_KEY` + `HITEM_SECRET_KEY`) is
+configured. Generation shows a spinner while the provider works, costs provider credits, and the
+finished model is cached under the world's save folder, so a later restore re-imports it locally
+instead of paying for it again.
 
 ### Online Image Search
 
@@ -184,6 +221,20 @@ Worlds are cached for faster revisiting. The world info panel shows name, dates,
 ```text
 model by Set Blueprint Archive
 ```
+
+### How Saves Are Written
+
+Every save is journaled rather than overwritten in place. The app writes a temporary file, rotates the
+previous committed document to `world.json.bak`, then renames the new one into place, and it holds a
+per-folder writer lock while doing so. If the app is killed partway through a save, or the primary
+file is damaged, the next startup recovers the previous generation from `world.json.bak` and keeps
+both files; the next successful save repairs the primary.
+
+What that means in practice: a save interrupted mid-write costs you the newest changes, never the
+world. On a headset, saves live at
+`/sdcard/Android/data/com.QLC.HeadsetHolodeck/files/Worlds/<config_id>/world.json`. Restarting the
+app and loading the same world restores its saved transform, spawn point, objects, downloaded audio,
+and cached 3D content.
 
 ## Status, Info, And LCARS UI
 
@@ -278,6 +329,22 @@ The app also tracks "my parts":
 - left hand: active left hand/controller object
 - right hand: active right hand/controller object
 
+## Hands And Direct Manipulation
+
+Hands are a first-class input alongside voice and controllers (XR Hands + XR Interaction Toolkit).
+Pinch or grip near an app-created object to point at it, grab it, or set the "held" object that `this`
+and `that` resolve to. Hand pointing feeds the same target resolver as gaze and controllers, so
+"what is this", "move this", and "make this red" work from whichever pointer is aiming at the object.
+
+The whole loaded world can also be manipulated directly:
+
+- "Computer, grab world." (or the Ops panel's `GRAB WORLD` button) arms world manipulation.
+- Move and rotate the world by moving/rotating the dominant hand; grip with the other hand to switch
+  to two-handed midpoint translation, vector rotation, and uniform two-hand scaling.
+- "Computer, release world." commits the final world transform to the save.
+- Snap settings persist between runs: "snap to 10 centimeters", "snap to 30 degrees", "snap on",
+  "snap off". Snapping applies to grabbed objects and to objects moved by voice.
+
 ## Delete Commands
 
 You can delete objects or categories:
@@ -360,13 +427,25 @@ Wake detection should be suppressed while known TTS audio sources are playing. I
 ## Current Prototype Limitations
 
 - This is still a local prototype, not a hardened consumer build.
-- API credentials are handled locally through `.env` or runtime config.
+- API credentials are handled locally. On a headset the build carries no keys: the app reads the
+  `.env` you push to the device's own files directory. See the README's "Headset Run Flow".
 - World generation and network downloads depend on third-party service availability.
-- Object generation from image is scaffolded but not connected to Meshy, Tripo, or Hitem yet.
+- Object generation from image/text uses 3dAIStudio Tripo or HiTem and costs provider credits; it is
+  disabled until one of those is configured. `MESHY_API_KEY` and `TRIPO_API_KEY` are reserved and
+  enable nothing on their own.
 - Multiplayer and avatars are planned future phases.
 - Some voice commands depend on scene references and active hand/controller tracking.
 - `.ply` loading is less mature than `.spz` loading.
 - Delete actions are immediate.
+- An interrupted save loses only the newest changes: startup recovers the previous generation from
+  `world.json.bak`. The write path is verified on macOS and for backup recovery on Quest; the
+  kill-mid-write case has not yet been reproduced on headset hardware.
+- Frame timing has been measured only with the headset off (48 fps median), so worn-headset
+  performance is not yet a verified number. SPZ decoding and floor analysis still run synchronously
+  on the Unity main thread, which is what the measured 0.84–1.0 s cached-load stall consists of.
+- A loose splat cannot be loaded by voice by bare filename (`load yoyo.spz` is treated as a
+  saved-world name), and one mis-heard word in a saved-world name can defeat the lookup. Both are
+  recorded findings with repro steps in `docs/stabilization/handoff-05.md`.
 
 ## Quick Command Examples
 

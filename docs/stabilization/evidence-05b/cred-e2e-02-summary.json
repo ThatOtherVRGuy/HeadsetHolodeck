@@ -1,0 +1,10 @@
+{
+  "label": "cred-e2e-02",
+  "assembly": "x",
+  "method": "StabilizationCredentials04.Run",
+  "exit_code": 0,
+  "started": "2026-09-13T18:13:56.146544-07:00",
+  "ended": "2026-09-13T18:14:32.906953-07:00",
+  "compiler_errors": 0,
+  "test_failures_in_log": 3
+}

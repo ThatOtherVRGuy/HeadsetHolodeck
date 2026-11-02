@@ -1,0 +1,12 @@
+{
+  "time": "2026-09-13T14:59:20.560954-07:00",
+  "copied": [
+    "Assets/App/Save/Runtime/WorldConfigFile.cs"
+  ],
+  "installed_adapters": [
+    "Assets/App/Editor/StabilizationBaseline01.cs",
+    "Assets/App/Editor/StabilizationSaveRisk03.cs",
+    "Assets/App/Editor/StabilizationTransitions02.cs"
+  ],
+  "cleaned": false
+}

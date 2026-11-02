@@ -1,0 +1,25 @@
+Device build (APK with no .env) — interactive verification run, 22:05-22:06 on 2026-09-13.
+The headset's own .env supplied every key; the artifact contains none.
+
+I/Unity   (15962): [RuntimeDotEnv] Loaded 15 variable(s) from /storage/emulated/0/Android/data/com.QLC.HeadsetHolodeck/files/.env
+I/Unity   (15962): SpeechIntent.RuntimeDotEnv:EnsureLoaded()
+I/Unity   (15962): [EnvLoader] Loaded 15 variables from '/storage/emulated/0/Android/data/com.QLC.HeadsetHolodeck/files/.env'.
+I/Unity   (15962): WorldLabs.API.EnvLoader:TryLoadFromFile(String, Boolean)
+I/Unity   (15962): WorldLabs.API.EnvLoader:Load(String)
+I/Unity   (15962): WorldLabs.API.EnvLoader:Get(String, String)
+I/Unity   (15962): WorldLabs.Runtime.<ListWorldsAsync>d__86:MoveNext()
+I/Unity   (15962): WorldLabs.Runtime.WorldLabsWorldManager:ListWorldsAsync(String, Int32, Nullable`1, Nullable`1)
+I/Unity   (15962): [OpenAiSpeechIntentService] Transcript: "Open my world."
+I/Unity   (15962): [VoiceCommandRouter] HandleResult router=24396 pending=False/None transcript='Open my world.' intent=LoadWorldConfig execute=True response='Opening you
+I/Unity   (15962): SpeechIntent.VoiceCommandRouter:HandleResult(SpeechIntentResult, SpatialSnapshot)
+I/Unity   (15962): SpeechIntent.VoiceCommandRouter:HandleResult(SpeechIntentResult, SpatialSnapshot)
+I/Unity   (15962): [OpenAiSpeechIntentService] Transcript: "Load YoYo Loose Splat Test."
+I/Unity   (15962): [OpenAiSpeechIntentService] Short-circuiting intent API for local command 'Load YoYo Loose Splat Test.' as LoadWorldConfig.
+I/Unity   (15962): [VoiceCommandRouter] HandleResult router=24396 pending=False/None transcript='Load YoYo Loose Splat Test.' intent=LoadWorldConfig execute=True response
+I/Unity   (15962): SpeechIntent.VoiceCommandRouter:HandleResult(SpeechIntentResult, SpatialSnapshot)
+I/Unity   (15962): SpeechIntent.VoiceCommandRouter:HandleResult(SpeechIntentResult, SpatialSnapshot)
+I/Unity   (15962): SpeechIntent.VoiceCommandRouter:HandleResult(SpeechIntentResult, SpatialSnapshot)
+I/Unity   (15962): [WorldConfigRestorer] Restoring 'Yoyo Loose Splat Test'
+I/Unity   (15962): [HolodeckModelController] World loaded ('local_32_Mermaid_11M_639249591718509500'); hiding static holodeck.
+I/Unity   (15962): [LocalRemoteSplatLoader] Loaded 'Yoyo Loose Splat Test' (.spz) as worldId='local_32_Mermaid_11M_639249591718509500'.
+I/Unity   (15962): [WorldConfigRestorer] Restore complete for 'Yoyo Loose Splat Test'

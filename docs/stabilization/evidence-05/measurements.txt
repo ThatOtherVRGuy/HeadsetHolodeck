@@ -1,0 +1,46 @@
+
+Measurements — work order 05. Method recorded per number. All device samples were taken with the
+headset sitting on a desk headset-off (display asleep unless the stay-awake flag was set), so treat
+absolute frame-rate figures as a lower bound, not a worn-headset result. Load stalls and memory are
+unaffected by that caveat in the same way.
+
+1) Cached-world load stalls — source: app's own log lines, `[WorldConfigRestorer] Restoring '<name>'`
+   ... `Restore complete for '<name>'`, captured by `adb logcat -v time -s Unity VrApi ...`.
+   Sample count: every restore observed in the session.
+
+      837 ms  Zebra World Labs Test
+     1001 ms  Yoyo Loose Splat Test
+      903 ms  Yoyo Loose Splat Test
+      950 ms  Yoyo Loose Splat Test
+      966 ms  Yoyo Loose Splat Test
+      787 ms  Yoyo Loose Splat Test
+
+   Zebra (World Labs cached, 6.3 MB spz): n=1
+   Yoyo  (loose-style cached splat, 11 MB spz): n=4, median 950 ms
+
+2) Frame timing — source: the app process's own VrApi 1 Hz summary lines
+   (`adb logcat -s VrApi`, pid 11108 = the app), duration ~8 minutes of the session.
+   n=472 median=48.0 p95=72.0 max=73.0   [FPS per 1 s sample]
+   App frame submit time:  n=472 median=17.6 p95=85.4 max=865.5  [ms]
+   CPU&GPU frame time:     n=472 median=29.4 p95=92.0 max=100.0  [ms]
+   Predicted display period: n=472 median=57.0 p95=115.0 max=124.0  [ms]
+   Samples below 60 fps: 416/472; at/above 68 fps: 53/472
+   Worst observed single frame submit: 866 ms; worst CPU&GPU: 100 ms
+   Caveat: measured headset-off, where the Quest compositor throttles (Prd median 57 ms
+   instead of 13.9 ms), so these numbers bound the app's own frame cost rather than a worn-headset fps.
+
+3) Save cost, host, journaled writer — source: the app-kill probe's own SAVE-DONE lines
+   (20,000-object / 5.7 MB document, macOS host, isolated copy):
+   n=21 saves, median 2,921 ms, min 1,909 ms, max 8,143 ms.
+   Each save durably writes the document twice (temp + rotated backup), which is the cost driver.
+
+4) Memory — source: `adb shell dumpsys meminfo com.QLC.HeadsetHolodeck`, TOTAL PSS, sampled every
+   20-25 s (device-memory-timeline.csv holds the first 14 samples; the rest are in the log capture).
+   cold start after install: 277,278 KB
+   idle, listening for wake word: ~2,353,454 KB (14 samples, stable to <1 MB)
+   after loading fixture A: ~2,660,000 KB
+   after loading fixture B: ~2,640,000 KB
+   observed mid-load sample: 1,435,534 KB (allocator release during a load)
+   cold start after force-stop restart: 2,226,537 KB
+   Peak sampled PSS: ~2,669,102 KB. No true peak is available: /proc/<pid>/status VmHWM is not
+   readable by adb shell for a non-debuggable package, so this is a sampled maximum, not a peak.

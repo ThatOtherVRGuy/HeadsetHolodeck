@@ -1,0 +1,9 @@
+{
+  "check": "transitions",
+  "label": "final-restore-01",
+  "exit_code": -4,
+  "timed_out": false,
+  "started": "2026-09-10T18:23:00.014292-07:00",
+  "ended": "2026-09-10T18:23:57.254451-07:00",
+  "log": "/private/tmp/holodeck-transitions-02-final-sg5r74ko/final-restore-01.log"
+}

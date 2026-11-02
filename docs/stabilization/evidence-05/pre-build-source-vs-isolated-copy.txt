@@ -1,0 +1,468 @@
+.d..t..g. ./
+.d..t..g. App/
+.d..t..g. App/Animations/
+.d..t..g. App/Command/
+.d..t..g. App/Command/CommandUnderstanding/
+.d..t..g. App/Command/CommandUnderstanding/Runtime/
+.d..t..g. App/Command/SpeechIntent/
+.d..t..g. App/Command/SpeechIntent/Runtime/
+.d..t..g. App/Command/SpeechIntent/Runtime/Audio/
+.d..t..g. App/Command/SpeechIntent/Runtime/Behaviors/
+.d..t..g. App/Command/SpeechIntent/Runtime/HandInput/
+.d..t..g. App/Command/SpeechIntent/Runtime/Testing/
+.d..t..g. App/Command/SpeechIntent/Runtime/UI/
+.d..t..g. App/Command/SpeechIntent/Runtime/UI/Prefabs/
+.d..t..g. App/Command/SpeechIntent/Runtime/UI/Resources/
+.d..t..g. App/Command/SpeechIntent/Runtime/UI/Resources/LCARS/
+.d..t..g. App/Command/SpeechIntent/Runtime/VoiceActivation/
+.d..t..g. App/Editor/
+.d..t..g. App/Editor/Tests/
+.d..t..g. App/GaussianSplatting/
+.d..t..g. App/GaussianSplatting/Runtime/
+.d..t..g. App/Input/
+.d..t..g. App/Materials/
+.d..t..g. App/Materials/ObjectGeneration/
+.d..t..g. App/Prefabs/
+.d..t..g. App/Save/
+.d..t..g. App/Save/Runtime/
+.d..t..g. App/Save/Tests/
+.d..t..g. App/Scripts/
+.d..t..g. App/Scripts/Diagnostics/
+.d..t..g. App/Scripts/Direct/
+.d..t..g. App/Scripts/Direct/ObjectGeneration/
+.d..t..g. App/Scripts/Effects/
+.d..t..g. App/Scripts/Input/
+.d..t..g. App/Scripts/State/
+.d..t..g. App/Scripts/Voice/
+.d..t..g. App/Sounds/
+.d..t..g. App/UI/
+.d..t..g. App/UI/LCARS/
+.d..t..g. App/UI/LCARS/Prefabs/
+.d..t..g. App/UI/LCARS/Sprites/
+.d..t..g. Models/
+.d..t..g. Models/Materials/
+.d..t..g. Plugins/
+.d..t..g. Plugins/Android/
+.d..t..g. Plugins/Android/HeadsetCameraPermissions.androidlib/
+.d..t..g. Plugins/NuGet/
+.d..t..g. Plugins/SherpaOnnx/
+.d..t..g. Plugins/SherpaOnnx/Android/
+.d..t..g. Plugins/SherpaOnnx/Android/arm64-v8a/
+.d..t..g. Plugins/SherpaOnnx/osx-arm64/
+.d..t..g. Plugins/SherpaOnnx/win-x64/
+.d..t..g. Resources/
+.d..t..g. Samples/
+.d..t..g. Samples/PonyuDev Sherpa-ONNX/
+.d..t..g. Samples/PonyuDev Sherpa-ONNX/0.1.0/
+.d..t..g. Samples/PonyuDev Sherpa-ONNX/0.1.0/TTS Samples/
+.d..t..g. Samples/PonyuDev Sherpa-ONNX/0.1.0/TTS Samples/SampleMenu/
+.d..t..g. Samples/PonyuDev Sherpa-ONNX/0.1.0/TTS Samples/Shared/
+.d..t..g. Samples/PonyuDev Sherpa-ONNX/0.1.0/TTS Samples/TtsCachePanel/
+.d..t..g. Samples/PonyuDev Sherpa-ONNX/0.1.0/TTS Samples/TtsConfigPanel/
+.d..t..g. Samples/PonyuDev Sherpa-ONNX/0.1.0/TTS Samples/TtsProgressPanel/
+.d..t..g. Samples/PonyuDev Sherpa-ONNX/0.1.0/TTS Samples/TtsSimplePanel/
+.d..t..g. Samples/PonyuDev Sherpa-ONNX/0.1.0/TTS Samples/UI Toolkit/
+.d..t..g. Samples/PonyuDev Sherpa-ONNX/0.1.0/TTS Samples/UI Toolkit/UnityThemes/
+.d..t..g. Samples/WorldLabs Gaussian Splatting/
+.d..t..g. Samples/WorldLabs Gaussian Splatting/1.1.0/
+.d..t..g. Samples/WorldLabs Gaussian Splatting/1.1.0/Sensai Sample/
+.d..t..g. Samples/WorldLabs Gaussian Splatting/1.1.0/Sensai Sample/Prefabs/
+.d..t..g. Samples/XR Hands/
+.d..t..g. Samples/XR Hands/1.7.3/
+.d..t..g. Samples/XR Hands/1.7.3/HandVisualizer/
+.d..t..g. Samples/XR Hands/1.7.3/HandVisualizer/Materials/
+.d..t..g. Samples/XR Hands/1.7.3/HandVisualizer/Models/
+.d..t..g. Samples/XR Hands/1.7.3/HandVisualizer/Prefabs/
+.d..t..g. Samples/XR Hands/1.7.3/HandVisualizer/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/DemoAssets/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/DemoAssets/AffordanceThemes/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/DemoAssets/Animation/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/DemoAssets/Materials/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/DemoAssets/Models/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/DemoAssets/Prefabs/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/DemoAssets/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/DemoAssets/Sprites/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/DemoAssets/Textures/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/Editor/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/Editor/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/Materials/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/Prefabs/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/Shaders/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/AR Starter Assets/Textures/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/AffordanceThemes/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DatumPresets/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Affordances/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Animation/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Audio/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Materials/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Models/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Models/Chess/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Models/Primitives/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Prefabs/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Prefabs/UI/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Scripts/UI/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Scripts/Utilities/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Settings/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Shaders/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Textures/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/DemoAssets/Video/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/Editor/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/Editor/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandShapes/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/Materials/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/Prefabs/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/Shaders/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/Shaders/Subgraphs/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/Textures/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Spatial Keyboard/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Spatial Keyboard/Affordances/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Spatial Keyboard/Audio/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Spatial Keyboard/Editor/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Spatial Keyboard/Editor/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Spatial Keyboard/Key Functions/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Spatial Keyboard/Layouts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Spatial Keyboard/Materials/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Spatial Keyboard/Models/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Spatial Keyboard/Prefabs/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Spatial Keyboard/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Spatial Keyboard/Scripts/KeyFunctions/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Spatial Keyboard/Sprites/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/AffordanceThemes/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Animations/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/DemoAssets/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/DemoAssets/AffordanceThemes/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/DemoAssets/Audio/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/DemoAssets/Materials/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/DemoAssets/Models/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/DemoAssets/Prefabs/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/DemoAssets/Prefabs/Climb/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/DemoAssets/Prefabs/Interactables/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/DemoAssets/Prefabs/Teleport/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/DemoAssets/Prefabs/UI/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/DemoAssets/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/DemoAssets/Settings/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/DemoAssets/Sprites/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/DemoAssets/Textures/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Editor/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Editor/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Filters/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Materials/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Models/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Prefabs/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Prefabs/Affordances/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Prefabs/Controllers/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Prefabs/Interactors/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Prefabs/Teleport/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Presets/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Shaders/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/Textures/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/Starter Assets/TunnelingVignette/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/World Space UI/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/World Space UI/Editor/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/World Space UI/Editor/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/World Space UI/Materials/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/World Space UI/Models/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/World Space UI/Prefabs/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/World Space UI/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/World Space UI/Styles/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/World Space UI/UI Toolkit Documents/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/World Space UI/UI Toolkit Panel Settings/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Interaction Simulator/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Interaction Simulator/Editor/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Interaction Simulator/Hand Expressions/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Interaction Simulator/Hand Recordings/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Interaction Simulator/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Interaction Simulator/UI/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Interaction Simulator/UI/Controller/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Interaction Simulator/UI/Cursors/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Interaction Simulator/UI/General/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Interaction Simulator/UI/Hands/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Interaction Simulator/UI/Headset/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Interaction Simulator/UI/Highlight/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Interaction Simulator/UI/Modes/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Interaction Simulator/UI/Rotate/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Interaction Simulator/UI/Translate/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Mouse Interaction Demo/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Mouse Interaction Demo/Editor/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Mouse Interaction Demo/Editor/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Mouse Interaction Demo/Materials/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Mouse Interaction Demo/Prefabs/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Mouse Interaction Demo/Scripts/
+.d..t..g. Samples/XR Interaction Toolkit/3.5.0/XR Mouse Interaction Demo/Textures/
+.d..t..g. Scenes/
+.d..t..g. Scenes/BasicScene/
+.d..t..g. Scenes/Holodeck/
+.d..t..g. Scenes/SampleScene/
+.d..t..g. Settings/
+.d..t..g. Settings/Build Profiles/
+.d..t..g. Settings/Project Configuration/
+.d..t..g. StreamingAssets/
+.d..t..g. StreamingAssets/SherpaOnnx/
+.d..t..g. StreamingAssets/SherpaOnnx/asr-models/
+.d..t..g. StreamingAssets/SherpaOnnx/asr-models/sherpa-onnx-zipformer-small-en-2023-06-26/
+.d..t..g. StreamingAssets/SherpaOnnx/asr-models/sherpa-onnx-zipformer-small-en-2023-06-26/test_wavs/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/aav/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/art/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/azc/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/bat/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/bnt/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/ccs/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/cel/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/cus/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/dra/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/esx/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/gmq/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/gmw/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/grk/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/inc/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/ine/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/ira/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/iro/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/itc/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/jpx/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/map/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/miz/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/myn/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/poz/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/roa/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/sai/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/sem/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/sit/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/tai/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/trk/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/urj/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/zle/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/zls/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/lang/zlw/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/voices/
+.d..t..g. StreamingAssets/SherpaOnnx/tts-models/vits-piper-en_US-kristin-medium-int8/espeak-ng-data/voices/!v/
+.d..t..g. StreamingAssets/SherpaOnnx/vad-models/
+.d..t..g. StreamingAssets/SherpaOnnx/vad-models/silero_vad/
+.d..t..g. TextMesh Pro/
+.d..t..g. TextMesh Pro/Fonts/
+.d..t..g. TextMesh Pro/Resources/
+.d..t..g. TextMesh Pro/Resources/Fonts & Materials/
+.d..t..g. TextMesh Pro/Resources/Style Sheets/
+.d..t..g. TextMesh Pro/Shaders/
+.d..t..g. VRTemplateAssets/
+.d..t..g. VRTemplateAssets/Audio/
+.d..t..g. VRTemplateAssets/Fonts/
+.d..t..g. VRTemplateAssets/Fonts/Inter/
+.d..t..g. VRTemplateAssets/Graphics/
+.d..t..g. VRTemplateAssets/Materials/
+.d..t..g. VRTemplateAssets/Materials/Anchor Materials/
+.d..t..g. VRTemplateAssets/Materials/Controller/
+.d..t..g. VRTemplateAssets/Materials/Environment/
+.d..t..g. VRTemplateAssets/Materials/Locomotion/
+.d..t..g. VRTemplateAssets/Materials/Particles/
+.d..t..g. VRTemplateAssets/Materials/Pointer/
+.d..t..g. VRTemplateAssets/Materials/Primitive/
+.d..t..g. VRTemplateAssets/Materials/Skybox/
+.d..t..g. VRTemplateAssets/Materials/UI/
+.d..t..g. VRTemplateAssets/Models/
+.d..t..g. VRTemplateAssets/Models/Anchor/
+.d..t..g. VRTemplateAssets/Models/Blink/
+.d..t..g. VRTemplateAssets/Models/Controllers/
+.d..t..g. VRTemplateAssets/Models/Cursors/
+.d..t..g. VRTemplateAssets/Models/Environment/
+.d..t..g. VRTemplateAssets/Models/Marks/
+.d..t..g. VRTemplateAssets/Models/Poke/
+.d..t..g. VRTemplateAssets/Models/Primitives/
+.d..t..g. VRTemplateAssets/Models/UI/
+.d..t..g. VRTemplateAssets/Prefabs/
+.d..t..g. VRTemplateAssets/Prefabs/Affordance/
+.d..t..g. VRTemplateAssets/Prefabs/Blaster/
+.d..t..g. VRTemplateAssets/Prefabs/Blink/
+.d..t..g. VRTemplateAssets/Prefabs/Controller/
+.d..t..g. VRTemplateAssets/Prefabs/Cursors/
+.d..t..g. VRTemplateAssets/Prefabs/Interactables/
+.d..t..g. VRTemplateAssets/Prefabs/Setup/
+.d..t..g. VRTemplateAssets/Prefabs/Teleport/
+.d..t..g. VRTemplateAssets/Prefabs/TutorialPlayer/
+.d..t..g. VRTemplateAssets/Prefabs/UI/
+.d..t..g. VRTemplateAssets/Scripts/
+.d..t..g. VRTemplateAssets/Shaders/
+.d..t..g. VRTemplateAssets/Sprites/
+.d..t..g. VRTemplateAssets/Sprites/CoachingCards/
+.d..t..g. VRTemplateAssets/Sprites/Icons/
+.d..t..g. VRTemplateAssets/Sprites/UI/
+.d..t..g. VRTemplateAssets/Themes/
+.d..t..g. VRTemplateAssets/Tutorial/
+.d..t..g. VRTemplateAssets/Tutorial/Images/
+.d..t..g. VRTemplateAssets/Videos/
+.d..t..g. XR/
+.d..t..g. XR/AndroidXR/
+.f..t..g. XR/AndroidXR/AndroidXRSettingsInitializer
+.d..t..g. XR/Loaders/
+.d..t..g. XR/Resources/
+.d..t..g. XR/Settings/
+.f..t..g. XR/Settings/OpenXR Package Settings.asset
+.d..t..g. XR/Temp/
+.d..t..g. XR/UserSimulationSettings/
+.d..t..g. XR/UserSimulationSettings/Resources/
+.d..t..g. XRI/
+.d..t..g. XRI/Settings/
+.d..t..g. XRI/Settings/Resources/
+.d..t..g. _Recovery/
+.d..t..g. ./
+.d..t..g. com.ponyudev.sherpa-onnx/
+.d..t..g. com.ponyudev.sherpa-onnx/DevProject~/
+.d..t..g. com.ponyudev.sherpa-onnx/DevProject~/Assets/
+.L.....g. com.ponyudev.sherpa-onnx/DevProject~/Assets/Samples -> ../../Samples~
+.d..t..g. com.ponyudev.sherpa-onnx/DevProject~/Assets/Plugins/
+.d..t..g. com.ponyudev.sherpa-onnx/DevProject~/Assets/Plugins/Android/
+.d..t..g. com.ponyudev.sherpa-onnx/DevProject~/Assets/UI Toolkit/
+.d..t..g. com.ponyudev.sherpa-onnx/DevProject~/Assets/UI Toolkit/UnityThemes/
+.d..t..g. com.ponyudev.sherpa-onnx/DevProject~/Packages/
+.d..t..g. com.ponyudev.sherpa-onnx/DevProject~/ProjectSettings/
+.d..t..g. com.ponyudev.sherpa-onnx/DevProject~/UIElementsSchema/
+.d..t..g. com.ponyudev.sherpa-onnx/Docs/
+.d..t..g. com.ponyudev.sherpa-onnx/Docs/images/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/ASRInstall/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/ASRInstall/Scripts/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/ASRInstall/Scripts/Build/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/ASRInstall/Scripts/Import/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/ASRInstall/Scripts/Presenters/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/ASRInstall/Scripts/Presenters/Offline/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/ASRInstall/Scripts/Presenters/Online/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/ASRInstall/Scripts/Settings/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/ASRInstall/Scripts/View/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/ASRInstall/UI/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/Common/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/Common/Scripts/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/Common/Scripts/Build/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/Common/Scripts/Import/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/Common/Scripts/Presenters/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/Common/UI/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/LibraryInstall/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/LibraryInstall/Scripts/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/LibraryInstall/Scripts/ContentHandlers/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/LibraryInstall/Scripts/Helpers/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/LibraryInstall/UI/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/TTSInstall/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/TTSInstall/Scripts/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/TTSInstall/Scripts/Build/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/TTSInstall/Scripts/Import/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/TTSInstall/Scripts/Presenters/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/TTSInstall/Scripts/Settings/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/TTSInstall/Scripts/View/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/TTSInstall/UI/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/VadInstall/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/VadInstall/Scripts/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/VadInstall/Scripts/Import/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/VadInstall/Scripts/Presenters/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/VadInstall/Scripts/Settings/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/VadInstall/Scripts/View/
+.d..t..g. com.ponyudev.sherpa-onnx/Editor/VadInstall/UI/
+.d..t..g. com.ponyudev.sherpa-onnx/Plugins~/
+.d..t..g. com.ponyudev.sherpa-onnx/Plugins~/Android/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Asr/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Asr/Config/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Asr/Offline/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Asr/Offline/Config/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Asr/Offline/Data/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Asr/Offline/Engine/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Asr/Offline/MonoBehaviours/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Asr/Online/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Asr/Online/Config/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Asr/Online/Data/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Asr/Online/Engine/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Asr/Online/MonoBehaviours/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Common/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Common/Audio/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Common/Audio/Config/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Common/Data/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Common/Extractors/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Common/IO/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Common/InstallPipeline/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Common/Networking/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Common/Platform/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Tts/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Tts/Cache/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Tts/Config/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Tts/Data/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Tts/Engine/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Tts/MonoBehaviours/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Vad/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Vad/Config/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Vad/Data/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Vad/Engine/
+.d..t..g. com.ponyudev.sherpa-onnx/Runtime/Vad/MonoBehaviours/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/ASR/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/ASR/AsrFilePanel/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/ASR/AsrSampleMenu/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/ASR/AsrStreamPanel/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/ASR/Audio/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/ASR/Shared/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/ASR/UI Toolkit/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/ASR/UI Toolkit/UnityThemes/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/TTS/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/TTS/SampleMenu/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/TTS/Shared/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/TTS/TtsCachePanel/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/TTS/TtsConfigPanel/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/TTS/TtsProgressPanel/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/TTS/TtsSimplePanel/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/TTS/UI Toolkit/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/TTS/UI Toolkit/UnityThemes/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/VAD/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/VAD/Shared/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/VAD/UI Toolkit/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/VAD/UI Toolkit/UnityThemes/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/VAD/VadDemoPanel/
+.d..t..g. com.ponyudev.sherpa-onnx/Samples~/VAD/VadSampleMenu/
+.d..t..g. com.ponyudev.sherpa-onnx/Tests/
+.d..t..g. com.ponyudev.sherpa-onnx/Tests/Editor/
+.d..t..g. com.ponyudev.sherpa-onnx/Tests/Editor/ASR/
+.d..t..g. com.ponyudev.sherpa-onnx/Tests/Editor/ASR/Common/
+.d..t..g. com.ponyudev.sherpa-onnx/Tests/Editor/ASR/Offline/
+.d..t..g. com.ponyudev.sherpa-onnx/Tests/Editor/ASR/Online/
+.d..t..g. com.ponyudev.sherpa-onnx/Tests/Editor/ASR/Stubs/
+.d..t..g. com.ponyudev.sherpa-onnx/Tests/Editor/TTS/
+.d..t..g. com.ponyudev.sherpa-onnx/Tests/Editor/TTS/Stubs/
+.d..t..g. com.ponyudev.sherpa-onnx/Tests/Editor/VAD/
+.d..t..g. com.ponyudev.sherpa-onnx/Tests/Editor/VAD/Stubs/
+.d..t..g. com.ponyudev.sherpa-onnx/Tests/Runtime/
+.d..t..g. com.ponyudev.sherpa-onnx/Tests/Runtime/TTS/
+.d..t..g. com.ponyudev.sherpa-onnx/Tests/Runtime/TTS/Stubs/
+.d..t..g. com.ponyudev.sherpa-onnx/Tools~/
+.d..t..g. com.ponyudev.sherpa-onnx/Tools~/Installer/
+.d..t..g. com.worldlabs.gaussian-splatting/
+.d..t..g. com.worldlabs.gaussian-splatting/Editor/
+.d..t..g. com.worldlabs.gaussian-splatting/Editor/GaussianSplatting/
+.d..t..g. com.worldlabs.gaussian-splatting/Editor/GaussianSplatting/Icons/
+.d..t..g. com.worldlabs.gaussian-splatting/Editor/GaussianSplatting/Utils/
+.d..t..g. com.worldlabs.gaussian-splatting/Editor/WorldLabs/
+.d..t..g. com.worldlabs.gaussian-splatting/Materials/
+.d..t..g. com.worldlabs.gaussian-splatting/Runtime/
+.d..t..g. com.worldlabs.gaussian-splatting/Runtime/GaussianSplatting/
+.d..t..g. com.worldlabs.gaussian-splatting/Runtime/WorldLabs/
+.d..t..g. com.worldlabs.gaussian-splatting/Runtime/WorldLabs/Editor/
+.d..t..g. com.worldlabs.gaussian-splatting/Runtime/WorldLabs/Examples/
+.d..t..g. com.worldlabs.gaussian-splatting/Samples~/
+.d..t..g. com.worldlabs.gaussian-splatting/Samples~/Sensai/
+.d..t..g. com.worldlabs.gaussian-splatting/Samples~/Sensai/Prefabs/
+.d..t..g. com.worldlabs.gaussian-splatting/Shaders/
+.d..t..g. ./
+.d..t..g. Packages/
+.d..t..g. Packages/com.unity.ai.assistant/
+.d..t..g. Packages/com.unity.learn.iet-framework/
+.d..t..g. Packages/com.unity.testtools.codecoverage/

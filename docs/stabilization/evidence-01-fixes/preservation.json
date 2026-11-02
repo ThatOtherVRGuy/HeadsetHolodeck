@@ -1,0 +1,14 @@
+{
+  "original_files_hashed": 4666,
+  "changed_original_files": [
+    "Assets/App/Editor/CachedObjectBatchTests.cs",
+    "Assets/App/Save/Tests/WorldConfigStoreTests.cs",
+    "docs/stabilization/STATUS.md",
+    "docs/stabilization/handoff-01.md"
+  ],
+  "missing_original_files": [],
+  "unexpected_status_entries": [],
+  "preservation_pass": true,
+  "head": "05a09dd46710d82ac4bf1c91c1488d249872ae3d",
+  "staged_diff_empty": true
+}

@@ -1,0 +1,9 @@
+{
+  "check": "transitions",
+  "label": "order04-loader-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-13T16:00:14.995517-07:00",
+  "ended": "2026-09-13T16:00:49.769456-07:00",
+  "log": "/private/tmp/holodeck-saves-04-verify/order04-loader-01.log"
+}

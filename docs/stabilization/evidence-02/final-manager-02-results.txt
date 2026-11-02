@@ -1,0 +1,8 @@
+2026-09-10T18:32:52.8967900Z BEGIN HeadsetHolodeck.EditorTests.WorldTransitionBatchTests.RunAsync context=BoundedMainThreadPump timeout=120s thread=1
+2026-09-10T18:33:02.9073180Z PUMP elapsed=10.0 pending=0 task=WaitingForActivation
+2026-09-10T18:33:03.5650990Z FAIL System.TimeoutException: Transition did not settle within ten seconds.
+  at HeadsetHolodeck.EditorTests.WorldTransitionBatchTests.Finish[T] (System.Threading.Tasks.Task`1[TResult] task) [0x000b7] in /private/tmp/holodeck-transitions-02-final-sg5r74ko/project/Assets/App/Editor/WorldTransitionBatchTests.cs:440 
+  at HeadsetHolodeck.EditorTests.WorldTransitionBatchTests.DisableRejectsLateCompletionAndCanRetry () [0x000b0] in /private/tmp/holodeck-transitions-02-final-sg5r74ko/project/Assets/App/Editor/WorldTransitionBatchTests.cs:189 
+  at HeadsetHolodeck.EditorTests.WorldTransitionBatchTests.RunCase (System.String name, System.Func`1[TResult] test) [0x00020] in /private/tmp/holodeck-transitions-02-final-sg5r74ko/project/Assets/App/Editor/WorldTransitionBatchTests.cs:99 
+  at HeadsetHolodeck.EditorTests.WorldTransitionBatchTests.RunAsync () [0x0028b] in /private/tmp/holodeck-transitions-02-final-sg5r74ko/project/Assets/App/Editor/WorldTransitionBatchTests.cs:84 
+  at StabilizationTransitions02.Run () [0x0020f] in /private/tmp/holodeck-transitions-02-final-sg5r74ko/project/Assets/App/Editor/StabilizationTransitions02.cs:73 

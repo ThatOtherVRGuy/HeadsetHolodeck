@@ -1,0 +1,9 @@
+{
+  "check": "save",
+  "label": "order04-save-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-13T15:31:08.858780-07:00",
+  "ended": "2026-09-13T15:32:15.393364-07:00",
+  "log": "/private/tmp/holodeck-saves-04-verify/order04-save-01.log"
+}

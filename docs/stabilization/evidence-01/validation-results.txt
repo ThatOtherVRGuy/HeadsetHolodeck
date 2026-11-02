@@ -1,0 +1,2 @@
+2026-09-08T22:51:39.1859830Z STATE unity=6000.2.10f1 batch=True playing=False compiling=False updating=False target=Android
+2026-09-08T22:51:39.1983040Z VALIDATOR 24 check(s): 0 failure(s), 2 warning(s)

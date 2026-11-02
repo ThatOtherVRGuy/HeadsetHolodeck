@@ -1,0 +1,53 @@
+
+Device save / restore / recovery evidence (excerpts from the device log; full capture in device-logcat.txt)
+
+  (11108): [WorldConfigRestorer] Restoring 'Zebra World Labs Test'
+  (11108): [WorldConfigAutoSave] Saved estimated spawn point for 'Zebra World Labs Test' using normal_line_consensus_candidate_v1+normal_consensus_spawn_v1+local_floor_y_v1.
+  (11108): [WorldConfigRestorer] Restore complete for 'Zebra World Labs Test'
+  (11108): [WorldConfigAutoSave] Saved world transform for 'Zebra World Labs Test'.
+  (11108): [WorldConfigAutoSave] Saved manual spawn point for 'Zebra World Labs Test'.
+  (11108): [WorldActionDispatcher] Saved current config.
+  (11108): [WorldConfigRestorer] Restoring 'Yoyo Loose Splat Test'
+  (11108): [WorldConfigAutoSave] Saved estimated spawn point for 'Yoyo Loose Splat Test' using normal_line_consensus_candidate_v1+normal_consensus_spawn_v1+local_floor_y_v1.
+  (11108): [WorldConfigRestorer] Restore complete for 'Yoyo Loose Splat Test'
+  (11108): [WorldConfigRestorer] Restoring 'Yoyo Loose Splat Test'
+  (11108): [WorldConfigRestorer] Prepared saved spawn point 1 for 'Yoyo Loose Splat Test' after world transform.
+  (11108): [WorldConfigRestorer] Restore complete for 'Yoyo Loose Splat Test'
+  (11108): [WorldConfigRestorer] Restoring 'Yoyo Loose Splat Test'
+  (11108): [WorldConfigRestorer] Prepared saved spawn point 1 for 'Yoyo Loose Splat Test' after world transform.
+  (11108): [WorldConfigRestorer] Restore complete for 'Yoyo Loose Splat Test'
+  (11108): [WorldActionDispatcher] Saved current config.
+  (11108): [WorldConfigRestorer] Restoring 'Yoyo Loose Splat Test'
+  (11108): [WorldConfigRestorer] Prepared saved spawn point 1 for 'Yoyo Loose Splat Test' after world transform.
+  (11108): [WorldConfigRestorer] Restore complete for 'Yoyo Loose Splat Test'
+  (15733): [WorldConfigRestorer] Restoring 'Yoyo Loose Splat Test'
+  (15733): [WorldConfigRestorer] Prepared saved spawn point 1 for 'Yoyo Loose Splat Test' after world transform.
+  (15733): [WorldConfigRestorer] Restore complete for 'Yoyo Loose Splat Test'
+  (15733): [WorldActionDispatcher] Saved current config.
+  09-13 17:51:21.710 W/Unity   (18729): [WorldConfigStore] Primary save '/storage/emulated/0/Android/data/com.QLC.HeadsetHolodeck/files/Worlds/STAB05_WL_NorthPole/world.json' is missing, unreadable, or 
+  09-13 17:51:21.715 W/Unity   (18729): [WorldConfigStore] Primary save '/storage/emulated/0/Android/data/com.QLC.HeadsetHolodeck/files/Worlds/STAB05_WL_NorthPole/world.json' is missing, unreadable, or 
+
+On-disk state of the isolated fixture folders (adb shell ls -la), after the session:
+  STAB05_WL_NorthPole:  world.json 8415, world.json.bak 8415, .world.json.lock 0
+  STAB05_Loose_Mermaid: world.json 4782, world.json.bak 4782, .world.json.lock 0
+
+Saved content of the isolated fixture (pulled off device; device-fixtures/STAB05_Loose_Mermaid.world.json):
+  display_name 'Yoyo Loose Splat Test', world_source.type=local_splat
+  objects=1  spawn_points=1  prompts=1  world_transform=null
+  object component types: AudioAttributionMetadata, AudioPlaybackController, AudioSource, Transform
+  object display name: 'Audio_Altenthann_Isolate ambient soundscape ...'
+  saved spawn point: source 'estimated', method
+     'normal_line_consensus_candidate_v1+normal_consensus_spawn_v1+local_floor_y_v1', confidence 0.82
+  world.json.bak holds the same world one generation earlier (modified_at 2026-09-14T003306Z vs
+      primary 2026-09-14T004400Z) - i.e. the backup is genuinely the previous committed save.
+
+Interrupted-save recovery exercised ON DEVICE (not simulated in a test harness): the fixture's
+world.json was replaced with 54 bytes of truncated JSON while world.json.bak stayed valid, then the
+app was restarted. The startup scan recovered the previous generation and retained both files:
+
+  (18729): [WorldConfigStore] Primary save '/storage/emulated/0/Android/data/com.QLC.HeadsetHolodeck/files/Worlds/STAB05_WL_NorthPole/world.json' is missing, unreadable, or corrupt; recovered the previous generation from '/storage/e
+  (18729): [WorldConfigStore] Primary save '/storage/emulated/0/Android/data/com.QLC.HeadsetHolodeck/files/Worlds/STAB05_WL_NorthPole/world.json' is missing, unreadable, or corrupt; recovered the previous generation from '/storage/e
+
+The read-only legacy-folder migration could NOT be exercised on the headset: it needs a save to
+happen while the folder is read-only, and the headset fell asleep before that command could be
+spoken. It remains verified only on the host (order 03 fixtures).

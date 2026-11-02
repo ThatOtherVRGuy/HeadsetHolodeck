@@ -1,0 +1,354 @@
+ M Assets/App/Command/SpeechIntent/OpenAiSpeechIntentConfig.asset
+ M Assets/App/Command/SpeechIntent/Runtime/Behaviors/BehaviorCommandController.cs
+ M Assets/App/Command/SpeechIntent/Runtime/CachedObjectChoiceController.cs
+ M Assets/App/Command/SpeechIntent/Runtime/HandInput/HandOnlyInputCoordinator.cs
+ M Assets/App/Command/SpeechIntent/Runtime/InteractableObjectWrapper.cs
+ M Assets/App/Command/SpeechIntent/Runtime/InteractionMemory.cs
+ M Assets/App/Command/SpeechIntent/Runtime/LightActionController.cs
+ M Assets/App/Command/SpeechIntent/Runtime/LocalRemoteSplatLoader.cs
+ M Assets/App/Command/SpeechIntent/Runtime/LocalTypedIntentParser.cs
+ M Assets/App/Command/SpeechIntent/Runtime/MaterialTargetController.cs
+ M Assets/App/Command/SpeechIntent/Runtime/OpenAiSpeechIntentConfig.cs
+ M Assets/App/Command/SpeechIntent/Runtime/OpenAiSpeechIntentService.cs
+ M Assets/App/Command/SpeechIntent/Runtime/PlayerOriginController.cs
+ M Assets/App/Command/SpeechIntent/Runtime/SceneEntityResolver.cs
+ M Assets/App/Command/SpeechIntent/Runtime/SpatialContextProvider.cs
+ M Assets/App/Command/SpeechIntent/Runtime/TargetTransformController.cs
+ M Assets/App/Command/SpeechIntent/Runtime/UI/ArchOperationsPanel.cs
+ M Assets/App/Command/SpeechIntent/Runtime/VoiceCommandRouter.cs
+ M Assets/App/Command/SpeechIntent/Runtime/VoiceIntentSchemas.cs
+ M Assets/App/Command/SpeechIntent/Runtime/WorldActionDispatcher.cs
+ M Assets/App/Editor/CachedObjectBatchTests.cs
+ M Assets/App/Editor/RuntimeSplatProcessingBatchTests.cs
+ M Assets/App/Editor/SpeechIntentBatchTests.cs
+ M Assets/App/Editor/SplatSpawnAndOrientationBatchTests.cs
+ M Assets/App/Editor/WorldViewCaptureUiSetup.cs
+ M Assets/App/Prefabs/GSplatRenderer.prefab
+ M Assets/App/Save/Runtime/WorldConfigStore.cs
+ M Assets/App/Save/WorldConfigRestorer.cs
+ M Assets/App/Scripts/Direct/ObjectGeneration/ObjectGenerationService.cs
+ M Assets/App/Scripts/Direct/RuntimeSplatFloorLoader.cs
+ M Assets/Plugins/Android/AndroidManifest.xml
+ M "Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-0_comp_dir.png.meta"
+ M "Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-0_comp_light.exr.meta"
+ M "Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-1_comp_dir.png.meta"
+ M "Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-1_comp_light.exr.meta"
+ M "Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-2_comp_dir.png.meta"
+ M "Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-2_comp_light.exr.meta"
+ M "Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/ReflectionProbe-0.exr.meta"
+ M Assets/Scenes/Holodeck.unity
+ M Packages/com.worldlabs.gaussian-splatting/Runtime/GaussianSplatting/SPZFileReader.cs
+ M Packages/com.worldlabs.gaussian-splatting/Runtime/WorldLabs/WorldBrowserController.cs
+ M Packages/com.worldlabs.gaussian-splatting/Runtime/WorldLabs/WorldLabsWorldManager.cs
+ M Packages/manifest.json
+ M Packages/packages-lock.json
+ M ProjectSettings/PackageManagerSettings.asset
+ M ProjectSettings/ProjectSettings.asset
+ M docs/project-learning-log.md
+?? .agents/skills/assets-copy/SKILL.md
+?? .agents/skills/assets-create-folder/SKILL.md
+?? .agents/skills/assets-delete/SKILL.md
+?? .agents/skills/assets-find-built-in/SKILL.md
+?? .agents/skills/assets-find/SKILL.md
+?? .agents/skills/assets-get-data/SKILL.md
+?? .agents/skills/assets-material-create/SKILL.md
+?? .agents/skills/assets-modify/SKILL.md
+?? .agents/skills/assets-move/SKILL.md
+?? .agents/skills/assets-prefab-close/SKILL.md
+?? .agents/skills/assets-prefab-create/SKILL.md
+?? .agents/skills/assets-prefab-instantiate/SKILL.md
+?? .agents/skills/assets-prefab-open/SKILL.md
+?? .agents/skills/assets-prefab-save/SKILL.md
+?? .agents/skills/assets-refresh/SKILL.md
+?? .agents/skills/assets-shader-get-data/SKILL.md
+?? .agents/skills/assets-shader-list-all/SKILL.md
+?? .agents/skills/console-clear-logs/SKILL.md
+?? .agents/skills/console-get-logs/SKILL.md
+?? .agents/skills/editor-application-get-state/SKILL.md
+?? .agents/skills/editor-application-set-state/SKILL.md
+?? .agents/skills/editor-selection-get/SKILL.md
+?? .agents/skills/editor-selection-set/SKILL.md
+?? .agents/skills/gameobject-component-add/SKILL.md
+?? .agents/skills/gameobject-component-destroy/SKILL.md
+?? .agents/skills/gameobject-component-get/SKILL.md
+?? .agents/skills/gameobject-component-list-all/SKILL.md
+?? .agents/skills/gameobject-component-modify/SKILL.md
+?? .agents/skills/gameobject-create/SKILL.md
+?? .agents/skills/gameobject-destroy/SKILL.md
+?? .agents/skills/gameobject-duplicate/SKILL.md
+?? .agents/skills/gameobject-find/SKILL.md
+?? .agents/skills/gameobject-modify/SKILL.md
+?? .agents/skills/gameobject-set-parent/SKILL.md
+?? .agents/skills/object-get-data/SKILL.md
+?? .agents/skills/object-modify/SKILL.md
+?? .agents/skills/package-add/SKILL.md
+?? .agents/skills/package-list/SKILL.md
+?? .agents/skills/package-remove/SKILL.md
+?? .agents/skills/package-search/SKILL.md
+?? .agents/skills/particle-system-get/SKILL.md
+?? .agents/skills/particle-system-modify/SKILL.md
+?? .agents/skills/ping/SKILL.md
+?? .agents/skills/profiler-capture-frame/SKILL.md
+?? .agents/skills/profiler-clear-data/SKILL.md
+?? .agents/skills/profiler-enable-module/SKILL.md
+?? .agents/skills/profiler-get-memory-stats/SKILL.md
+?? .agents/skills/profiler-get-rendering-stats/SKILL.md
+?? .agents/skills/profiler-get-script-stats/SKILL.md
+?? .agents/skills/profiler-get-status/SKILL.md
+?? .agents/skills/profiler-list-modules/SKILL.md
+?? .agents/skills/profiler-load-data/SKILL.md
+?? .agents/skills/profiler-save-data/SKILL.md
+?? .agents/skills/profiler-start/SKILL.md
+?? .agents/skills/profiler-stop/SKILL.md
+?? .agents/skills/reflection-method-call/SKILL.md
+?? .agents/skills/reflection-method-find/SKILL.md
+?? .agents/skills/scene-create/SKILL.md
+?? .agents/skills/scene-get-data/SKILL.md
+?? .agents/skills/scene-list-opened/SKILL.md
+?? .agents/skills/scene-open/SKILL.md
+?? .agents/skills/scene-save/SKILL.md
+?? .agents/skills/scene-set-active/SKILL.md
+?? .agents/skills/scene-unload/SKILL.md
+?? .agents/skills/screenshot-camera/SKILL.md
+?? .agents/skills/screenshot-game-view/SKILL.md
+?? .agents/skills/screenshot-isolated/SKILL.md
+?? .agents/skills/screenshot-scene-view/SKILL.md
+?? .agents/skills/script-delete/SKILL.md
+?? .agents/skills/script-execute/SKILL.md
+?? .agents/skills/script-read/SKILL.md
+?? .agents/skills/script-update-or-create/SKILL.md
+?? .agents/skills/tests-run/SKILL.md
+?? .agents/skills/tool-set-enabled-state/SKILL.md
+?? .agents/skills/type-get-json-schema/SKILL.md
+?? .agents/skills/unity-initial-setup/SKILL.md
+?? .agents/skills/unity-skill-create/SKILL.md
+?? .agents/skills/unity-skill-generate/SKILL.md
+?? .agents/skills/unity-tool-list/SKILL.md
+?? .claude/skills/assets-copy/SKILL.md
+?? .claude/skills/assets-create-folder/SKILL.md
+?? .claude/skills/assets-delete/SKILL.md
+?? .claude/skills/assets-find-built-in/SKILL.md
+?? .claude/skills/assets-find/SKILL.md
+?? .claude/skills/assets-get-data/SKILL.md
+?? .claude/skills/assets-material-create/SKILL.md
+?? .claude/skills/assets-modify/SKILL.md
+?? .claude/skills/assets-move/SKILL.md
+?? .claude/skills/assets-prefab-close/SKILL.md
+?? .claude/skills/assets-prefab-create/SKILL.md
+?? .claude/skills/assets-prefab-instantiate/SKILL.md
+?? .claude/skills/assets-prefab-open/SKILL.md
+?? .claude/skills/assets-prefab-save/SKILL.md
+?? .claude/skills/assets-refresh/SKILL.md
+?? .claude/skills/assets-shader-get-data/SKILL.md
+?? .claude/skills/assets-shader-list-all/SKILL.md
+?? .claude/skills/console-clear-logs/SKILL.md
+?? .claude/skills/console-get-logs/SKILL.md
+?? .claude/skills/editor-application-get-state/SKILL.md
+?? .claude/skills/editor-application-set-state/SKILL.md
+?? .claude/skills/editor-selection-get/SKILL.md
+?? .claude/skills/editor-selection-set/SKILL.md
+?? .claude/skills/gameobject-component-add/SKILL.md
+?? .claude/skills/gameobject-component-destroy/SKILL.md
+?? .claude/skills/gameobject-component-get/SKILL.md
+?? .claude/skills/gameobject-component-list-all/SKILL.md
+?? .claude/skills/gameobject-component-modify/SKILL.md
+?? .claude/skills/gameobject-create/SKILL.md
+?? .claude/skills/gameobject-destroy/SKILL.md
+?? .claude/skills/gameobject-duplicate/SKILL.md
+?? .claude/skills/gameobject-find/SKILL.md
+?? .claude/skills/gameobject-modify/SKILL.md
+?? .claude/skills/gameobject-set-parent/SKILL.md
+?? .claude/skills/object-get-data/SKILL.md
+?? .claude/skills/object-modify/SKILL.md
+?? .claude/skills/package-add/SKILL.md
+?? .claude/skills/package-list/SKILL.md
+?? .claude/skills/package-remove/SKILL.md
+?? .claude/skills/package-search/SKILL.md
+?? .claude/skills/particle-system-get/SKILL.md
+?? .claude/skills/particle-system-modify/SKILL.md
+?? .claude/skills/ping/SKILL.md
+?? .claude/skills/profiler-capture-frame/SKILL.md
+?? .claude/skills/profiler-clear-data/SKILL.md
+?? .claude/skills/profiler-enable-module/SKILL.md
+?? .claude/skills/profiler-get-memory-stats/SKILL.md
+?? .claude/skills/profiler-get-rendering-stats/SKILL.md
+?? .claude/skills/profiler-get-script-stats/SKILL.md
+?? .claude/skills/profiler-get-status/SKILL.md
+?? .claude/skills/profiler-list-modules/SKILL.md
+?? .claude/skills/profiler-load-data/SKILL.md
+?? .claude/skills/profiler-save-data/SKILL.md
+?? .claude/skills/profiler-start/SKILL.md
+?? .claude/skills/profiler-stop/SKILL.md
+?? .claude/skills/reflection-method-call/SKILL.md
+?? .claude/skills/reflection-method-find/SKILL.md
+?? .claude/skills/scene-create/SKILL.md
+?? .claude/skills/scene-get-data/SKILL.md
+?? .claude/skills/scene-list-opened/SKILL.md
+?? .claude/skills/scene-open/SKILL.md
+?? .claude/skills/scene-save/SKILL.md
+?? .claude/skills/scene-set-active/SKILL.md
+?? .claude/skills/scene-unload/SKILL.md
+?? .claude/skills/screenshot-camera/SKILL.md
+?? .claude/skills/screenshot-game-view/SKILL.md
+?? .claude/skills/screenshot-isolated/SKILL.md
+?? .claude/skills/screenshot-scene-view/SKILL.md
+?? .claude/skills/script-delete/SKILL.md
+?? .claude/skills/script-execute/SKILL.md
+?? .claude/skills/script-read/SKILL.md
+?? .claude/skills/script-update-or-create/SKILL.md
+?? .claude/skills/tests-run/SKILL.md
+?? .claude/skills/tool-set-enabled-state/SKILL.md
+?? .claude/skills/type-get-json-schema/SKILL.md
+?? .claude/skills/unity-initial-setup/SKILL.md
+?? .claude/skills/unity-skill-create/SKILL.md
+?? .claude/skills/unity-skill-generate/SKILL.md
+?? .claude/skills/unity-tool-list/SKILL.md
+?? .codex/config.toml
+?? .superpowers/brainstorm/29866-1782883479/state/server.pid
+?? .superpowers/brainstorm/30282-1782883495/content/chakra-cone-vortices-v3.html
+?? .superpowers/brainstorm/30282-1782883495/content/chakra-particle-directions-v2.html
+?? .superpowers/brainstorm/30282-1782883495/content/chakra-particle-directions.html
+?? .superpowers/brainstorm/30282-1782883495/state/server-stopped
+?? .superpowers/brainstorm/30282-1782883495/state/server.pid
+?? Assets/App/Command/SpeechIntent/Runtime/SceneFocusContext.cs
+?? Assets/App/Command/SpeechIntent/Runtime/SceneFocusContext.cs.meta
+?? Assets/App/Command/SpeechIntent/Runtime/SnapWhileGrabbed.cs
+?? Assets/App/Command/SpeechIntent/Runtime/SnapWhileGrabbed.cs.meta
+?? Assets/App/Command/SpeechIntent/Runtime/TargetSelectionUtility.cs
+?? Assets/App/Command/SpeechIntent/Runtime/TargetSelectionUtility.cs.meta
+?? Assets/App/Command/SpeechIntent/Runtime/Testing.meta
+?? Assets/App/Command/SpeechIntent/Runtime/Testing/HolodeckRigTestHarness.cs
+?? Assets/App/Command/SpeechIntent/Runtime/Testing/HolodeckRigTestHarness.cs.meta
+?? Assets/App/Command/SpeechIntent/Runtime/Testing/TestRigScenario.cs
+?? Assets/App/Command/SpeechIntent/Runtime/Testing/TestRigScenario.cs.meta
+?? Assets/App/Command/SpeechIntent/Runtime/WorldManipulationController.cs
+?? Assets/App/Command/SpeechIntent/Runtime/WorldManipulationController.cs.meta
+?? Assets/App/Editor/HolodeckRigTestHarnessSetup.cs
+?? Assets/App/Editor/HolodeckRigTestHarnessSetup.cs.meta
+?? Assets/App/Editor/OptionsPanelUiSetup.cs
+?? Assets/App/Editor/OptionsPanelUiSetup.cs.meta
+?? Assets/App/Scripts/Direct/ObjectGeneration/GeneratedObjectGlbTextureRepair.cs
+?? Assets/App/Scripts/Direct/ObjectGeneration/GeneratedObjectGlbTextureRepair.cs.meta
+?? Assets/Plugins/NuGet.meta
+?? Assets/Plugins/NuGet/.nuget-installed.json
+?? Assets/Plugins/NuGet/McpPlugin.Common.dll
+?? Assets/Plugins/NuGet/McpPlugin.Common.dll.meta
+?? Assets/Plugins/NuGet/McpPlugin.dll
+?? Assets/Plugins/NuGet/McpPlugin.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.AspNetCore.Connections.Abstractions.dll
+?? Assets/Plugins/NuGet/Microsoft.AspNetCore.Connections.Abstractions.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.AspNetCore.Http.Connections.Client.dll
+?? Assets/Plugins/NuGet/Microsoft.AspNetCore.Http.Connections.Client.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.AspNetCore.Http.Connections.Common.dll
+?? Assets/Plugins/NuGet/Microsoft.AspNetCore.Http.Connections.Common.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.AspNetCore.SignalR.Client.Core.dll
+?? Assets/Plugins/NuGet/Microsoft.AspNetCore.SignalR.Client.Core.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.AspNetCore.SignalR.Client.dll
+?? Assets/Plugins/NuGet/Microsoft.AspNetCore.SignalR.Client.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.AspNetCore.SignalR.Common.dll
+?? Assets/Plugins/NuGet/Microsoft.AspNetCore.SignalR.Common.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.AspNetCore.SignalR.Protocols.Json.dll
+?? Assets/Plugins/NuGet/Microsoft.AspNetCore.SignalR.Protocols.Json.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.Bcl.AsyncInterfaces.dll
+?? Assets/Plugins/NuGet/Microsoft.Bcl.AsyncInterfaces.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.Bcl.Memory.dll
+?? Assets/Plugins/NuGet/Microsoft.Bcl.Memory.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.Bcl.TimeProvider.dll
+?? Assets/Plugins/NuGet/Microsoft.Bcl.TimeProvider.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.CodeAnalysis.CSharp.dll
+?? Assets/Plugins/NuGet/Microsoft.CodeAnalysis.CSharp.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.CodeAnalysis.dll
+?? Assets/Plugins/NuGet/Microsoft.CodeAnalysis.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Caching.Abstractions.dll
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Caching.Abstractions.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Configuration.Abstractions.dll
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Configuration.Abstractions.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+?? Assets/Plugins/NuGet/Microsoft.Extensions.DependencyInjection.Abstractions.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.Extensions.DependencyInjection.dll
+?? Assets/Plugins/NuGet/Microsoft.Extensions.DependencyInjection.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Diagnostics.Abstractions.dll
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Diagnostics.Abstractions.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Features.dll
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Features.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.Extensions.FileProviders.Abstractions.dll
+?? Assets/Plugins/NuGet/Microsoft.Extensions.FileProviders.Abstractions.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Hosting.Abstractions.dll
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Hosting.Abstractions.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Logging.Abstractions.dll
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Logging.Abstractions.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Logging.dll
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Logging.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Options.dll
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Options.dll.meta
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Primitives.dll
+?? Assets/Plugins/NuGet/Microsoft.Extensions.Primitives.dll.meta
+?? Assets/Plugins/NuGet/R3.dll
+?? Assets/Plugins/NuGet/R3.dll.meta
+?? Assets/Plugins/NuGet/ReflectorNet.dll
+?? Assets/Plugins/NuGet/ReflectorNet.dll.meta
+?? Assets/Plugins/NuGet/System.Buffers.dll
+?? Assets/Plugins/NuGet/System.Buffers.dll.meta
+?? Assets/Plugins/NuGet/System.Collections.Immutable.dll
+?? Assets/Plugins/NuGet/System.Collections.Immutable.dll.meta
+?? Assets/Plugins/NuGet/System.ComponentModel.Annotations.dll
+?? Assets/Plugins/NuGet/System.ComponentModel.Annotations.dll.meta
+?? Assets/Plugins/NuGet/System.Diagnostics.DiagnosticSource.dll
+?? Assets/Plugins/NuGet/System.Diagnostics.DiagnosticSource.dll.meta
+?? Assets/Plugins/NuGet/System.IO.Pipelines.dll
+?? Assets/Plugins/NuGet/System.IO.Pipelines.dll.meta
+?? Assets/Plugins/NuGet/System.Memory.dll
+?? Assets/Plugins/NuGet/System.Memory.dll.meta
+?? Assets/Plugins/NuGet/System.Numerics.Vectors.dll
+?? Assets/Plugins/NuGet/System.Numerics.Vectors.dll.meta
+?? Assets/Plugins/NuGet/System.Reflection.Metadata.dll
+?? Assets/Plugins/NuGet/System.Reflection.Metadata.dll.meta
+?? Assets/Plugins/NuGet/System.Runtime.CompilerServices.Unsafe.dll
+?? Assets/Plugins/NuGet/System.Runtime.CompilerServices.Unsafe.dll.meta
+?? Assets/Plugins/NuGet/System.Text.Encoding.CodePages.dll
+?? Assets/Plugins/NuGet/System.Text.Encoding.CodePages.dll.meta
+?? Assets/Plugins/NuGet/System.Text.Encodings.Web.dll
+?? Assets/Plugins/NuGet/System.Text.Encodings.Web.dll.meta
+?? Assets/Plugins/NuGet/System.Text.Json.dll
+?? Assets/Plugins/NuGet/System.Text.Json.dll.meta
+?? Assets/Plugins/NuGet/System.Threading.Channels.dll
+?? Assets/Plugins/NuGet/System.Threading.Channels.dll.meta
+?? Assets/Plugins/NuGet/System.Threading.Tasks.Extensions.dll
+?? Assets/Plugins/NuGet/System.Threading.Tasks.Extensions.dll.meta
+?? Assets/Scenes/ChakraTest.unity
+?? Assets/Scenes/ChakraTest.unity.meta
+?? Assets/XR/Temp.meta
+?? Assets/XR/Temp/XRSimulationPreferences.asset
+?? Assets/XR/Temp/XRSimulationPreferences.asset.meta
+?? Assets/XR/Temp/XRSimulationRuntimeSettings.stale.asset
+?? Assets/XR/Temp/XRSimulationRuntimeSettings.stale.asset.meta
+?? ProjectSettings/Packages/com.unity.ai.assistant/Settings.json
+?? com.QLC.HeadsetHolodeck-logcat2.txt
+?? docs/stabilization/STATUS.md
+?? docs/stabilization/WORK-ORDERS.md
+?? docs/stabilization/evidence-01/apk-signature-verification.txt
+?? docs/stabilization/evidence-01/asset-reference-check.txt
+?? docs/stabilization/evidence-01/baseline-context.json
+?? docs/stabilization/evidence-01/batch-results.txt
+?? docs/stabilization/evidence-01/build-results.json
+?? docs/stabilization/evidence-01/build-results.txt
+?? docs/stabilization/evidence-01/build-settings-diff.txt
+?? docs/stabilization/evidence-01/diff-check.txt
+?? docs/stabilization/evidence-01/diff-stat-before.txt
+?? docs/stabilization/evidence-01/dirty-inventory-summary.txt
+?? docs/stabilization/evidence-01/execution.txt
+?? docs/stabilization/evidence-01/failure-excerpts.txt
+?? docs/stabilization/evidence-01/final-document-check.txt
+?? docs/stabilization/evidence-01/git-status-after.txt
+?? docs/stabilization/evidence-01/git-status-before.txt
+?? docs/stabilization/evidence-01/install-validation.txt
+?? docs/stabilization/evidence-01/preservation-results.json
+?? docs/stabilization/evidence-01/save-test-results.txt
+?? docs/stabilization/evidence-01/save-tests.xml
+?? docs/stabilization/evidence-01/snapshot-comparison.txt
+?? docs/stabilization/evidence-01/static-inventory.txt
+?? docs/stabilization/evidence-01/temporary-validation-adapter.cs.txt
+?? docs/stabilization/evidence-01/test-entrypoint-review.txt
+?? docs/stabilization/evidence-01/validation-results.txt
+?? docs/stabilization/handoff-01.md
+?? spz-renderer-handoff-notes.md

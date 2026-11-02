@@ -1,0 +1,9 @@
+{
+  "check": "credentialsTests",
+  "label": "cred-tests-01",
+  "exit_code": 1,
+  "timed_out": false,
+  "started": "2026-09-13T15:50:43.288712-07:00",
+  "ended": "2026-09-13T15:51:02.185694-07:00",
+  "log": "/private/tmp/holodeck-saves-04-verify/cred-tests-01.log"
+}

@@ -1,0 +1,16 @@
+2026-09-13T22:32:38.1170930Z ENV unity=6000.2.10f1 batch=True platform=OSXEditor
+2026-09-13T22:32:38.1185380Z FIXTURE-ROOT /var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveRisk04_44c4a48d36d548e8b2598fa5006a12e2
+2026-09-13T22:32:38.1747530Z LEGACY-FIRST-SAVE bytes=339 backup-exists=False lock-exists=False temp-files=0
+2026-09-13T22:32:38.1913090Z LEGACY-INTERRUPTED bytes=169 parse=JsonReaderException backup-exists=False recoverable=False
+2026-09-13T22:32:38.5647540Z LEGACY-CONCURRENT writers=4 rounds=4 write-errors=12 first-error=IOException: Sharing violation on path /var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveRisk04_44c4a48d36d548e8b2598fa5006a12e2/legacy-concurrent/world.json final-bytes=2658122 temp-files=0
+2026-09-13T22:32:38.5861970Z JOURNALED-FIRST-SAVE primary-name=First backup-exists=False lock-exists=True temp-files=0
+2026-09-13T22:32:38.5902840Z JOURNALED-REPEATED-SAVE primary-name=Second backup-name=First primary-bytes=543 backup-bytes=542 temp-files=0
+2026-09-13T22:32:38.5993680Z JOURNALED-REPEATED-SAVE-2 primary-name=Third backup-name=Second temp-files=0
+2026-09-13T22:32:38.6050220Z JOURNALED-INTERRUPTED-STATE primary-bytes=275 backup-exists=True backup-name=Committed temp-files=0
+2026-09-13T22:32:38.6067660Z JOURNALED-INTERRUPTION-RECOVERY recovered=True display_name=Committed
+2026-09-13T22:32:38.6070560Z JOURNALED-INTERRUPTION-FILES-RETAINED primary=True backup=True temp-files=0
+2026-09-13T22:32:38.6086890Z JOURNALED-INTERRUPTION-REPAIR primary-name=Repaired backup-name=Committed temp-files=0
+2026-09-13T22:32:38.6122800Z JOURNALED-MISSING-PRIMARY primary-exists=False backup-name=BackupOnly1
+2026-09-13T22:32:38.6134390Z JOURNALED-MISSING-PRIMARY-RECOVERY recovered=True display_name=BackupOnly1
+2026-09-13T22:32:38.6143480Z JOURNALED-MISSING-FILES loaded=<null> folder-created=False
+2026-09-13T22:32:38.6145510Z RISK-PROBE COMPLETE

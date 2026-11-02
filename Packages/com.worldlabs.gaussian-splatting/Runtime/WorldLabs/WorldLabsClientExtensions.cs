@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -141,14 +142,14 @@ namespace WorldLabs.API
         /// <summary>
         /// Downloads the panorama image from a world's assets.
         /// </summary>
-        public static async Task<Texture2D> DownloadPanoramaAsync(this WorldLabsClient client, World world)
+        public static async Task<Texture2D> DownloadPanoramaAsync(this WorldLabsClient client, World world, CancellationToken cancellationToken = default)
         {
             if (world?.assets?.imagery?.pano_url == null)
             {
                 throw new Exception("World does not have a panorama URL");
             }
 
-            return await DownloadTextureAsync(world.assets.imagery.pano_url);
+            return await DownloadTextureAsync(world.assets.imagery.pano_url, cancellationToken);
         }
 
         /// <summary>
@@ -168,8 +169,9 @@ namespace WorldLabs.API
         /// Downloads a texture from a URL.
         /// Note: WebP format is not natively supported by Unity. Use DownloadTextureWithFallbackAsync for WebP URLs.
         /// </summary>
-        public static async Task<Texture2D> DownloadTextureAsync(string url)
+        public static async Task<Texture2D> DownloadTextureAsync(string url, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             string noCacheUrl = AddCacheBuster(url);
             using (UnityWebRequest request = UnityWebRequestTexture.GetTexture(noCacheUrl))
             {
@@ -178,9 +180,12 @@ namespace WorldLabs.API
                 var operation = request.SendWebRequest();
                 while (!operation.isDone)
                 {
+                    if (cancellationToken.IsCancellationRequested) request.Abort();
+                    cancellationToken.ThrowIfCancellationRequested();
                     await Task.Yield();
                 }
 
+                cancellationToken.ThrowIfCancellationRequested();
                 if (request.result != UnityWebRequest.Result.Success)
                 {
                     throw new Exception($"Failed to download texture: {request.error}");
@@ -236,8 +241,9 @@ namespace WorldLabs.API
         /// <summary>
         /// Downloads binary data from a URL.
         /// </summary>
-        public static async Task<byte[]> DownloadBinaryAsync(string url)
+        public static async Task<byte[]> DownloadBinaryAsync(string url, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             string noCacheUrl = AddCacheBuster(url);
             using (UnityWebRequest request = UnityWebRequest.Get(noCacheUrl))
             {
@@ -246,9 +252,12 @@ namespace WorldLabs.API
                 var operation = request.SendWebRequest();
                 while (!operation.isDone)
                 {
+                    if (cancellationToken.IsCancellationRequested) request.Abort();
+                    cancellationToken.ThrowIfCancellationRequested();
                     await Task.Yield();
                 }
 
+                cancellationToken.ThrowIfCancellationRequested();
                 if (request.result != UnityWebRequest.Result.Success)
                 {
                     throw new Exception($"Failed to download: {request.error}");

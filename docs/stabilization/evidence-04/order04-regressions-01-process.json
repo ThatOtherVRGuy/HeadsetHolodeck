@@ -1,0 +1,9 @@
+{
+  "check": "batch",
+  "label": "order04-regressions-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-13T16:00:49.915556-07:00",
+  "ended": "2026-09-13T16:01:25.611544-07:00",
+  "log": "/private/tmp/holodeck-saves-04-verify/order04-regressions-01.log"
+}

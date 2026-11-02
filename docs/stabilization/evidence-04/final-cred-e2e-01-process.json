@@ -1,0 +1,9 @@
+{
+  "check": "credentials",
+  "label": "final-cred-e2e-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-13T16:04:13.222799-07:00",
+  "ended": "2026-09-13T16:04:50.512156-07:00",
+  "log": "/private/tmp/holodeck-saves-04-verify/final-cred-e2e-01.log"
+}

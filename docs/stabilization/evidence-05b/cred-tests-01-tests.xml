@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="28" result="Failed(Child)" total="28" passed="27" failed="1" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-09-14 01:11:32Z" end-time="2026-09-14 01:11:33Z" duration="0.1492208">
+  <test-suite type="TestSuite" id="1000" name="HeadsetHolodeck" fullname="HeadsetHolodeck" runstate="Runnable" testcasecount="270" result="Failed" site="Child" start-time="2026-09-14 01:11:32Z" end-time="2026-09-14 01:11:33Z" duration="0.149221" total="28" passed="27" failed="1" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1032" name="Holodeck.BuildCredentials.Tests.dll" fullname="/private/tmp/holodeck-saves-03-zusaQa/project/Library/ScriptAssemblies/Holodeck.BuildCredentials.Tests.dll" runstate="Runnable" testcasecount="28" result="Failed" site="Child" start-time="2026-09-14 01:11:32Z" end-time="2026-09-14 01:11:33Z" duration="0.140515" total="28" passed="27" failed="1" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="65690" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1033" name="Holodeck" fullname="Holodeck" runstate="Runnable" testcasecount="28" result="Failed" site="Child" start-time="2026-09-14 01:11:32Z" end-time="2026-09-14 01:11:33Z" duration="0.136783" total="28" passed="27" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1034" name="BuildCredentials" fullname="Holodeck.BuildCredentials" runstate="Runnable" testcasecount="28" result="Failed" site="Child" start-time="2026-09-14 01:11:32Z" end-time="2026-09-14 01:11:33Z" duration="0.135790" total="28" passed="27" failed="1" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestSuite" id="1035" name="Tests" fullname="Holodeck.BuildCredentials.Tests" runstate="Runnable" testcasecount="28" result="Failed" site="Child" start-time="2026-09-14 01:11:32Z" end-time="2026-09-14 01:11:33Z" duration="0.135200" total="28" passed="27" failed="1" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-suite type="TestFixture" id="1003" name="BuildEnvCredentialsTests" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" testcasecount="28" result="Failed" site="Child" start-time="2026-09-14 01:11:32Z" end-time="2026-09-14 01:11:33Z" duration="0.132948" total="28" passed="27" failed="1" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-case id="1008" name="AllowList_NeverNamesACredentialShapedKey" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.AllowList_NeverNamesACredentialShapedKey" methodname="AllowList_NeverNamesACredentialShapedKey" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1243943336" result="Passed" start-time="2026-09-14 01:11:32Z" end-time="2026-09-14 01:11:32Z" duration="0.012981" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1009" name="CredentialShapedKeys_AreRecognised" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.CredentialShapedKeys_AreRecognised" methodname="CredentialShapedKeys_AreRecognised" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1099139402" result="Passed" start-time="2026-09-14 01:11:32Z" end-time="2026-09-14 01:11:32Z" duration="0.000913" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1027" name="DeviceMode_CanBeDeclaredOnTheCommandLineOrEnvironment" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.DeviceMode_CanBeDeclaredOnTheCommandLineOrEnvironment" methodname="DeviceMode_CanBeDeclaredOnTheCommandLineOrEnvironment" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1392421273" result="Passed" start-time="2026-09-14 01:11:32Z" end-time="2026-09-14 01:11:32Z" duration="0.005065" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1025" name="DeviceMode_EmbedsNothingEvenWhenTheEnvHasCredentials" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.DeviceMode_EmbedsNothingEvenWhenTheEnvHasCredentials" methodname="DeviceMode_EmbedsNothingEvenWhenTheEnvHasCredentials" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="2052131430" result="Failed" start-time="2026-09-14 01:11:32Z" end-time="2026-09-14 01:11:33Z" duration="0.020715" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  No credential value may appear anywhere in a device build's resources.
+  Expected: False
+  But was:  True
+]]></message>
+                  <stack-trace><![CDATA[at Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.DeviceMode_EmbedsNothingEvenWhenTheEnvHasCredentials () [0x000a6] in /private/tmp/holodeck-saves-03-zusaQa/project/Assets/App/Editor/Tests/BuildEnvCredentialsTests.cs:384
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1026" name="DeviceMode_RemovesAStaleCopyLeftByAnEarlierBuild" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.DeviceMode_RemovesAStaleCopyLeftByAnEarlierBuild" methodname="DeviceMode_RemovesAStaleCopyLeftByAnEarlierBuild" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="2128461261" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.004865" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1014" name="Distribution_DropsAStaleCopyLeftByACrashedPrivateBuild" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Distribution_DropsAStaleCopyLeftByACrashedPrivateBuild" methodname="Distribution_DropsAStaleCopyLeftByACrashedPrivateBuild" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="548877857" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.004274" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1012" name="Distribution_ExcludesCredentialsAndUnrelatedEntries" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Distribution_ExcludesCredentialsAndUnrelatedEntries" methodname="Distribution_ExcludesCredentialsAndUnrelatedEntries" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="814884178" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.006098" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1013" name="Distribution_NeverWritesAValueBelongingToAnExcludedEntry" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Distribution_NeverWritesAValueBelongingToAnExcludedEntry" methodname="Distribution_NeverWritesAValueBelongingToAnExcludedEntry" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="228105768" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.003388" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1015" name="Distribution_RemovesAStaleCopyEvenWhenNothingIsEmbeddable" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Distribution_RemovesAStaleCopyEvenWhenNothingIsEmbeddable" methodname="Distribution_RemovesAStaleCopyEvenWhenNothingIsEmbeddable" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1818864779" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.001690" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1016" name="Distribution_WithNoEnvFile_WritesNothing" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Distribution_WithNoEnvFile_WritesNothing" methodname="Distribution_WithNoEnvFile_WritesNothing" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="552835558" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.000817" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1022" name="Embed_LeavesNoTemporaryFileBehind" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Embed_LeavesNoTemporaryFileBehind" methodname="Embed_LeavesNoTemporaryFileBehind" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="677034182" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.001627" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1023" name="Embed_ReplacesAnExistingDocumentWithoutLeavingOneBehind" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Embed_ReplacesAnExistingDocumentWithoutLeavingOneBehind" methodname="Embed_ReplacesAnExistingDocumentWithoutLeavingOneBehind" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1655380941" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.006838" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1021" name="EmbeddedDocument_KeepsTheRuntimeEnvFormat" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.EmbeddedDocument_KeepsTheRuntimeEnvFormat" methodname="EmbeddedDocument_KeepsTheRuntimeEnvFormat" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1521701754" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.004130" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1031" name="EmbeddedPath_MatchesTheRuntimeResourcesName" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.EmbeddedPath_MatchesTheRuntimeResourcesName" methodname="EmbeddedPath_MatchesTheRuntimeResourcesName" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="211024794" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.000241" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1029" name="EnvLoader_PrefersTheDeviceFileOverAnyEmbeddedCopy" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.EnvLoader_PrefersTheDeviceFileOverAnyEmbeddedCopy" methodname="EnvLoader_PrefersTheDeviceFileOverAnyEmbeddedCopy" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="761859783" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.005323" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1006" name="ParseMode_RejectsAnUnknownValueInsteadOfGuessing" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.ParseMode_RejectsAnUnknownValueInsteadOfGuessing" methodname="ParseMode_RejectsAnUnknownValueInsteadOfGuessing" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="673161796" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.001153" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1010" name="Private_EmbedsEveryEntryUnchanged" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Private_EmbedsEveryEntryUnchanged" methodname="Private_EmbedsEveryEntryUnchanged" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="312558631" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.003618" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1011" name="Private_WithNoEnvFile_EmbedsNothingAndCreatesNothing" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Private_WithNoEnvFile_EmbedsNothingAndCreatesNothing" methodname="Private_WithNoEnvFile_EmbedsNothingAndCreatesNothing" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="261531455" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.001508" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1007" name="ReadCommandLineValue_FindsTheDeclaredArgument" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.ReadCommandLineValue_FindsTheDeclaredArgument" methodname="ReadCommandLineValue_FindsTheDeclaredArgument" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="515100293" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.000459" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1024" name="RemoveEmbedded_DeletesTheCopyAndItsMetadata" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.RemoveEmbedded_DeletesTheCopyAndItsMetadata" methodname="RemoveEmbedded_DeletesTheCopyAndItsMetadata" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1882373800" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.001424" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1004" name="Resolve_PrefersCommandLineThenEnvironmentThenSavedChoice" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Resolve_PrefersCommandLineThenEnvironmentThenSavedChoice" methodname="Resolve_PrefersCommandLineThenEnvironmentThenSavedChoice" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1520203196" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.000170" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1005" name="Resolve_WithNoDeclaration_IsUnspecified" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Resolve_WithNoDeclaration_IsUnspecified" methodname="Resolve_WithNoDeclaration_IsUnspecified" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="772062518" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.000093" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1030" name="RuntimeDotEnv_LoadsBeforeTheFirstScene" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.RuntimeDotEnv_LoadsBeforeTheFirstScene" methodname="RuntimeDotEnv_LoadsBeforeTheFirstScene" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1274026389" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.000883" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1017" name="Undeclared_WithCredentials_StopsTheBuildWithActionableText" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Undeclared_WithCredentials_StopsTheBuildWithActionableText" methodname="Undeclared_WithCredentials_StopsTheBuildWithActionableText" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="217939247" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.003888" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1019" name="Undeclared_WithNoEnvFile_DoesNotStopTheBuild" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Undeclared_WithNoEnvFile_DoesNotStopTheBuild" methodname="Undeclared_WithNoEnvFile_DoesNotStopTheBuild" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="544593784" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.000725" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1018" name="Undeclared_WithOnlyNonCredentialEntries_DoesNotStopTheBuild" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Undeclared_WithOnlyNonCredentialEntries_DoesNotStopTheBuild" methodname="Undeclared_WithOnlyNonCredentialEntries_DoesNotStopTheBuild" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="2066456056" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.001586" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1020" name="Undeclared_WithUnfilledCredentialSlots_DoesNotStopTheBuild" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.Undeclared_WithUnfilledCredentialSlots_DoesNotStopTheBuild" methodname="Undeclared_WithUnfilledCredentialSlots_DoesNotStopTheBuild" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="278002398" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.001338" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1028" name="UnspecifiedMode_TellsYouAboutTheDeviceOption" fullname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests.UnspecifiedMode_TellsYouAboutTheDeviceOption" methodname="UnspecifiedMode_TellsYouAboutTheDeviceOption" classname="Holodeck.BuildCredentials.Tests.BuildEnvCredentialsTests" runstate="Runnable" seed="1732213535" result="Passed" start-time="2026-09-14 01:11:33Z" end-time="2026-09-14 01:11:33Z" duration="0.001962" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[<color=#ff6b6b>fail:</color> [18:11:33:1008] <color=#B4FF32>[AI]</color> <color=#58D68D><b>TestResultCollector</b></color> Test run finished, but the pending MCP request id was missing. The test results cannot be delivered to the client.
+<color=#ff6b6b>fail:</color> [18:11:33:1008] <color=#B4FF32>[AI]</color> <color=#58D68D><b>TestResultCollector</b></color> Test run finished, but the pending MCP request id was missing. The test results cannot be delivered to the client.
+Saving results to: /Users/davidarendash/Library/Application Support/QLC/HeadsetHolodeck/TestResults.xml
+Saving results to: /Users/davidarendash/Library/Application Support/QLC/HeadsetHolodeck/TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

@@ -1,0 +1,606 @@
+﻿{
+    "generatedUtc":  "2026-10-28T00:32:39.3993984Z",
+    "purpose":  "P1.0 baseline captured before Meta/Pico target isolation",
+    "unityVersion":  "6000.2.10f1",
+    "activeBuildTarget":  "Android",
+    "player":  {
+                   "applicationIdentifier":  "com.QLC.HeadsetHolodeck",
+                   "bundleVersion":  "9.2.1",
+                   "androidBundleVersionCode":  "1",
+                   "minSdkVersion":  "32",
+                   "targetSdkVersion":  "0",
+                   "targetArchitectures":  "2",
+                   "activeInputHandler":  "1",
+                   "scriptingBackend":  "IL2CPP",
+                   "graphicsAPIs":  [
+                                        "Vulkan"
+                                    ],
+                   "scriptingDefines":  "USE_INPUT_SYSTEM_POSE_CONTROL;UNITY_POST_PROCESSING_STACK_V2;USE_STICK_CONTROL_THUMBSTICKS;SHERPA_ONNX;PICO_SPATIALIZER;ENABLE_PICO_OPENXR_SDK;ENABLE_PICO_INTERACTION_PACK;UNITY_MCP_READY;UNITY_MCP_DEPS_17"
+               },
+    "xr":  {
+               "androidInitManagerOnStart":  true,
+               "providers":  [
+                                 {
+                                     "provider":  "Android Providers",
+                                     "automaticLoading":  false,
+                                     "automaticRunning":  false,
+                                     "loaders":  [
+                                                     "OpenXRLoader"
+                                                 ]
+                                 },
+                                 {
+                                     "provider":  "Standalone Providers",
+                                     "automaticLoading":  false,
+                                     "automaticRunning":  false,
+                                     "loaders":  [
+                                                     "OpenXRLoader"
+                                                 ]
+                                 }
+                             ]
+           },
+    "openxr":  {
+                   "renderMode":  "MultiPass",
+                   "depthSubmissionMode":  "None",
+                   "features":  [
+                                    {
+                                        "name":  "RuntimeDebuggerOpenXRFeature",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "RuntimeDebuggerOpenXRFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "LayerSecureContentFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "LayerSecureContentFeature",
+                                        "company":  "PICO",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "XrPerformanceSettingsFeature",
+                                        "buildTargetGroup":  "VisionOS",
+                                        "featureId":  "XrPerformanceSettingsFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "HTCViveControllerProfile",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "HTCViveControllerProfile",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "ARFaceFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "ARFaceFeature",
+                                        "company":  "Unity Technologies",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "ARSessionFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "ARSessionFeature",
+                                        "company":  "Unity Technologies",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "HandInteractionProfile",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "HandInteractionProfile",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "HandCommonPosesInteraction",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "HandCommonPosesInteraction",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "XrPerformanceSettingsFeature",
+                                        "buildTargetGroup":  "iPhone",
+                                        "featureId":  "XrPerformanceSettingsFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "SpaceWarpFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "SpaceWarpFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "DisplayRefreshRateFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "DisplayRefreshRateFeature",
+                                        "company":  "PICO",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "ConformanceAutomationFeature",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "ConformanceAutomationFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "MetaQuestFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "MetaQuestFeature",
+                                        "company":  "Unity",
+                                        "enabled":  true
+                                    },
+                                    {
+                                        "name":  "PalmPoseInteraction",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "PalmPoseInteraction",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "DebugUtilsFeature",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "DebugUtilsFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "HandTracking",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "HandTracking",
+                                        "company":  "Unity",
+                                        "enabled":  true
+                                    },
+                                    {
+                                        "name":  "KHRSimpleControllerProfile",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "KHRSimpleControllerProfile",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "AndroidMouseInteractionProfile",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "AndroidMouseInteractionProfile",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "ARAnchorFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "ARAnchorFeature",
+                                        "company":  "Unity Technologies",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "OculusQuestFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "OculusQuestFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "MetaQuestTouchProControllerProfile",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "MetaQuestTouchProControllerProfile",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "DPadInteraction",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "DPadInteraction",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "PICOSceneCapture",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "PICOSceneCapture",
+                                        "company":  "PICO",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "AndroidXRSupportFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "AndroidXRSupportFeature",
+                                        "company":  "Unity Technologies",
+                                        "enabled":  true
+                                    },
+                                    {
+                                        "name":  "KHRSimpleControllerProfile",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "KHRSimpleControllerProfile",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "MockRuntime",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "MockRuntime",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "PassthroughFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "PassthroughFeature",
+                                        "company":  "PICO",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "FoveationFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "FoveationFeature",
+                                        "company":  "PICO",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "ARRaycastFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "ARRaycastFeature",
+                                        "company":  "Unity Technologies",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "PICOSpatialAnchor",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "PICOSpatialAnchor",
+                                        "company":  "PICO",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "DPadInteraction",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "DPadInteraction",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "PICOSpatialMesh",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "PICOSpatialMesh",
+                                        "company":  "PICO",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "EyeGazeInteraction",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "EyeGazeInteraction",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "XrPerformanceSettingsFeature",
+                                        "buildTargetGroup":  "WebGL",
+                                        "featureId":  "XrPerformanceSettingsFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "PalmPoseInteraction",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "PalmPoseInteraction",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "HPReverbG2ControllerProfile",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "HPReverbG2ControllerProfile",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "HandTracking",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "HandTracking",
+                                        "company":  "Unity",
+                                        "enabled":  true
+                                    },
+                                    {
+                                        "name":  "FoveatedRenderingFeature",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "FoveatedRenderingFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "AndroidXRHandMeshData",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "AndroidXRHandMeshData",
+                                        "company":  "Unity Technologies",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "ApiLayersFeature",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "ApiLayersFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "DisplayUtilitiesFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "DisplayUtilitiesFeature",
+                                        "company":  "Unity Technologies",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "AndroidXRPerformanceMetrics",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "AndroidXRPerformanceMetrics",
+                                        "company":  "Unity Technologies",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "RuntimeDebuggerOpenXRFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "RuntimeDebuggerOpenXRFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "MetaQuestTouchProControllerProfile",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "MetaQuestTouchProControllerProfile",
+                                        "company":  "Unity",
+                                        "enabled":  true
+                                    },
+                                    {
+                                        "name":  "OculusTouchControllerProfile",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "OculusTouchControllerProfile",
+                                        "company":  "Unity",
+                                        "enabled":  true
+                                    },
+                                    {
+                                        "name":  "OculusTouchControllerProfile",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "OculusTouchControllerProfile",
+                                        "company":  "Unity",
+                                        "enabled":  true
+                                    },
+                                    {
+                                        "name":  "MicrosoftHandInteraction",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "MicrosoftHandInteraction",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "ConformanceAutomationFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "ConformanceAutomationFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "XrPerformanceSettingsFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "XrPerformanceSettingsFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "MicrosoftMotionControllerProfile",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "MicrosoftMotionControllerProfile",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "OpenXRLifeCycleFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "OpenXRLifeCycleFeature",
+                                        "company":  "Unity Technologies",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "HandInteractionProfile",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "HandInteractionProfile",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "PICOG3ControllerProfile",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "PICOG3ControllerProfile",
+                                        "company":  "PICO",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "FoveatedRenderingFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "FoveatedRenderingFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "XrPerformanceSettingsFeature",
+                                        "buildTargetGroup":  "GameCoreXboxOne",
+                                        "featureId":  "XrPerformanceSettingsFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "PICO4ControllerProfile",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "PICO4ControllerProfile",
+                                        "company":  "PICO",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "MetaHandTrackingAim",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "MetaHandTrackingAim",
+                                        "company":  "Unity",
+                                        "enabled":  true
+                                    },
+                                    {
+                                        "name":  "XrPerformanceSettingsFeature",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "XrPerformanceSettingsFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "MetaQuestTouchPlusControllerProfile",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "MetaQuestTouchPlusControllerProfile",
+                                        "company":  "Unity",
+                                        "enabled":  true
+                                    },
+                                    {
+                                        "name":  "ValveIndexControllerProfile",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "ValveIndexControllerProfile",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "AROcclusionFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "AROcclusionFeature",
+                                        "company":  "Unity Technologies",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "PICONeo3ControllerProfile",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "PICONeo3ControllerProfile",
+                                        "company":  "PICO",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "PICOFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "PICOFeature",
+                                        "company":  "PICO",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "MockRuntime",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "MockRuntime",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "MetaQuestTouchPlusControllerProfile",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "MetaQuestTouchPlusControllerProfile",
+                                        "company":  "Unity",
+                                        "enabled":  true
+                                    },
+                                    {
+                                        "name":  "ARPlaneFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "ARPlaneFeature",
+                                        "company":  "Unity Technologies",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "MetaHandTrackingAim",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "MetaHandTrackingAim",
+                                        "company":  "Unity",
+                                        "enabled":  true
+                                    },
+                                    {
+                                        "name":  "DebugUtilsFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "DebugUtilsFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "EyeGazeInteraction",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "EyeGazeInteraction",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "HandCommonPosesInteraction",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "HandCommonPosesInteraction",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "BodyTrackingFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "BodyTrackingFeature",
+                                        "company":  "PICO",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "MicrosoftHandInteraction",
+                                        "buildTargetGroup":  "Standalone",
+                                        "featureId":  "MicrosoftHandInteraction",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "PICO4UltraControllerProfile",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "PICO4UltraControllerProfile",
+                                        "company":  "PICO",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "ARCameraFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "ARCameraFeature",
+                                        "company":  "Unity Technologies",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "FacialSimulationFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "FacialSimulationFeature",
+                                        "company":  "PICO",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "OpenXRExtensions",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "OpenXRExtensions",
+                                        "company":  "PICO",
+                                        "enabled":  false
+                                    },
+                                    {
+                                        "name":  "ApiLayersFeature",
+                                        "buildTargetGroup":  "Android",
+                                        "featureId":  "ApiLayersFeature",
+                                        "company":  "Unity",
+                                        "enabled":  false
+                                    }
+                                ]
+               },
+    "buildScenes":  [
+                        {
+                            "enabled":  true,
+                            "path":  "Assets/Scenes/Holodeck.unity",
+                            "guid":  "2d01f3713ded2496ab416f6c079957de"
+                        }
+                    ],
+    "sourceManifest":  {
+                           "path":  "Assets/Plugins/Android/AndroidManifest.xml",
+                           "exists":  true,
+                           "bytes":  3634,
+                           "hasOculusVrCategory":  true,
+                           "hasVrHardwareFeature":  false,
+                           "hasPicoEntries":  false
+                       },
+    "method":  [
+                   "player.graphicsAPIs/scriptingBackend and openxr.renderMode/depthSubmissionMode were read from the live editor via script.eval.",
+                   "Everything else is parsed from serialized project assets; case-sensitive YAML keys (m_Enabled vs m_enabled) matter.",
+                   "The merged APK manifest is only available after a build; this records the source manifest."
+               ]
+}

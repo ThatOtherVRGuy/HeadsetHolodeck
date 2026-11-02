@@ -1,0 +1,9 @@
+{
+  "check": "transitions",
+  "label": "order04-manager-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-13T15:34:35.353246-07:00",
+  "ended": "2026-09-13T15:35:23.619873-07:00",
+  "log": "/private/tmp/holodeck-saves-04-verify/order04-manager-01.log"
+}

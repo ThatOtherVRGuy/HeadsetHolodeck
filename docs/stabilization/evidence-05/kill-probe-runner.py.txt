@@ -1,0 +1,146 @@
+#!/usr/bin/env python3
+"""Work order 05 — app-kill save probe driver.
+
+Runs the real save path in an isolated Unity batch editor and SIGKILLs the process group
+(= an app kill) while saves are in flight, then asks the real store whether each killed
+fixture is still recoverable. Provider networking and reads of the developer's real .env
+are denied by the sandbox profile. Every fixture lives under this scratch directory.
+"""
+
+import datetime
+import json
+import os
+import re
+import shutil
+import signal
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+RUN = Path(__file__).resolve().parent
+PROJECT = Path("/private/tmp/holodeck-saves-03-zusaQa/project")
+UNITY = "/Applications/Unity/Hub/Editor/6000.2.10f1/Unity.app/Contents/MacOS/Unity"
+POLICY = RUN / "offline-tests.sb"
+FIXTURES = RUN / "fixtures"
+METHOD = "StabilizationSaveKill05.Run"
+EVIDENCE = Path(
+    "/Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev/docs/stabilization/evidence-05"
+)
+
+# Delays after the first completed save; each lands at a different point of the save cycle.
+TRIAL_DELAYS = [0.02, 0.05, 0.09, 0.13, 0.21, 0.31]
+OBJECTS_PER_SAVE = 20000
+
+
+def child_env():
+    return {k: v for k, v in os.environ.items() if not re.search(r"KEY|TOKEN|SECRET|PASSWORD", k, re.I)}
+
+
+def launch(label, mode, extra):
+    command = [
+        "/usr/bin/sandbox-exec", "-f", str(POLICY), UNITY,
+        "-batchmode", "-nographics", "-projectPath", str(PROJECT),
+        "-executeMethod", METHOD, "-killMode", mode,
+    ] + extra + ["-logFile", str(RUN / (label + ".log"))]
+    (RUN / (label + "-command.json")).write_text(json.dumps(command, indent=2) + "\n")
+    return subprocess.Popen(command, env=child_env(), start_new_session=True)
+
+
+def wait_for_first_save(process, result_path, deadline_seconds=240):
+    """Wait until the writer has completed at least one save (or exited/compiled but failed)."""
+    deadline = time.time() + deadline_seconds
+    while time.time() < deadline:
+        if result_path.exists():
+            text = result_path.read_text(errors="replace")
+            if "SAVE-DONE" in text:
+                return True
+            if "FAIL " in text:
+                return False
+        if process.poll() is not None:
+            return False
+        time.sleep(0.05)
+    return False
+
+
+def record(path, line):
+    with path.open("a") as handle:
+        handle.write(line + "\n")
+    print(line, flush=True)
+
+
+def main():
+    FIXTURES.mkdir(parents=True, exist_ok=True)
+    summary = {"started": datetime.datetime.now().astimezone().isoformat(), "trials": [], "project": str(PROJECT)}
+    trial_log = RUN / "trials.txt"
+
+    for index, delay in enumerate(TRIAL_DELAYS, start=1):
+        label = f"trial-{index:02d}"
+        fixture = FIXTURES / label
+        result = RUN / f"{label}-writer.txt"
+        process = launch(
+            label + "-writer", "write",
+            ["-killResult", str(result), "-killFixture", str(fixture),
+             "-killObjects", str(OBJECTS_PER_SAVE), "-killBudgetMs", "60000"],
+        )
+        started = time.time()
+        began = wait_for_first_save(process, result)
+        time.sleep(delay)
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.wait()
+        elapsed = time.time() - started
+
+        text = result.read_text(errors="replace") if result.exists() else ""
+        completed = len(re.findall(r"SAVE-DONE", text))
+        started_saves = len(re.findall(r"SAVE-START", text))
+        in_flight = started_saves > completed
+        entry = {
+            "trial": label,
+            "fixture": str(fixture),
+            "kill_delay_after_first_save_s": delay,
+            "writer_produced_first_save": began,
+            "process_returncode": process.returncode,
+            "killed_with": "SIGKILL to process group",
+            "wall_seconds": round(elapsed, 1),
+            "saves_started": started_saves,
+            "saves_completed": completed,
+            "kill_landed_inside_a_save": in_flight,
+        }
+        summary["trials"].append(entry)
+        record(trial_log, json.dumps(entry))
+
+    verify_label = "verify"
+    verify_result = RUN / "verify.txt"
+    verify = launch(verify_label, "verify", ["-killResult", str(verify_result), "-killRoot", str(FIXTURES)])
+    verify.wait(timeout=900)
+    summary["verify_exit_code"] = verify.returncode
+    summary["ended"] = datetime.datetime.now().astimezone().isoformat()
+    (RUN / "kill-summary.json").write_text(json.dumps(summary, indent=2) + "\n")
+
+    EVIDENCE.mkdir(parents=True, exist_ok=True)
+    for artifact in RUN.glob("trial-*-writer.txt"):
+        shutil.copy2(artifact, EVIDENCE / artifact.name)
+    for artifact in ("trials.txt", "verify.txt", "kill-summary.json"):
+        source = RUN / artifact
+        if source.exists():
+            shutil.copy2(source, EVIDENCE / artifact)
+    for log in RUN.glob("trial-*.log"):
+        redact_and_copy(log, EVIDENCE / (log.name + ".txt"))
+    if (RUN / "verify.log").exists():
+        redact_and_copy(RUN / "verify.log", EVIDENCE / "verify.log.txt")
+    print(json.dumps(summary), flush=True)
+    return 0
+
+
+def redact_and_copy(source, destination):
+    content = source.read_text(errors="replace")
+    content = re.sub(r"sk-[A-Za-z0-9_-]{12,}", "[REDACTED_API_KEY]", content)
+    content = re.sub(r"(?i)(Bearer +)[A-Za-z0-9._-]{12,}", r"\1[REDACTED]", content)
+    destination.write_text(content)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

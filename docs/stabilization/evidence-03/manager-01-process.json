@@ -1,0 +1,9 @@
+{
+  "check": "transitions",
+  "label": "manager-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-13T14:53:45.420581-07:00",
+  "ended": "2026-09-13T14:55:00.592919-07:00",
+  "log": "/private/tmp/holodeck-saves-03-zusaQa/manager-01.log"
+}

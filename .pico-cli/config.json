@@ -1,0 +1,11 @@
+{
+  "project_name": "HeadsetHolodeckDev",
+  "mode": "openxr",
+  "unity_version": "6000.2.10f1",
+  "platform": "android",
+  "devices": [
+    "pico swan"
+  ],
+  "business_type": "toC",
+  "pico_unity_init_completed": true
+}

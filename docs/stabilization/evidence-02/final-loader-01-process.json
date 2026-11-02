@@ -1,0 +1,9 @@
+{
+  "check": "transitions",
+  "label": "final-loader-01",
+  "exit_code": 0,
+  "timed_out": false,
+  "started": "2026-09-10T11:36:02.786572-07:00",
+  "ended": "2026-09-10T11:36:33.648210-07:00",
+  "log": "/private/tmp/holodeck-transitions-02-final-sg5r74ko/final-loader-01.log"
+}

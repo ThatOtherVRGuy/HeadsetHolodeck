@@ -1,0 +1,11 @@
+{
+  "passed_entry_points": 19,
+  "complete": true,
+  "compilation_errors": 0,
+  "generation_start_log_count": 0,
+  "missing_pointing_hit_messages": [
+    "[WorldActionDispatcher] Generate text object placement unresolved for 'teddy bear': Where?"
+  ],
+  "network_policy": "External outbound connections denied; local IPC/loopback allowed for Unity services.",
+  "credential_policy": "No copied root .env; .env / embedded env resource reads denied; inherited KEY/TOKEN/SECRET/PASSWORD variables omitted."
+}

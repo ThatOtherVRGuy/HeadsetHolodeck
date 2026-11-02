@@ -1,0 +1,6 @@
+Headset Holodeck order 06 — docs claim audit
+date: 2026-09-14T06:50:45Z  host: Darwin/arm64  mode: links
+
+== Markdown link check (local targets only) ==
+BROKEN  ./docs/stabilization/handoff-05b-device-env.md -> evidence-05b/cred-e2e-02-results.txt
+NOTE  historical handoffs intentionally reference since-deleted APK artifacts (handoff 05b records the cleanup).

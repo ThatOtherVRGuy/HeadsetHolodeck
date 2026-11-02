@@ -1,0 +1,36 @@
+[
+  {
+    "scope": "modified runtime and STATUS",
+    "exit_code": 0,
+    "clean": true,
+    "output": ""
+  },
+  {
+    "scope": "Assets/App/Editor/WorldRestoreTransitionBatchTests.cs",
+    "exit_code": 1,
+    "clean": true,
+    "output": "",
+    "note": "Exit 1 from no-index denotes a new file, not a whitespace failure."
+  },
+  {
+    "scope": "Assets/App/Editor/WorldLoaderTransitionBatchTests.cs",
+    "exit_code": 1,
+    "clean": true,
+    "output": "",
+    "note": "Exit 1 from no-index denotes a new file, not a whitespace failure."
+  },
+  {
+    "scope": "Assets/App/Editor/WorldTransitionBatchTests.cs",
+    "exit_code": 1,
+    "clean": true,
+    "output": "",
+    "note": "Exit 1 from no-index denotes a new file, not a whitespace failure."
+  },
+  {
+    "scope": "Packages/com.worldlabs.gaussian-splatting/Runtime/WorldLabs/WorldTransitionOperation.cs",
+    "exit_code": 1,
+    "clean": true,
+    "output": "",
+    "note": "Exit 1 from no-index denotes a new file, not a whitespace failure."
+  }
+]

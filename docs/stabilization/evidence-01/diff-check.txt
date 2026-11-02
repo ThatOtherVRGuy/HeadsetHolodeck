@@ -1,0 +1,143 @@
+Current git diff --check exit 2. These pre-existing scene/sample metadata whitespace findings were preserved; original file hashes match the starting state.
+Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-0_comp_dir.png.meta:126: trailing whitespace.
++    customData: 
+Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-0_comp_light.exr.meta:126: trailing whitespace.
++    customData: 
+Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-1_comp_dir.png.meta:126: trailing whitespace.
++    customData: 
+Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-1_comp_light.exr.meta:126: trailing whitespace.
++    customData: 
+Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-2_comp_dir.png.meta:126: trailing whitespace.
++    customData: 
+Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/Lightmap-2_comp_light.exr.meta:126: trailing whitespace.
++    customData: 
+Assets/Samples/XR Interaction Toolkit/3.5.0/Hands Interaction Demo/HandsDemoScene/ReflectionProbe-0.exr.meta:126: trailing whitespace.
++    customData: 
+Assets/Scenes/Holodeck.unity:459: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:2345: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:2420: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:4394: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:6616: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:7430: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:7474: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:9115: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:10584: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:10837: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:11210: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:11417: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:12806: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:14659: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:14703: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:17531: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:18270: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:18314: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:18859: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:18977: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:18999: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:21891: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:21935: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:23687: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:24198: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:24238: trailing whitespace.
++          m_ObjectArgumentAssemblyTypeName: 
+Assets/Scenes/Holodeck.unity:24241: trailing whitespace.
++          m_StringArgument: 
+Assets/Scenes/Holodeck.unity:24254: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:24329: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:24465: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:24641: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:24681: trailing whitespace.
++          m_ObjectArgumentAssemblyTypeName: 
+Assets/Scenes/Holodeck.unity:24684: trailing whitespace.
++          m_StringArgument: 
+Assets/Scenes/Holodeck.unity:25730: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:25774: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:28852: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:30018: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:32103: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:32842: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:32886: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:32963: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:33007: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:35407: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:35545: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:35589: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:37063: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:37241: trailing whitespace.
++          m_ObjectArgumentAssemblyTypeName: 
+Assets/Scenes/Holodeck.unity:37244: trailing whitespace.
++          m_StringArgument: 
+Assets/Scenes/Holodeck.unity:37257: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:38155: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:41422: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:41466: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:45105: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:47165: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:48116: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:48160: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:48978: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:50430: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:50474: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:53433: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:54586: trailing whitespace.
++  m_Name: 
+Assets/Scenes/Holodeck.unity:54626: trailing whitespace.
++          m_ObjectArgumentAssemblyTypeName: 
+Assets/Scenes/Holodeck.unity:54629: trailing whitespace.
++          m_StringArgument: 
+Assets/Scenes/Holodeck.unity:54642: trailing whitespace.
++  m_Name: 

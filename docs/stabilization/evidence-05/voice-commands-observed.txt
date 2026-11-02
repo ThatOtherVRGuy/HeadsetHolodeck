@@ -1,0 +1,70 @@
+
+Voice pipeline observed on device (auto-transcribed by the app; ASR text is upper-cased by the wake trigger)
+
+Wake trigger is VadAsrWakeTrigger + Sherpa VAD/ASR on device. The configured wake words are an
+intentional alias list taken from real-world testing (VoiceActivationConfig.asset):
+  computer, pewter, pudor, peter, impewter, pumpor
+so utterances like 'pewter' or 'impewter' opening the command window are by design, not false accepts.
+Samples:
+  [VadAsrWakeTrigger] Microphone started. actualDevice='<default>', sampleRate=16000
+  [HeadsetHolodeckVoiceController] ListeningForWake: Listening for "computer".
+
+Distinct utterances recognised during the session (count x text):
+    27 x  PEWTER
+    12 x  IMPEWTER
+    12 x  FUDOR
+     8 x  LETTER
+     6 x  FUTURE
+     5 x  THE LOAD SEABREW WORLDLAM
+     5 x  RABBED THE WORLD
+     5 x  RELEASED THE WORLD
+     5 x  WORLD
+     5 x  DEAD SOUND BIRD CHIRPING
+     5 x  SPAWN POINT
+     5 x  MADE
+     5 x  LOAD YO YO
+     5 x  LOAD WORLD YO YO
+     5 x  LOWED YO YO LOOSE SPLAT TEST
+     5 x  GAVE
+     5 x  LOAD YO YO DADAS P Z
+     5 x  FANNORAMA
+     5 x  SHER PANORAMA
+     5 x  THE LOW WORLD
+     5 x  THE LOW ZEBRA WORLD LAMP TEST
+     5 x  LOAD WORLD YO YO LOOSE SPLAT TEST
+     5 x  ZEBRA WORLD LAB TEST
+     5 x  SENSIL GENERATION
+     5 x  LOAD YU O YO LOOSE SPLAT TEST
+     5 x  NAME
+     4 x  FUDER
+     4 x  PUDER
+
+Command dispatch results (VoiceCommandRouter):
+  09-13 17:32:02.166 I/Unity   (11108): [VoiceCommandRouter] HandleResult router=24398 pending=False/None transcript='Load yo-yo.' intent=LoadWorldConfig execute=True respo
+  09-13 17:32:21.367 I/Unity   (11108): [VoiceCommandRouter] HandleResult router=24398 pending=False/None transcript='Load world yo-yo.' intent=LoadWorldConfig execute=True
+  09-13 17:32:38.555 I/Unity   (11108): [VoiceCommandRouter] HandleResult router=24398 pending=False/None transcript='Load Yoyo Loose Splat Test' intent=LoadWorldConfig exe
+  09-13 17:33:06.416 I/Unity   (11108): [VoiceCommandRouter] HandleResult router=24398 pending=False/None transcript='Save.' intent=SaveWorldConfig execute=True response='S
+  09-13 17:33:24.721 I/Unity   (11108): [VoiceCommandRouter] HandleResult router=24398 pending=False/None transcript='load yoyo.spz' intent=LoadWorldConfig execute=True res
+  09-13 17:33:57.110 I/Unity   (11108): [VoiceCommandRouter] HandleResult router=24398 pending=False/None transcript='Panorama.' intent=ShowPanoWorld execute=True response=
+  09-13 17:34:09.823 I/Unity   (11108): [VoiceCommandRouter] HandleResult router=24398 pending=False/None transcript='Panorama.' intent=ShowPanoWorld execute=True response=
+  09-13 17:34:43.496 I/Unity   (11108): [VoiceCommandRouter] HandleResult router=24398 pending=False/None transcript='LOAD WORLD' intent=LoadWorldConfig execute=True respon
+  09-13 17:35:08.076 I/Unity   (11108): [VoiceCommandRouter] HandleResult router=24398 pending=False/None transcript='Load Zebra World Lab Test.' intent=LoadWorldConfig exe
+  09-13 17:35:31.832 I/Unity   (11108): [VoiceCommandRouter] HandleResult router=24398 pending=False/None transcript='Load World Yo-Yo Loose Splat Test' intent=LoadWorldCon
+  09-13 17:35:56.093 I/Unity   (11108): [VoiceCommandRouter] HandleResult router=24398 pending=False/None transcript='Zebra World Lab test.' intent=Unknown execute=False re
+  09-13 17:36:02.649 I/Unity   (11108): [VoiceCommandRouter] HandleResult router=24398 pending=False/None transcript='Cancel generation.' intent=CancelGeneration execute=Tr
+  09-13 17:43:40.940 I/Unity   (15733): [VoiceCommandRouter] HandleResult router=24398 pending=False/None transcript='Load YoYo Loose Splat Test.' intent=LoadWorldConfig ex
+  09-13 17:44:00.858 I/Unity   (15733): [VoiceCommandRouter] HandleResult router=24398 pending=False/None transcript='Save.' intent=SaveWorldConfig execute=True response='S
+
+Wake word accepted during this session (WakeDetected events): pewter 13x, impewter 6x, pudor 2x, computer 1x
+
+Wake word NOT matched during this session - near-misses the speaker intended as 'computer':
+  [VadAsrWakeTrigger] Wake word not matched. transcript='THEOR'
+  [VadAsrWakeTrigger] Wake word not matched. transcript='IN LEAST THE WORLD'
+  [VadAsrWakeTrigger] Wake word not matched. transcript='OH'
+  [VadAsrWakeTrigger] Wake word not matched. transcript='FUDOR'
+  [VadAsrWakeTrigger] Wake word not matched. transcript='FUTURE'
+  [VadAsrWakeTrigger] Wake word not matched. transcript='FUDOR'
+  [VadAsrWakeTrigger] Wake word not matched. transcript='FUDER'
+  [VadAsrWakeTrigger] Wake word not matched. transcript='TUDOR'
+  [VadAsrWakeTrigger] Wake word not matched. transcript='TEST'
+  [VadAsrWakeTrigger] Wake word not matched. transcript='PUDER'

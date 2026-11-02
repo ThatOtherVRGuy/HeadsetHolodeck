@@ -1,0 +1,64 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using GaussianSplatting.Runtime;
+using WorldLabs.API;
+using WorldLabs.Runtime;
+using Holodeck.Save;
+using SpeechIntent;
+public static class StabilizationTransitionRisk02
+{
+    static string ResultPath { get { string[] args=Environment.GetCommandLineArgs(); for(int i=0;i<args.Length-1;i++) if(args[i]=="-riskResult")return args[i+1]; throw new Exception("Missing -riskResult"); } }
+    static void Record(string value) { File.AppendAllText(ResultPath,DateTime.UtcNow.ToString("o")+" "+value+"\n"); Debug.Log("[TransitionRisk02] "+value); }
+    static GameObject Inactive(string name) { var go=new GameObject(name); go.SetActive(false); return go; }
+    static async Task CompleteExternalAsync(WorldLabsWorldManager manager, string id, GaussianSplatRenderer renderer, Task delay)
+    {
+        manager.NotifyWorldLoadStarted(id);
+        await delay;
+        manager.RegisterExternalWorld(id,renderer,new World { world_id=id,display_name=id });
+    }
+    public static async void Run()
+    {
+        GameObject managerGo=null, rootA=null, rootB=null, saveGo=null, restoreGo=null; WorldConfigStore store=null;
+        string fixture=Path.Combine(Path.GetTempPath(),"holodeck-transition-risk02-"+Guid.NewGuid().ToString("N"));
+        int result=0;
+        try {
+            if(!Application.isBatchMode)throw new Exception("Isolated batch editor required");
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
+            Directory.CreateDirectory(fixture);
+            managerGo=Inactive("Risk02_Manager"); var manager=managerGo.AddComponent<WorldLabsWorldManager>(); manager.worldParent=managerGo.transform;
+            rootA=Inactive("Risk02_A"); rootB=Inactive("Risk02_B");
+            var rendererA=rootA.AddComponent<GaussianSplatRenderer>(); var rendererB=rootB.AddComponent<GaussianSplatRenderer>();
+            var gateA=new TaskCompletionSource<bool>(); var gateB=new TaskCompletionSource<bool>();
+            string activated=""; manager.OnWorldLoaded+=(id,renderer)=>activated=id;
+            Task a=CompleteExternalAsync(manager,"A",rendererA,gateA.Task);
+            Task b=CompleteExternalAsync(manager,"B",rendererB,gateB.Task);
+            gateB.SetResult(true); await b;
+            Record("AFTER_B activated="+activated+" LastLoadedWorld="+manager.LastLoadedWorld?.world_id);
+            await Task.Yield();
+            gateA.SetResult(true); await a;
+            bool stale=activated=="A" && manager.LastLoadedWorld?.world_id=="A" && manager.IsWorldLoaded("A") && !manager.IsWorldLoaded("B");
+            Record("RAPID_A_B_LATE_A stale_activation="+stale+" activated="+activated+" LastLoadedWorld="+manager.LastLoadedWorld?.world_id);
+            if(!stale)throw new Exception("Expected baseline stale activation was not reproduced");
+            store=WorldConfigStore.CreateForTesting(fixture); store.gameObject.SetActive(false);
+            saveGo=Inactive("Risk02_AutoSave"); var autosave=saveGo.AddComponent<WorldConfigAutoSave>(); autosave.worldConfigStore=store;
+            var original=store.CreateConfig(new WorldSourceData { type="local",world_id="original" },"Original",null); autosave.ActiveConfig=original;
+            var failed=store.CreateConfig(null,"Failed",null);
+            restoreGo=Inactive("Risk02_Restorer"); var restorer=restoreGo.AddComponent<WorldConfigRestorer>(); restorer.worldConfigStore=store; restorer.worldManager=manager; restorer.worldConfigAutoSave=autosave;
+            bool error=false; restorer.onRestoreError=new StringEvent(); restorer.onRestoreError.AddListener(_=>error=true);
+            await restorer.RestoreAsync(failed);
+            bool incorrect=error && ReferenceEquals(autosave.ActiveConfig,failed);
+            Record("FAILED_RESTORE error="+error+" incorrect_ActiveConfig="+incorrect+" active="+autosave.ActiveConfig?.display_name);
+            if(!incorrect)throw new Exception("Expected baseline wrong ActiveConfig was not reproduced");
+            Record("REPRODUCTION_COMPLETE cases=2 reproduced=2 fixture="+fixture+" no_provider_calls=true");
+        } catch(Exception ex) { Record("REPRODUCTION_FAILED "+ex); result=1; }
+        finally {
+            foreach(var go in new [] { restoreGo,saveGo,managerGo,rootA,rootB,store!=null?store.gameObject:null })if(go!=null)UnityEngine.Object.DestroyImmediate(go);
+            if(Directory.Exists(fixture))Directory.Delete(fixture,true);
+            EditorApplication.Exit(result);
+        }
+    }
+}

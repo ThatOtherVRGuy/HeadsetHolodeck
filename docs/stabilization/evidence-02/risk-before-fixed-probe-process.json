@@ -1,0 +1,8 @@
+{
+  "check": "risk",
+  "label": "risk-before-fixed-probe",
+  "exit_code": 0,
+  "started": "2026-09-08T23:35:30.197943-07:00",
+  "ended": "2026-09-08T23:36:05.004561-07:00",
+  "log": "/private/tmp/holodeck-transitions-02-w462lgrl/risk-before-fixed-probe.log"
+}

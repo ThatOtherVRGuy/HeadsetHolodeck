@@ -1,0 +1,143 @@
+--- before/Assets/App/Editor/CachedObjectBatchTests.cs
++++ after/Assets/App/Editor/CachedObjectBatchTests.cs
+@@ -111,7 +111,7 @@
+                 TestCachedObjectChoiceReplyAllowsPunctuation();
+                 TestGenerationControlParser();
+                 TestDispatcherBeginsCachedObjectChoice(store);
+-                TestDispatcherAsksWhereBeforeGeneratingWithoutPlacement();
++                TestDispatcherAsksWhereBeforeGeneratingWhenPointingHitIsMissing();
+ 
+                 record.model_path = "../escape.glb";
+                 string unsafeModelPath = store.GetModelAbsolutePath(record);
+@@ -764,19 +764,13 @@
+             }
+         }
+ 
+-        static void TestDispatcherAsksWhereBeforeGeneratingWithoutPlacement()
++        static void TestDispatcherAsksWhereBeforeGeneratingWhenPointingHitIsMissing()
+         {
+             var dispatcherGo = new GameObject("GeneratedPlacementValidationDispatcherTest");
+             var placementGo = new GameObject("GeneratedPlacementValidationObjectPlacementTest");
+-            var configGo = new GameObject("GeneratedPlacementValidationObjectGenerationConfigTest");
+             try
+             {
+                 DestroyObjectGenerationServices();
+-
+-                ObjectGenerationApiConfig config = configGo.AddComponent<ObjectGenerationApiConfig>();
+-                typeof(ObjectGenerationApiConfig)
+-                    .GetField("threeDAIStudioApiKey", BindingFlags.NonPublic | BindingFlags.Instance)
+-                    ?.SetValue(config, "test-key");
+ 
+                 var dispatcher = dispatcherGo.AddComponent<WorldActionDispatcher>();
+                 var placement = placementGo.AddComponent<ObjectPlacementController>();
+@@ -789,10 +783,16 @@
+                     intent = VoiceIntentType.PlaceObject,
+                     should_execute = true,
+                     object_name = "teddy bear",
+-                    spatial_reference = SpatialReferenceMode.None
++                    // An omitted location uses default placement; an explicit pointing
++                    // request must be resolved before offering generation or cached objects.
++                    spatial_reference = SpatialReferenceMode.PointingHit
+                 };
+ 
+-                dispatcher.Execute(command, new SpatialSnapshot());
++                var spatial = new SpatialSnapshot();
++                AssertTrue(!placement.TryResolvePlacementPose(command, spatial, out _, out _),
++                    "Expected the missing pointing hit to remain unresolved.");
++
++                dispatcher.Execute(command, spatial);
+                 AssertTrue(!string.IsNullOrWhiteSpace(command.spoken_response), "Expected unresolved generated placement to ask for clarification.");
+                 AssertContains(command.spoken_response, "where", "Expected unresolved generated placement to ask where before API generation.");
+                 AssertTrue(FindObjectGenerationService() == null, "Expected unresolved placement to return before object generation service creation.");
+@@ -802,7 +802,6 @@
+                 DestroyObjectGenerationServices();
+                 UnityEngine.Object.DestroyImmediate(dispatcherGo);
+                 UnityEngine.Object.DestroyImmediate(placementGo);
+-                UnityEngine.Object.DestroyImmediate(configGo);
+             }
+         }
+ 
+
+--- before/Assets/App/Save/Tests/WorldConfigStoreTests.cs
++++ after/Assets/App/Save/Tests/WorldConfigStoreTests.cs
+@@ -5,6 +5,7 @@
+ using Holodeck.Save;
+ using Newtonsoft.Json;
+ using System.Linq;
++using System.Collections.Generic;
+ 
+ namespace Holodeck.Save.Tests
+ {
+@@ -12,19 +13,33 @@
+     {
+         string _tempRoot;
+         WorldConfigStore _store;
++        readonly List<WorldConfigStore> _stores = new List<WorldConfigStore>();
+ 
+         [SetUp]
+         public void SetUp()
+         {
+             _tempRoot = Path.Combine(Path.GetTempPath(), "HolodeckSaveTests_" + System.Guid.NewGuid().ToString("N")[..8]);
+-            _store = WorldConfigStore.CreateForTesting(_tempRoot);
++            Directory.CreateDirectory(_tempRoot);
++            _store = CreateStore();
+         }
+ 
+         [TearDown]
+         public void TearDown()
+         {
++            foreach (WorldConfigStore store in _stores)
++                if (store != null)
++                    UnityEngine.Object.DestroyImmediate(store.gameObject);
++            _stores.Clear();
++
+             if (Directory.Exists(_tempRoot))
+                 Directory.Delete(_tempRoot, recursive: true);
++        }
++
++        WorldConfigStore CreateStore()
++        {
++            WorldConfigStore store = WorldConfigStore.CreateForTesting(_tempRoot);
++            _stores.Add(store);
++            return store;
+         }
+ 
+         [Test]
+@@ -99,6 +114,10 @@
+         {
+             var source = new WorldSourceData { type = "worldlabs", world_id = "wl1", display_name = "Beach" };
+             WorldConfig original = _store.CreateConfig(source, "Beach Empty", null);
++            // Timestamps have second precision. Backdate the source so this checks
++            // that a fork gets a fresh timestamp without depending on wall-clock delays.
++            const string originalCreatedAt = "2000-01-01T000000Z";
++            original.created_at = originalCreatedAt;
+             original.objects.Add(new SavedObject { instance_id = "chair_001", prefab_name = "beach chair" });
+             _store.SaveConfig(original);
+ 
+@@ -110,6 +129,8 @@
+             Assert.AreEqual("chair_001", fork.objects[0].instance_id);
+             Assert.IsTrue(Directory.Exists(Path.Combine(_tempRoot, fork.config_id)));
+             Assert.AreNotEqual(original.created_at, fork.created_at);
++            Assert.AreEqual(originalCreatedAt, original.created_at, "Forking must not change the source timestamp.");
++            Assert.AreEqual(fork.created_at, fork.modified_at);
+         }
+ 
+         [Test]
+@@ -138,7 +159,7 @@
+             Assert.AreEqual(2f, migrated.world_transform.scale.x, 0.001f);
+             Assert.AreEqual(1, migrated.prompts.Count);
+ 
+-            WorldConfigStore reloadedStore = WorldConfigStore.CreateForTesting(_tempRoot);
++            WorldConfigStore reloadedStore = CreateStore();
+             await reloadedStore.ScanAndMigrateAsync();
+             Assert.AreEqual(1, reloadedStore.ListConfigs().Count,
+                 "The migrated config should suppress its read-only legacy duplicate on later scans.");
+@@ -151,7 +172,7 @@
+             string looseSplat = Path.Combine(_tempRoot, "ImportedRoom.spz");
+             File.WriteAllBytes(looseSplat, new byte[] { 1, 2, 3, 4 });
+ 
+-            WorldConfigStore secondStore = WorldConfigStore.CreateForTesting(_tempRoot);
++            WorldConfigStore secondStore = CreateStore();
+ 
+             await Task.WhenAll(
+                 _store.ScanAndMigrateAsync(),

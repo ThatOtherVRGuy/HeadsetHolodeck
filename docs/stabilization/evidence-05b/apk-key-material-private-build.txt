@@ -1,0 +1,19 @@
+== Holodeck-order05-private.apk (313579135 bytes)
+-- unpacked apk: /private/tmp/holodeck-quest-05/apk-extract
+   '<KEY>=' markers (an embedded .env document): 12
+      FREESOUND_API_KEY=  x1
+      FREESOUND_SEARCH_URL=  x1
+      HITEM_ACCESS_KEY=  x1
+      HITEM_SECRET_KEY=  x1
+      MESHY_API_KEY=  x1
+      OPENAI_API_KEY=  x1
+      PIXABAY_API_KEY=  x1
+      THREEDAISTUDIO_API_KEY=  x1
+      TRIPO_API_KEY=  x1
+      WORLDLABS_API_KEY=  x1
+      XENO_CANTO_API_KEY=  x1
+      XENO_CANTO_SEARCH_URL=  x1
+   token-shaped strings: 4
+      WLT-[A-Za-z0-9_\-]{10,}  x1
+      sk-[A-Za-z0-9_\-]{20,}  x3
+

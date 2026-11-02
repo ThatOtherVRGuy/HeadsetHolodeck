@@ -1,0 +1,80 @@
+using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+
+public static class StabilizationTransitions02
+{
+    sealed class PumpContext : SynchronizationContext
+    {
+        readonly ConcurrentQueue<Tuple<SendOrPostCallback, object>> pending = new();
+        public int PendingCount => pending.Count;
+        public override void Post(SendOrPostCallback callback, object state) => pending.Enqueue(Tuple.Create(callback, state));
+        public override SynchronizationContext CreateCopy() => this;
+        public void DrainOneTurn()
+        {
+            int count = Math.Min(pending.Count, 256);
+            for (int i = 0; i < count && pending.TryDequeue(out var work); i++)
+            {
+                SynchronizationContext previous = Current;
+                try { SetSynchronizationContext(this); work.Item1(work.Item2); }
+                finally { SetSynchronizationContext(previous); }
+            }
+        }
+    }
+    static string Arg(string name)
+    {
+        string[] args = Environment.GetCommandLineArgs();
+        for (int i = 0; i < args.Length - 1; i++) if (args[i] == name) return args[i + 1];
+        throw new ArgumentException("Missing " + name);
+    }
+    static void Record(string message)
+    {
+        File.AppendAllText(Arg("-transitionResult"), DateTime.UtcNow.ToString("o") + " " + message + "\n");
+        UnityEngine.Debug.Log("[Transitions02] " + message);
+    }
+    public static void Run()
+    {
+        if (!Application.isBatchMode) throw new InvalidOperationException("Only run in an isolated batch editor.");
+        EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+        var context = new PumpContext();
+        SynchronizationContext previous = SynchronizationContext.Current;
+        int code = 0;
+        try
+        {
+            SynchronizationContext.SetSynchronizationContext(context);
+            string name = Arg("-transitionMethod");
+            int dot = name.LastIndexOf('.');
+            Type type = typeof(HeadsetHolodeck.EditorTests.SpeechIntentBatchTests).Assembly.GetType(name.Substring(0, dot), true);
+            MethodInfo method = type.GetMethod(name.Substring(dot + 1), BindingFlags.Public | BindingFlags.Static);
+            if (method == null) throw new MissingMethodException(name);
+            Record("BEGIN " + name + " context=BoundedMainThreadPump timeout=120s thread=" + Thread.CurrentThread.ManagedThreadId);
+            var clock = Stopwatch.StartNew();
+            object returned = method.Invoke(null, null);
+            Task running = returned as Task ?? (method.ReturnType == typeof(void) ? Task.CompletedTask : throw new InvalidOperationException("Expected Task or void entry point."));
+            double heartbeat = 10;
+            while (!running.IsCompleted)
+            {
+                context.DrainOneTurn();
+                if (clock.Elapsed.TotalSeconds > 120) throw new TimeoutException("Main-thread continuation pump exceeded 120 seconds.");
+                if (clock.Elapsed.TotalSeconds >= heartbeat)
+                {
+                    Record("PUMP elapsed=" + clock.Elapsed.TotalSeconds.ToString("F1") + " pending=" + context.PendingCount + " task=" + running.Status);
+                    heartbeat += 10;
+                }
+                Thread.Sleep(1);
+            }
+            running.GetAwaiter().GetResult();
+            Record("PASS " + name); Record("TRANSITIONS COMPLETE");
+        }
+        catch (Exception error) { code = 1; Record("FAIL " + error.GetBaseException()); }
+        finally { SynchronizationContext.SetSynchronizationContext(previous); }
+        EditorApplication.Exit(code);
+    }
+}

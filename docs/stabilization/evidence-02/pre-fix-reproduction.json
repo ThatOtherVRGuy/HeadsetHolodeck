@@ -1,0 +1,14 @@
+{
+  "result": "2/2 pre-fix risks reproduced",
+  "cases": [
+    "Rapid A then B external load start; B completes, then stale A completion replaces active registration and LastLoadedWorld.",
+    "Failed restore with null world source raises error but replaces previous ActiveConfig with failed config."
+  ],
+  "fixture_policy": "Inactive save/restorer components; unique disposable store; empty scene; simulated delayed external loader; no provider calls; external network and environment-resource reads blocked.",
+  "limitations": [
+    "Reproduction is logical state/event coverage with GPU-free placeholder renderers, not renderer/device acceptance.",
+    "Pre-fix manager Destroy in edit-mode emits expected warning; fixture cleanup uses DestroyImmediate.",
+    "First temp probe failed compilation from missing SpeechIntent import; corrected only temporary adapter and successful rerun retained."
+  ],
+  "raw_log": "/private/tmp/holodeck-transitions-02-w462lgrl/risk-before-fixed-probe.log"
+}

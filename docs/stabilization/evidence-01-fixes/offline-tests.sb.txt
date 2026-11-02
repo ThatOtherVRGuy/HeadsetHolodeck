@@ -1,0 +1,5 @@
+(version 1)
+(allow default)
+(deny network-outbound)
+(allow network-outbound (remote unix-socket) (remote ip "localhost:*"))
+(deny file-read* (regex #"/\.env$") (regex #"/worldlabs_env\.txt$"))

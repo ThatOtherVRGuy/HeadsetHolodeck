@@ -1,0 +1,26 @@
+Current Unity execution, 2026-09-08; process exit 0. Duplicate OnEnable/Refresh report collapsed. Presence checks do not authenticate keys.
+[HeadsetHolodeckInstallValidator] 24 check(s): 0 failure(s), 2 warning(s)
+OK: Unity version - 6000.2.10f1
+OK: Main scene - Assets/Scenes/Holodeck.unity
+OK: Project README - README.md
+OK: Environment example - .env.example
+OK: World Labs Gaussian Splatting package - Packages/com.worldlabs.gaussian-splatting/package.json
+OK: Sherpa-ONNX Unity package - Packages/com.ponyudev.sherpa-onnx/package.json
+OK: Package manifest - Vendored package dependencies are present.
+OK: Sherpa-ONNX files - Required ASR, VAD, TTS, and native runtime files are present.
+OK: Android manifest - Quest permissions and Vulkan feature declaration are present.
+OK: Headset camera Android library - Namespace and compileSdk are configured.
+OK: .env file - .env exists in the project root.
+OK: OPENAI_API_KEY - Configured.
+OK: WORLDLABS_API_KEY - Configured.
+OK: PIXABAY_API_KEY - Configured.
+OK: FREESOUND_API_KEY - Configured.
+OK: XENO_CANTO_API_KEY - Configured.
+WARNING: MESHY_API_KEY - Missing. Related optional UI/features may be disabled.
+WARNING: TRIPO_API_KEY - Missing. Related optional UI/features may be disabled.
+OK: THREEDAISTUDIO_API_KEY - Configured.
+OK: THREEDAISTUDIO_BASE_URL - Configured.
+OK: HITEM_ACCESS_KEY - Configured.
+OK: HITEM_SECRET_KEY - Configured.
+OK: HITEM_BASE_URL - Configured.
+OK: Editor utilities - Validation and repair/setup utilities are present.

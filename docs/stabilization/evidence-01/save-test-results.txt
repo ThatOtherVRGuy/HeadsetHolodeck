@@ -1,0 +1,31 @@
+Current EditMode run; Unity exit code 2.
+{'id': '2', 'testcasecount': '15', 'result': 'Failed(Child)', 'total': '15', 'passed': '13', 'failed': '2', 'inconclusive': '0', 'skipped': '0', 'asserts': '0', 'engine-version': '3.5.0.0', 'clr-version': '4.0.30319.42000', 'start-time': '2026-09-08 22:54:36Z', 'end-time': '2026-09-08 22:54:38Z', 'duration': '1.6849255'}
+Passed Holodeck.Save.Tests.WorldConfigRegistryTests.Register_AddsSerializer
+Passed Holodeck.Save.Tests.WorldConfigRegistryTests.Register_NullSerializer_ThrowsArgumentNullException
+Passed Holodeck.Save.Tests.WorldConfigRegistryTests.RestoreAll_CallsRestoreOnMatchingSerializer
+Passed Holodeck.Save.Tests.WorldConfigRegistryTests.RestoreAll_UnknownType_LogsWarningAndDoesNotThrow
+Passed Holodeck.Save.Tests.WorldConfigRegistryTests.SaveAll_CallsSaveOnRegisteredSerializer
+Passed Holodeck.Save.Tests.WorldConfigSerializationTests.WorldConfig_JsonRoundTrip_PreservesAllFields
+Passed Holodeck.Save.Tests.WorldConfigSerializationTests.WorldConfig_NullOptionalFields_SerializesCleanly
+Passed Holodeck.Save.Tests.WorldConfigStoreTests.CreateConfig_WritesJsonToDisk
+Passed Holodeck.Save.Tests.WorldConfigStoreTests.DeleteConfig_RemovesFolderAndInMemory
+Failed Holodeck.Save.Tests.WorldConfigStoreTests.ForkConfig_CreatesSeparateFolderWithSameObjects
+  Expected: not equal to "2026-09-08T225436Z"
+  But was:  "2026-09-08T225436Z"
+
+at Holodeck.Save.Tests.WorldConfigStoreTests.ForkConfig_CreatesSeparateFolderWithSameObjects () [0x000f8] in /Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev/Assets/App/Save/Tests/WorldConfigStoreTests.cs:112
+
+Passed Holodeck.Save.Tests.WorldConfigStoreTests.HasConfigForWorldId_ReturnsTrueWhenExists
+Passed Holodeck.Save.Tests.WorldConfigStoreTests.ListConfigs_ReturnsAllCreated
+Passed Holodeck.Save.Tests.WorldConfigStoreTests.MigrateConfigToWritableCopy_PreservesDataAndHidesLegacyDuplicateOnNextScan
+Passed Holodeck.Save.Tests.WorldConfigStoreTests.SaveConfig_UpdatesModifiedAt
+Failed Holodeck.Save.Tests.WorldConfigStoreTests.ScanAndMigrateAsync_WithMultipleStores_CreatesOneConfigPerLooseSplat
+System.IO.DirectoryNotFoundException : Could not find a part of the path "/var/folders/5w/wmjvjpxs0398ml0vdjhp7p8m0000gn/T/HolodeckSaveTests_ee0361ec/ImportedRoom.spz".
+  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share, System.Int32 bufferSize, System.Boolean anonymous, System.IO.FileOptions options) [0x00164] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.FileStream..ctor (System.String path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share) [0x00000] in <3c470575843b432e876313222d20c5ed>:0 
+  at (wrapper remoting-invoke-with-check) System.IO.FileStream..ctor(string,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare)
+  at System.IO.File.InternalWriteAllBytes (System.String path, System.Byte[] bytes) [0x00000] in <3c470575843b432e876313222d20c5ed>:0 
+  at System.IO.File.WriteAllBytes (System.String path, System.Byte[] bytes) [0x00039] in <3c470575843b432e876313222d20c5ed>:0 
+  at Holodeck.Save.Tests.WorldConfigStoreTests.ScanAndMigrateAsync_WithMultipleStores_CreatesOneConfigPerLooseSplat () [0x0002d] in /Users/davidarendash/Documents/Projects/Unity/HeadsetHolodeckDev/Assets/App/Save/Tests/WorldConfigStoreTests.cs:152 
+  at UnityEngine.TestTools.TestRunner.TestTaskWrapper+<Execute>d__2.MoveNext () [0x00074] in ./Library/PackageCache/com.unity.test-framework@d97b7cd61ded/UnityEngine.TestRunner/TestRunner/TestTaskWrapper.cs:31 
+  at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0004e] in ./Library/PackageCache/com.unity.test-framework@d97b7cd61ded/UnityEngine.TestRunner/NUnitExtensions/Attributes/TestEnumerator.cs:44 

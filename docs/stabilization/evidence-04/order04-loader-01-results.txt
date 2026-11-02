@@ -1,0 +1,6 @@
+2026-09-13T22:35:51.0417870Z BEGIN HeadsetHolodeck.EditorTests.WorldLoaderTransitionBatchTests.RunAllAsync context=BoundedMainThreadPump timeout=120s thread=1
+2026-09-13T22:35:51.3190240Z PASS HeadsetHolodeck.EditorTests.WorldLoaderTransitionBatchTests.RunAllAsync
+2026-09-13T22:35:51.3195000Z TRANSITIONS COMPLETE
+2026-09-13T23:00:38.0491750Z BEGIN HeadsetHolodeck.EditorTests.WorldLoaderTransitionBatchTests.RunAllAsync context=BoundedMainThreadPump timeout=120s thread=1
+2026-09-13T23:00:38.2611770Z PASS HeadsetHolodeck.EditorTests.WorldLoaderTransitionBatchTests.RunAllAsync
+2026-09-13T23:00:38.2615250Z TRANSITIONS COMPLETE
