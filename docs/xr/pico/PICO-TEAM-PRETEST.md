@@ -1,7 +1,12 @@
 # Pre-test handover for the PICO team
 
-Purpose: answer one question first — **does the build run on the device at all?** Everything below is in
-service of that, plus what to send back so the answer is actionable.
+**This is an emulator handover.** The PICO Swan headset is not publicly available yet, so everything here
+targets the PICO emulator; the Meta Quest path remains the way to see the experience on real hardware. If
+you do have a Swan, the same artifact installs on it, but treat the emulator as the reference environment
+and do not read emulator results as device results.
+
+Purpose: answer one question first — **does the build run in the emulator, and can it be interacted with?**
+Everything below is in service of that, plus what to send back so the answer is actionable.
 
 ## The artifact
 

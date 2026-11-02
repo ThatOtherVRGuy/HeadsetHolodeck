@@ -2,6 +2,11 @@
 
 Draft started 2026-11-01. Target: a published, non-draft release by **2026-11-15**.
 
+**This is an emulator release.** The PICO headset is not publicly available yet, so the deliverable is a
+build validated against the PICO emulator, with the Meta Quest path remaining the way to run the
+experience on real hardware. Device criteria below apply to Quest; PICO criteria are emulator-scoped. Do
+not describe an emulator pass as a device pass anywhere in the release notes.
+
 The draft release `pico-2026-11-01` already exists with an APK attached, and it is the fallback: if
 everything after this point slips, there is still a tagged artifact to hand over. Everything below makes
 that artifact trustworthy rather than merely present.
@@ -14,8 +19,8 @@ notes as a known limitation — silence is not an option.
 | # | Criterion | Evidence required |
 |---|---|---|
 | 1 | Cold clone builds an APK with no manual steps | Build from a fresh clone, APK installed and launched |
-| 2 | Controller ray hover and UI select work on device | Screenshot or beacon from hardware |
-| 3 | Push-to-talk works on device, end to end | Transcript in the log from a spoken utterance |
+| 2 | Controller ray hover and UI select work | Screenshot or beacon from the **emulator** |
+| 3 | Push-to-talk works, end to end | Transcript in the log — **emulator microphone is silent, so this needs a headset or the fixture replay** |
 | 4 | Speech commands reach the dispatcher offline | `decision=AcceptLocal` lines from the fixture replay |
 | 5 | World load, save, and reload survives a restart | `[WorldConfigStore]` lines across two launches |
 | 6 | Wake word has a measured recall number | Fixture replay count, stated in the release notes |

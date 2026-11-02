@@ -2,6 +2,26 @@
 
 What this repository is, what state it is in, and what a partner needs to know to build and run it.
 
+## Where it runs today
+
+Read this before interpreting anything else on the page, because it changes what "verified" means.
+
+| Target | Status | What that means |
+|---|---|---|
+| **PICO Swan, PICO OS 6** | **Emulator only** | The headset is **not publicly available yet**. Every PICO result in this document comes from the PICO emulator. All PICO code paths, settings and builds are real, but none of them has run on PICO silicon. |
+| **Meta Quest** | **Targetable headset** | This is the platform you can put on a real head today. The Quest path is maintained in the same tree and selected by the build-profile target switch. |
+
+Two consequences worth stating plainly:
+
+- **A PICO pass in the emulator is not a hardware pass.** The emulator has no working microphone and
+  supplies no gaze pose, so voice input and gaze cannot be exercised there at all — see the known issues
+  below. Those two are unverified for PICO in every sense, not merely unconfirmed.
+- **The Meta path is the only one with real-hardware evidence**, and that evidence predates the recent
+  work in this tree. Treat Quest numbers as historical until rebuilt and re-checked.
+
+The delivery aim is a PICO emulator build that behaves correctly where the emulator can observe it, with
+the Meta target remaining the way to see the experience on real hardware.
+
 ## What it is
 
 A Unity 6 (6000.2.10f1) XR prototype for the PICO Swan (PICO OS 6): speech-driven creation, loading and
@@ -54,18 +74,27 @@ this is how the emulator is tested, since its microphone is silent.
 
 ## State of verification (2026-11-01)
 
-| Capability | Status |
+Two kinds of evidence appear below and they are not interchangeable. **Emulator** results come from the
+PICO emulator and can be reproduced by anyone with the emulator image. **Earlier device** results come from
+a PICO Swan session before the headset became unavailable — real hardware, but a different build than the
+one this repository now produces, so they are historical rather than a re-check.
+
+| Capability | Where verified |
 |---|---|
-| Launches on hardware (PICO Swan, OS 6.2.0) at 90 FPS | verified |
-| Controllers optional (hand tracking declared, no controller requirement) | verified |
-| Eye tracking device reaches the app | verified |
-| **Controller ray hover + UI select** | verified in the emulator after a fix (see below) |
-| Master volume / mute by voice | verified in the emulator via logs |
-| Camera capture (WebXR-style `WebCamTexture`) | verified on hardware |
-| 3D ↔ panorama switching, metric scale, 1 m placement, cache reuse, saves | verified |
-| Gaze→UI hover | implemented against OpenXR `gazePosition`/`gazeRotation`; **cannot be verified in the emulator**, which supplies no gaze pose — see known issues. Needs hardware |
-| Hand pose tracking on the emulator | not supported by this emulator image |
-| Wake-word recall | measured at 1 in 15 on hardware; recording fixtures exist to improve it |
+| Launches and renders at ~90 FPS | Earlier device (PICO Swan, OS 6.2.0) |
+| Controllers optional, hand tracking declared, no controller requirement | Earlier device |
+| Eye tracking device reaches the app | Earlier device |
+| **Controller ray hover + UI select** | Emulator, after the `XRUIToolkitManager` fix |
+| Master volume / mute by voice | Emulator, via `[Audio] master volume` logs |
+| Camera capture (`WebCamTexture`) | Earlier device |
+| 3D ↔ panorama switching, metric scale, 1 m placement, cache reuse, saves | Emulator and earlier device |
+| Gaze→UI hover | **Neither.** Implemented against OpenXR `gazePosition`/`gazeRotation`; the emulator supplies no gaze pose, and no headset is available. Unverified |
+| Hand pose tracking | Not supported by this emulator image |
+| Wake-word recall | Earlier device: 1 in 15 utterances |
+
+Because no headset is currently available, **this release is validated against the emulator only**. The
+device rows above are not a claim about this artifact; re-running them is the first thing to do when
+hardware returns.
 
 ### The two bugs worth knowing about
 
