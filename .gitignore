@@ -141,6 +141,11 @@ InitTestScene*.unity*
 /docs/agent-worklog.md
 /docs/xr/pico/agent-mail/
 
+# Local tooling state. These were never meant to be versioned, but they were only "untracked" rather
+# than ignored, so a broad `git add -A` on a snapshot branch swept them into the public repository.
+/.pico-cli/
+/.vsconfig
+
 # Local Python environments and caches used by the fixture splitter and the MCP servers.
 /.uv-cache/
 /.venv-audacity/
