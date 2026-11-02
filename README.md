@@ -4,8 +4,8 @@ Shared code is organized under `Assets/App/Shared`, with headset-specific work u
 `Assets/App/Platforms/Meta` and `Assets/App/Platforms/Pico`. See the
 [Meta/Pico architecture and delivery plan](docs/xr/PLAN.md).
 
-**Current target: PICO Swan (PICO OS 6).** The Meta Quest path is maintained in the same tree and selected
-through the build-profile target switch, but the Pico build is the one being verified. For the state of each
+**Current target: PICO Swan (PICO OS 6) Emulator.** The Meta Quest path is maintained in the same tree and selected
+through the build-profile target switch, but the Pico build is the one being verified. Note: the headset is not even available, but the emulator is, and that's what this targets. For the state of each
 capability, what is verified versus not, how to build and run, and the known issues, start with
 [docs/xr/pico/SHARE-SNAPSHOT.md](docs/xr/pico/SHARE-SNAPSHOT.md).
 
