@@ -32,31 +32,43 @@ final build rather than being assumed to still hold.
 
 ## Week 1 (2026-11-02 → 08): fix the things that make it unreliable
 
-Ordered by user impact, not by difficulty.
+**Hardware returns Friday 2026-11-06**, so the week splits: emulator work through Thursday, one device
+session on Friday. The Friday script is `FRIDAY-DEVICE-SESSION.md` — read it before, because the window is
+short and improvisation wastes it.
 
-1. **Wake-word recall.** The measured number is 1 in 15 on hardware. The fixture set exists
-   (`tools/split_voice_fixtures.py`, 13 groups, 39 utterances) but has not been recorded yet. Record,
-   replay, and get a baseline number; then decide between contextual biasing (needs a transducer model
-   and `modified_beam_search`) and accepting push-to-talk as the primary input and saying so.
-2. **Microphone death after a system dialog.** Any permission prompt or app pause leaves the wake
-   trigger dead until relaunch. This is the worst failure mode in a demo: it looks like the app froze.
-3. **Gaze on hardware.** Implemented against OpenXR `gazePosition`/`gazeRotation`; the emulator cannot
-   exercise it. One hardware session settles it, and it is the only unverified interaction path.
-4. **Camera rotation on device.** The rotation fix (`WebCamTexture.videoRotationAngle`) has never run on
-   hardware.
-5. **Local-first coverage.** Ten everyday commands still need the cloud because the capability does not
-   exist: world cycling, help, brightness, and disambiguation for `stop` / `brighter` / `reset the
-   world`. Global mute/mute shipped already; these are the remainder.
+Emulator work (Codex, via mailbox `M-0006`): panel traversal, save/load cycle, command battery, camera
+preview layout, idle soak. That list is the release's primary evidence, since the Swan headset is not
+publicly available.
+
+Friday device work, in priority order — the top items would block the release:
+
+1. **Gaze on hardware.** Implemented against OpenXR `gazePosition`/`gazeRotation`; the emulator cannot
+   exercise it. One session settles whether it ships or becomes a documented limitation.
+2. **Wake word and push-to-talk.** The emulator microphone is silent, so this cannot be answered any other
+   way. 20 spaced utterances gives a rate; below ~50% and push-to-talk becomes the documented primary input.
+3. **Camera preview orientation.** Needs a real camera.
+4. **Saves across a real force-stop and relaunch.** Verified on an older build; re-check against this one.
+
+Work that does not need the Friday window, and should land before it:
+
+- **Wake-word baseline.** The fixture set exists (`tools/split_voice_fixtures.py`, 13 groups, 39
+  utterances) but has not been recorded. Once recorded, the replay gives a rate without spending the
+  hardware window, and Friday is then a confirmation rather than a measurement.
+- **Microphone death after a system dialog.** Any permission prompt or app pause leaves the wake trigger
+  dead until relaunch — the worst failure mode in a demo, because it looks like the app froze.
+- **Local-first coverage.** Ten everyday commands still need the cloud because the capability does not
+  exist: world cycling, help, brightness, and disambiguation for `stop` / `brighter` / `reset the world`.
+  Global mute shipped already; these are the remainder.
 
 ## Week 2 (2026-11-09 → 15): make the release defensible
 
-6. **Regression matrix on hardware**, one row per capability in `SHARE-SNAPSHOT.md`, with the artifact
-   hash recorded beside each result.
-7. **Documentation pass.** `SHARE-SNAPSHOT.md` and `USER_MANUAL.md` must describe the shipped build, not
+5. **Regression matrix**, one row per capability in `SHARE-SNAPSHOT.md`, with the artifact hash and whether
+   the evidence is emulator or device recorded beside each result.
+6. **Documentation pass.** `SHARE-SNAPSHOT.md` and `USER_MANUAL.md` must describe the shipped build, not
    an earlier one. Confirm the README's first click lands on the truth.
-8. **Version bump** to 9.3.0 (from 9.2.1) and a fresh `-credentialMode device` build.
-9. **Publish the draft**: clear the draft flag, mark prerelease off, attach the final APK, add a
-   "verified on" section listing hardware, OS version and date.
+7. **Version bump** to 9.3.0 (from 9.2.1) and a fresh `-credentialMode device` build.
+8. **Publish the draft**: clear the draft flag, mark prerelease off, attach the final APK, and state in the
+   body what was verified where — emulator versus device — plus the date.
 
 ## Risks
 
