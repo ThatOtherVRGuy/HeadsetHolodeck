@@ -135,6 +135,12 @@ InitTestScene*.unity*
 # instead of competing with the editor for files it will clean up underneath us.
 /.scratch/
 
+# Internal agent coordination. The ledger and the Codex<->DeepSeek mailbox are shared between sessions
+# on this machine; they are working notes, not product documentation, and must not appear in the public
+# repository. They stay on disk so both sessions keep using them.
+/docs/agent-worklog.md
+/docs/xr/pico/agent-mail/
+
 # Local Python environments and caches used by the fixture splitter and the MCP servers.
 /.uv-cache/
 /.venv-audacity/
